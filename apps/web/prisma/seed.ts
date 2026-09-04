@@ -2,13 +2,32 @@
  * Seed-Skript für Admin-Bootstrap. Nur einmalig ausführen.
  * Erfordert ADMIN_BOOTSTRAP_EMAIL + ADMIN_BOOTSTRAP_PASSWORD in der Umgebung.
  */
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "@node-rs/argon2";
-import { DEFAULT_GENERATOR_SETTINGS } from "../src/lib/generator-settings-schema.ts";
+import { loadEnvConfig } from "@next/env";
+
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const webRoot = resolve(scriptDir, "..");
+const repoRoot = resolve(scriptDir, "../..");
+
+// Seed kann direkt in apps/web oder vom Repo-Root via --prefix gestartet werden.
+// Deshalb laden wir erst apps/web/.env und nutzen dann Root-.env als Fallback.
+loadEnvConfig(webRoot, false);
+if (!process.env.ADMIN_BOOTSTRAP_EMAIL || !process.env.ADMIN_BOOTSTRAP_PASSWORD) {
+  loadEnvConfig(repoRoot, false);
+}
 
 const prisma = new PrismaClient();
 
 async function main(): Promise<void> {
+  const { DEFAULT_GENERATOR_SETTINGS } = (await import(
+    new URL("../src/lib/generator-settings-schema.ts", import.meta.url).href
+  )) as {
+    DEFAULT_GENERATOR_SETTINGS: unknown;
+  };
+
   const email = process.env.ADMIN_BOOTSTRAP_EMAIL;
   const password = process.env.ADMIN_BOOTSTRAP_PASSWORD;
   if (!email || !password) {
