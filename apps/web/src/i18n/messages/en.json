@@ -1,16 +1,17 @@
 {
-    "brand": "SlotCrate",
+    "brand": "SlotCrate Sorting System",
     "meta": {
-        "title": "SlotCrate Configurator",
+        "title": "SlotCrate Sorting System Configurator",
         "description": "Configure and export modular SlotCrate sorting bins."
     },
     "nav": {
+        "home": "Home",
         "generator": "Single Box",
         "planner": "Layout Planner",
         "website": "SlotCrate Website"
     },
     "home": {
-        "title": "SlotCrate Configurator",
+        "title": "SlotCrate Sorting System Configurator",
         "subtitle": "Build precise bins and complete layouts for your SlotCrate setup in the browser, with live preview and export.",
         "generator": {
             "title": "Single Box Generator",

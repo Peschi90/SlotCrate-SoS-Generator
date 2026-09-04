@@ -2,17 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+    --green: #5fbb2e;
+    --green-bright: #7ed321;
+    --green-dark: #3f8f1c;
+    --green-glow: rgba(95, 187, 46, 0.4);
+    --bg: #080b08;
+    --text: #f2f5f0;
+}
+
 html,
 body {
     height: 100%;
-    background: #090b10;
-    color: #f2f3f6;
+    background: var(--bg);
+    color: var(--text);
     font-family: "Inter", "Segoe UI", sans-serif;
 }
 
 .slotcrate-theme {
     position: relative;
-    background: radial-gradient(1200px 700px at 8% -20%, rgba(232, 106, 51, 0.25), transparent 65%), radial-gradient(900px 600px at 95% 0%, rgba(29, 81, 171, 0.2), transparent 60%), #090b10;
+    background: radial-gradient(1200px 700px at 8% -20%, rgba(95, 187, 46, 0.28), transparent 65%), radial-gradient(900px 600px at 95% 0%, rgba(126, 211, 33, 0.12), transparent 60%), var(--bg);
     overflow-x: hidden;
 }
 
@@ -29,8 +39,8 @@ body {
     inset: 0;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.24;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    opacity: 0.22;
+    background-image: linear-gradient(rgba(95, 187, 46, 0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(95, 187, 46, 0.12) 1px, transparent 1px);
     background-size: 46px 46px;
     mask-image: radial-gradient(circle at center, black 45%, transparent 95%);
 }
@@ -54,8 +64,8 @@ body {
 .slotcrate-navcta {
     border-radius: 9999px;
     padding: 0.38rem 1rem;
-    background: linear-gradient(135deg, #e86a33, #d45521);
-    color: #fff;
+    background: linear-gradient(135deg, var(--green), var(--green-dark));
+    color: #071007;
     font-weight: 600;
     letter-spacing: 0.01em;
     transition: filter 180ms ease;
@@ -74,8 +84,9 @@ body {
 }
 
 .slotcrate-button-primary {
-    color: #fff;
-    background: linear-gradient(130deg, #e86a33, #d45521);
+    color: #071007;
+    background: linear-gradient(130deg, var(--green), var(--green-bright));
+    box-shadow: 0 0 22px var(--green-glow);
 }
 
 .slotcrate-button-primary:hover {
@@ -104,12 +115,12 @@ body {
 }
 
 .slotcrate-inline-link {
-    color: #f7a277;
+    color: var(--green-bright);
     font-weight: 600;
 }
 
 .slotcrate-inline-link:hover {
-    color: #ffb38e;
+    color: #98eb4b;
 }
 
 .slotcrate-range {
@@ -117,14 +128,14 @@ body {
     appearance: none;
     height: 14px;
     border-radius: 999px;
-    background: linear-gradient(90deg, rgba(76, 140, 255, 0.95), rgba(62, 168, 106, 0.85));
+    background: linear-gradient(90deg, var(--green), var(--green-bright));
     outline: none;
 }
 
 .slotcrate-range::-webkit-slider-runnable-track {
     height: 14px;
     border-radius: 999px;
-    background: linear-gradient(90deg, rgba(76, 140, 255, 0.95), rgba(62, 168, 106, 0.85));
+    background: linear-gradient(90deg, var(--green), var(--green-bright));
 }
 
 .slotcrate-range::-webkit-slider-thumb {
@@ -141,7 +152,7 @@ body {
 .slotcrate-range::-moz-range-track {
     height: 14px;
     border-radius: 999px;
-    background: linear-gradient(90deg, rgba(76, 140, 255, 0.95), rgba(62, 168, 106, 0.85));
+    background: linear-gradient(90deg, var(--green), var(--green-bright));
 }
 
 .slotcrate-range::-moz-range-thumb {

@@ -30,10 +30,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="min-h-screen flex flex-col relative">
             <header className="border-b border-white/10 bg-black/35 backdrop-blur-md px-6 py-4 flex items-center gap-6 sticky top-0 z-20">
               <div className="flex items-center gap-3">
-                <span className="text-xl font-semibold tracking-wider slotcrate-brand">{t("brand")}</span>
+                <Link href="/" className="text-xl font-semibold tracking-wider slotcrate-brand hover:text-white">
+                  {t("brand")}
+                </Link>
                 <span className="hidden sm:inline text-xs text-white/60">Transport. Organize. Race.</span>
               </div>
               <nav className="flex flex-1 flex-wrap items-center gap-3 text-sm text-white/85">
+                <Link href="/" className="slotcrate-navlink">
+                  {t("nav.home")}
+                </Link>
                 <Link href="/generator" className="slotcrate-navlink">
                   {t("nav.generator")}
                 </Link>

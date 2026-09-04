@@ -1,16 +1,17 @@
 {
-    "brand": "SlotCrate",
+    "brand": "SlotCrate Sorting System",
     "meta": {
-        "title": "SlotCrate Konfigurator",
+        "title": "SlotCrate Sorting System Konfigurator",
         "description": "Modulare SlotCrate-Sortierkästen konfigurieren und exportieren."
     },
     "nav": {
+        "home": "Startseite",
         "generator": "Einzelkasten",
         "planner": "Layout-Planer",
         "website": "SlotCrate Website"
     },
     "home": {
-        "title": "SlotCrate Konfigurator",
+        "title": "SlotCrate Sorting System Konfigurator",
         "subtitle": "Konfiguriere passgenaue Boxen und komplette Layouts fuer dein SlotCrate-System. Direkt im Browser, mit Live-Vorschau und Export.",
         "generator": {
             "title": "Einzelkasten-Generator",

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { BoxPreview } from "@/components/BoxPreview";
 import { SYSTEM } from "@/lib/system";
 
@@ -84,6 +85,9 @@ export function GeneratorClient({
         }}
       >
         <header className="space-y-1">
+          <Link href="/" className="slotcrate-inline-link inline-flex items-center gap-1 text-sm">
+            ← {t("nav.home")}
+          </Link>
           <h1 className="text-xl font-semibold tracking-tight">{t("generator.title")}</h1>
           <p className="text-sm text-neutral-400">{t("generator.subtitle")}</p>
         </header>

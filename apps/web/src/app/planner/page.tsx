@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import Link from "next/link";
 import { LayoutGrid } from "@/components/LayoutGrid";
 import { Layout3DView } from "@/components/Layout3DView";
 import { useLayoutStore } from "@/lib/layout-store";
@@ -70,6 +71,9 @@ export default function PlannerPage() {
       </div>
 
       <aside className="space-y-4 text-sm">
+        <Link href="/" className="slotcrate-inline-link inline-flex items-center gap-1">
+          ← {t("nav.home")}
+        </Link>
         <h1 className="text-lg font-semibold">{t("planner.title")}</h1>
         <p className="text-neutral-400">{t("planner.description")}</p>
 
