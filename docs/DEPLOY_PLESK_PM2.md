@@ -63,7 +63,7 @@ npm --prefix apps/web run db:seed
 5. Web-App mit PM2 starten:
 
 ```powershell
-pm2 start ecosystem.config.cjs --only slotcrate-web
+npx pm2 start ecosystem.config.cjs --only slotcrate-web
 ```
 
 ## CAD-API deployen
@@ -79,7 +79,7 @@ Hinweis: `cadquery==2.8.0` ist derzeit nicht auf PyPI verfügbar. Das Projekt pi
 2. CAD-API mit PM2 starten:
 
 ```powershell
-pm2 start ecosystem.config.cjs --only slotcrate-cad-api
+npx pm2 start ecosystem.config.cjs --only slotcrate-cad-api
 ```
 
 Falls dein Server kein `python3` kennt, setze vor dem Start `PYTHON_BIN` auf den vollständigen Pfad zum Python-Interpreter der virtuellen Umgebung.
@@ -87,12 +87,12 @@ Falls dein Server kein `python3` kennt, setze vor dem Start `PYTHON_BIN` auf den
 ## PM2 nützliche Befehle
 
 ```powershell
-pm2 status
-pm2 logs slotcrate-web
-pm2 logs slotcrate-cad-api
-pm2 restart slotcrate-web
-pm2 restart slotcrate-cad-api
-pm2 save
+npx pm2 status
+npx pm2 logs slotcrate-web
+npx pm2 logs slotcrate-cad-api
+npx pm2 restart slotcrate-web
+npx pm2 restart slotcrate-cad-api
+npx pm2 save
 ```
 
 ## Hinweise für Plesk

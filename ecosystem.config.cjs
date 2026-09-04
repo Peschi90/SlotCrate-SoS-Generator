@@ -9,8 +9,8 @@ module.exports = {
             },
             max_restarts: 10,
             restart_delay: 3000,
-            autorestart: true,
-            watch: false
+                script: "./node_modules/next/dist/bin/next",
+                args: "start -p 6293",
         },
         {
             name: "slotcrate-cad-api",
