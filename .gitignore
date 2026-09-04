@@ -1,0 +1,39 @@
+# Environments
+.venv/
+.venv-cad/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+
+# Local env
+.env
+.env.local
+.env.*.local
+
+# Generated artefacts (never commit generated STL/3MF/ZIP)
+generated/
+*.stl
+*.3mf
+*.zip
+
+# Preview derivatives (regenerable)
+*.glb
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Prisma
+prisma/*.db

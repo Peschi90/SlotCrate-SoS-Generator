@@ -1,0 +1,90 @@
+{
+    "brand": "SlotCrate",
+    "meta": {
+        "title": "SlotCrate Configurator",
+        "description": "Configure and export modular SlotCrate sorting bins."
+    },
+    "nav": {
+        "generator": "Single Box",
+        "planner": "Layout Planner"
+    },
+    "home": {
+        "title": "SlotCrate Configurator",
+        "generator": {
+            "title": "Single Box Generator",
+            "description": "Configure a single box in grid cells and download it as STL."
+        },
+        "planner": {
+            "title": "Layout Planner",
+            "description": "Place multiple boxes on the 10×10 grid plate and export them together."
+        }
+    },
+    "generator": {
+        "title": "Single Box Generator",
+        "subtitle": "With intuitive sliders for width, depth, and drawer height.",
+        "width": "Width (grid cells)",
+        "depth": "Depth (grid cells)",
+        "height": "Height (mm)",
+        "heightHint": "Choose a drawer height; the actual box height is mapped accordingly.",
+        "drawerLabel": "drawer",
+        "preview": "Live preview",
+        "download": "Download STL",
+        "downloading": "Generating …",
+        "cancel": "Cancel",
+        "error": "Generation failed: {message}",
+        "hint": "Bottom pickups and grid pitch are invariant."
+    },
+    "planner": {
+        "title": "Layout Planner",
+        "description": "Drag a rectangle over the grid plate to create a box. Valid areas are shown in green, invalid areas in red.",
+        "undo": "Undo ({count})",
+        "redo": "Redo ({count})",
+        "reset": "Reset",
+        "usedCells": "Used cells: {used} / {total}",
+        "boxCount": "Box count: {count}",
+        "selection": "Selection",
+        "gridSize": "Grid: {width}×{depth}",
+        "outerSize": "Outer size: {width} × {depth} mm",
+        "height": "Height: {height} mm",
+        "remove": "Remove",
+        "exportZip": "ZIP + bill of materials",
+        "exporting": "Creating ZIP …",
+        "cancel": "Cancel"
+    },
+    "admin": {
+        "title": "Admin panel",
+        "activeVersion": "Active version: {version}, created {createdAt}",
+        "logout": "Log out",
+        "constantsTitle": "Immutable constants",
+        "constantsHint": "These values are hard-wired in the geometry code and cannot be overridden by admin edits.",
+        "constant": {
+            "basePlate": "Base grid plate",
+            "grid10x10": "10×10 grid",
+            "pitch": "Grid pitch 21.09 mm",
+            "pickupShape": "Bottom pickup shape",
+            "pickupPosition": "Bottom pickup position",
+            "orientation": "Base orientation"
+        },
+        "settingsTitle": "Editable parameters",
+        "field": {
+            "boxHeightMm": "Box height (mm)",
+            "wallThicknessMm": "Wall thickness (mm)",
+            "innerFloorRadiusMm": "Inner floor radius (mm)",
+            "outerClearanceMm": "Outer clearance (mm)",
+            "minCells": "Min. grid size",
+            "maxCells": "Max. grid size",
+            "stlTessellationLinearMm": "STL linear (mm)",
+            "stlTessellationAngularRad": "STL angular (rad)",
+            "filenamePrefix": "Filename prefix"
+        },
+        "note": "Version note",
+        "publish": "Publish new version",
+        "published": "Published new version {version}."
+    },
+    "login": {
+        "title": "Admin login",
+        "email": "Email",
+        "password": "Password",
+        "submit": "Sign in"
+    }
+}

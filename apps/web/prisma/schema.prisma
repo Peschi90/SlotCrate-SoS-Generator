@@ -1,0 +1,116 @@
+// SlotCrate — Datenmodell für M8/M9
+//
+// Persistiert werden Benutzer, versionierte Generator-Einstellungen,
+// gespeicherte Layouts (an ihre ursprüngliche Einstellungsversion gebunden),
+// Sessions und ein Admin-Audit-Log. Reine Read-Only-Bibliotheks-Konstanten
+// (Rasterteilung, Bodenaufnahme, Grundausrichtung) sind bewusst NICHT in der
+// DB. Sie kommen aus dem Geometrie-Code und dürfen auch von Admins nicht
+// verändert werden.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id           String   @id @default(uuid()) @db.Char(36)
+  email        String   @unique
+  passwordHash String   @db.VarChar(255)
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions                Session[]
+  savedConfigurations     SavedConfiguration[]
+  auditLogsAsActor        AdminAuditLog[]            @relation("AuditActor")
+  settingsVersionsAsActor GeneratorSettingsVersion[] @relation("SettingsVersionActor")
+
+  @@index([role])
+}
+
+model Session {
+  id         String   @id @db.Char(64) // opaker, kryptografisch zufälliger Token-Hash
+  userId     String   @db.Char(36)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  userAgent  String?  @db.VarChar(255)
+  ipHash     String?  @db.VarChar(64)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// „Aktueller Zeiger“ auf die genutzte Version. Es gibt genau eine Zeile mit
+// singleton=true; die Row selbst wird nie gelöscht, sondern nur ihre
+// activeVersionId aktualisiert. So kann der Server jederzeit klar sagen,
+// welche Version als „aktiv“ gilt.
+model GeneratorSettings {
+  singleton       Boolean                  @id @default(true) @map("id")
+  activeVersionId Int
+  activeVersion   GeneratorSettingsVersion @relation("ActiveVersion", fields: [activeVersionId], references: [id])
+  updatedAt       DateTime                 @updatedAt
+}
+
+// Unveränderliche, versionierte Momentaufnahme aller adminseitig
+// änderbaren Parameter. Einmal erstellt, nie mutiert. Neue Änderungen
+// führen zu einer neuen Version. `payload` speichert die vollständigen
+// Werte als validiertes JSON, damit der Client- und der CAD-API-Cache
+// deterministisch reproduzieren können, mit welchen Werten eine
+// SavedConfiguration erzeugt wurde.
+model GeneratorSettingsVersion {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  createdById String?  @db.Char(36)
+  createdBy   User?    @relation("SettingsVersionActor", fields: [createdById], references: [id])
+  note        String?  @db.VarChar(255)
+  payload     Json
+
+  activeFor    GeneratorSettings[]  @relation("ActiveVersion")
+  savedConfigs SavedConfiguration[]
+
+  @@index([createdAt])
+}
+
+// Gespeichertes Kundenlayout. Ist strikt an die Einstellungsversion
+// gebunden, mit der es ursprünglich erzeugt wurde — auch dann, wenn
+// Admins später eine neue Version aktivieren.
+model SavedConfiguration {
+  id                String                   @id @default(uuid()) @db.Char(36)
+  ownerId           String?                  @db.Char(36)
+  owner             User?                    @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  name              String                   @db.VarChar(120)
+  settingsVersionId Int
+  settingsVersion   GeneratorSettingsVersion @relation(fields: [settingsVersionId], references: [id])
+  geometryVersion   String                   @db.VarChar(64)
+  payload           Json
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  @@index([ownerId])
+  @@index([settingsVersionId])
+}
+
+model AdminAuditLog {
+  id         BigInt   @id @default(autoincrement())
+  createdAt  DateTime @default(now())
+  actorId    String?  @db.Char(36)
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  action     String   @db.VarChar(64) // z. B. "settings.publish", "user.role.change"
+  targetType String?  @db.VarChar(64)
+  targetId   String?  @db.VarChar(64)
+  details    Json?
+
+  @@index([createdAt])
+  @@index([action])
+}

@@ -1,0 +1,123 @@
+[
+  {
+    "file": "SlotCrate.step",
+    "bbox_mm": [
+      4.0,
+      211.3,
+      216.8
+    ],
+    "bbox_min_mm": [
+      118.5,
+      140.7,
+      10.2
+    ],
+    "bbox_max_mm": [
+      329.8,
+      144.7,
+      227.0
+    ],
+    "volume_mm3": 43512.92,
+    "surface_area_mm2": 55085.26,
+    "solid_count": 1,
+    "face_stats": {
+      "total": 406,
+      "by_type": {
+        "Plane": 406
+      },
+      "cylinder_radii_mm": []
+    },
+    "center_of_mass_mm": [
+      224.15,
+      142.7,
+      118.6
+    ],
+    "notes": []
+  },
+  {
+    "file": "SlotCrate_1x1.step",
+    "bbox_mm": [
+      21.09,
+      21.09,
+      35.8
+    ],
+    "bbox_min_mm": [
+      181.97,
+      100.7,
+      160.78
+    ],
+    "bbox_max_mm": [
+      203.06,
+      136.5,
+      181.87
+    ],
+    "volume_mm3": 4232.88,
+    "surface_area_mm2": 6116.663,
+    "solid_count": 1,
+    "face_stats": {
+      "total": 40,
+      "by_type": {
+        "Plane": 34,
+        "Cone": 1,
+        "Cylinder": 5
+      },
+      "cylinder_radii_mm": [
+        2.5,
+        2.5,
+        2.5,
+        2.5,
+        6.327
+      ]
+    },
+    "center_of_mass_mm": [
+      192.515,
+      115.819,
+      171.307
+    ],
+    "notes": []
+  },
+  {
+    "file": "SlotCrate_2x2.step",
+    "bbox_mm": [
+      35.8,
+      42.18,
+      42.18
+    ],
+    "bbox_min_mm": [
+      118.7,
+      100.7,
+      181.87
+    ],
+    "bbox_max_mm": [
+      160.88,
+      136.5,
+      224.05
+    ],
+    "volume_mm3": 12174.154,
+    "surface_area_mm2": 14753.842,
+    "solid_count": 1,
+    "face_stats": {
+      "total": 99,
+      "by_type": {
+        "Plane": 87,
+        "Cone": 4,
+        "Cylinder": 8
+      },
+      "cylinder_radii_mm": [
+        2.5,
+        2.5,
+        2.5,
+        2.5,
+        6.327,
+        6.327,
+        6.327,
+        6.327
+      ]
+    },
+    "center_of_mass_mm": [
+      139.79,
+      112.38,
+      202.96
+    ],
+    "notes": []
+  }
+]

@@ -1,0 +1,13 @@
+{
+    "name": "@slotcrate/e2e",
+    "version": "0.10.0",
+    "private": true,
+    "scripts": {
+        "test": "playwright test",
+        "test:install": "playwright install --with-deps chromium"
+    },
+    "devDependencies": {
+        "@playwright/test": "1.48.0",
+        "typescript": "5.6.3"
+    }
+}

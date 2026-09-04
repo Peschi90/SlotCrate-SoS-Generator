@@ -1,0 +1,90 @@
+{
+    "brand": "SlotCrate",
+    "meta": {
+        "title": "SlotCrate Konfigurator",
+        "description": "Modulare SlotCrate-Sortierkästen konfigurieren und exportieren."
+    },
+    "nav": {
+        "generator": "Einzelkasten",
+        "planner": "Layout-Planer"
+    },
+    "home": {
+        "title": "SlotCrate Konfigurator",
+        "generator": {
+            "title": "Einzelkasten-Generator",
+            "description": "Einen einzelnen Kasten in Rasterfeldern konfigurieren und als STL herunterladen."
+        },
+        "planner": {
+            "title": "Layout-Planer",
+            "description": "Mehrere Kästen auf der 10×10-Rasterplatte platzieren und gemeinsam exportieren."
+        }
+    },
+    "generator": {
+        "title": "Einzelkasten-Generator",
+        "subtitle": "Mit intuitiven Schiebereglern für Breite, Tiefe und Schubladenhöhe.",
+        "width": "Breite (Rasterfelder)",
+        "depth": "Tiefe (Rasterfelder)",
+        "height": "Höhe (mm)",
+        "heightHint": "Wähle eine Schubladenhöhe; die tatsächliche Kastenhöhe wird passend abgebildet.",
+        "drawerLabel": "Schublade",
+        "preview": "Live-Vorschau",
+        "download": "STL herunterladen",
+        "downloading": "Wird erzeugt …",
+        "cancel": "Abbrechen",
+        "error": "Fehler beim Erzeugen: {message}",
+        "hint": "Bodenaufnahmen und Rasterteilung sind unveränderlich."
+    },
+    "planner": {
+        "title": "Layout-Planer",
+        "description": "Ziehe ein Rechteck über der Rasterplatte, um einen Kasten zu erzeugen. Gültige Bereiche werden grün, ungültige rot dargestellt.",
+        "undo": "Rückgängig ({count})",
+        "redo": "Wiederholen ({count})",
+        "reset": "Zurücksetzen",
+        "usedCells": "Belegte Zellen: {used} / {total}",
+        "boxCount": "Anzahl Kästen: {count}",
+        "selection": "Auswahl",
+        "gridSize": "Raster: {width}×{depth}",
+        "outerSize": "Außenmaß: {width} × {depth} mm",
+        "height": "Höhe: {height} mm",
+        "remove": "Entfernen",
+        "exportZip": "ZIP + Stückliste",
+        "exporting": "Erzeuge ZIP …",
+        "cancel": "Abbrechen"
+    },
+    "admin": {
+        "title": "Admin-Panel",
+        "activeVersion": "Aktive Version: {version}, erstellt {createdAt}",
+        "logout": "Abmelden",
+        "constantsTitle": "Unveränderliche Konstanten",
+        "constantsHint": "Diese Werte sind im Geometrie-Code fest verankert und lassen sich auch durch Admin-Änderungen nicht überschreiben.",
+        "constant": {
+            "basePlate": "Grundrasterplatte",
+            "grid10x10": "10×10-Raster",
+            "pitch": "Rasterteilung 21,09 mm",
+            "pickupShape": "Form der Bodenaufnahme",
+            "pickupPosition": "Position der Bodenaufnahmen",
+            "orientation": "Grundausrichtung"
+        },
+        "settingsTitle": "Änderbare Parameter",
+        "field": {
+            "boxHeightMm": "Kastenhöhe (mm)",
+            "wallThicknessMm": "Wandstärke (mm)",
+            "innerFloorRadiusMm": "Innenradius Boden (mm)",
+            "outerClearanceMm": "Außenabstand (mm)",
+            "minCells": "Min. Rastergröße",
+            "maxCells": "Max. Rastergröße",
+            "stlTessellationLinearMm": "STL linear (mm)",
+            "stlTessellationAngularRad": "STL angular (rad)",
+            "filenamePrefix": "Dateiname-Präfix"
+        },
+        "note": "Notiz zur Version",
+        "publish": "Neue Version veröffentlichen",
+        "published": "Neue Version {version} veröffentlicht."
+    },
+    "login": {
+        "title": "Admin-Anmeldung",
+        "email": "E-Mail",
+        "password": "Passwort",
+        "submit": "Anmelden"
+    }
+}

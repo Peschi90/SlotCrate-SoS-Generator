@@ -1,0 +1,51 @@
+{
+    "name": "@slotcrate/web",
+    "version": "0.5.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "next dev -p 6293",
+        "build": "next build",
+        "start": "next start -p 6293",
+        "lint": "next lint",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "db:generate": "prisma generate",
+        "db:migrate": "prisma migrate dev",
+        "db:deploy": "prisma migrate deploy",
+        "db:seed": "node --experimental-transform-types ./prisma/seed.ts"
+    },
+    "dependencies": {
+        "@node-rs/argon2": "2.0.2",
+        "@prisma/client": "5.22.0",
+        "@react-three/drei": "9.114.0",
+        "@react-three/fiber": "8.17.10",
+        "next": "14.2.15",
+        "next-intl": "3.20.0",
+        "react": "18.3.1",
+        "react-dom": "18.3.1",
+        "three": "0.169.0",
+        "zod": "3.23.8",
+        "zustand": "4.5.5"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "6.5.0",
+        "@testing-library/react": "16.0.1",
+        "@types/node": "22.7.5",
+        "@types/react": "18.3.11",
+        "@types/react-dom": "18.3.0",
+        "@types/three": "0.169.0",
+        "autoprefixer": "10.4.20",
+        "eslint": "8.57.1",
+        "eslint-config-next": "14.2.15",
+        "jsdom": "25.0.1",
+        "postcss": "8.4.47",
+        "prisma": "5.22.0",
+        "tailwindcss": "3.4.13",
+        "typescript": "5.6.3",
+        "vitest": "2.1.2"
+    },
+    "optionalDependencies": {
+        "@node-rs/argon2-win32-x64-msvc": "^2.2.0"
+    }
+}

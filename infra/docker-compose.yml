@@ -1,0 +1,70 @@
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-u",
+          "root",
+          "-p${MYSQL_ROOT_PASSWORD}"
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  cad-api:
+    build:
+      context: ..
+      dockerfile: infra/docker/cad-api/Dockerfile
+    restart: unless-stopped
+    environment:
+      CAD_API_HOST: 0.0.0.0
+      CAD_API_PORT: 8000
+      CAD_API_INTERNAL_TOKEN: ${CAD_API_INTERNAL_TOKEN}
+      RATE_LIMIT_BOX_STL: ${RATE_LIMIT_BOX_STL:-30}
+      RATE_LIMIT_LAYOUT_ZIP: ${RATE_LIMIT_LAYOUT_ZIP:-10}
+    ports:
+      - "8000:8000"
+    # Referenzdateien read-only in den Container einhängen.
+    volumes:
+      - ../reference:/app/reference:ro
+      - cad_api_cache:/app/services/cad-api/cache
+
+  web:
+    build:
+      context: ..
+      dockerfile: infra/docker/web/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      CAD_API_URL: http://cad-api:8000
+      CAD_API_INTERNAL_TOKEN: ${CAD_API_INTERNAL_TOKEN}
+      SESSION_SECRET: ${SESSION_SECRET}
+      CSRF_SECRET: ${CSRF_SECRET}
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      cad-api:
+        condition: service_started
+
+volumes:
+  mysql_data:
+  cad_api_cache:
