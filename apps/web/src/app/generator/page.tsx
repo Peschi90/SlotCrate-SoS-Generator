@@ -1,22 +1,25 @@
-import { fetchActiveSettings } from "@/lib/cad-client";
+import { getActiveSettings } from "@/lib/settings-service";
 import { SYSTEM } from "@/lib/system";
 import { GeneratorClient } from "./GeneratorClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function GeneratorPage() {
-  let settings: Awaited<ReturnType<typeof fetchActiveSettings>> | null = null;
+  let settings: Awaited<ReturnType<typeof getActiveSettings>> | null = null;
   try {
-    settings = await fetchActiveSettings();
+    settings = await getActiveSettings();
   } catch {
     // Server nicht erreichbar → Fallback auf clientseitige Defaults.
   }
   return (
     <GeneratorClient
-      defaultHeightMm={settings?.box.defaultHeightMm ?? SYSTEM.defaultBoxHeightMm}
-      minHeightMm={settings?.limits.minHeightMm ?? SYSTEM.minHeightMm}
-      maxHeightMm={settings?.limits.maxHeightMm ?? SYSTEM.maxHeightMm}
-      filenamePrefix={settings?.filenamePrefix ?? "SlotCrate_Box"}
+      defaultHeightMm={settings?.payload.boxHeightMm ?? SYSTEM.defaultBoxHeightMm}
+      minHeightMm={SYSTEM.minHeightMm}
+      maxHeightMm={SYSTEM.maxHeightMm}
+      minCells={settings?.payload.minCells ?? SYSTEM.minCells}
+      maxCells={settings?.payload.maxCells ?? SYSTEM.maxCells}
+      suitcaseVariants={settings?.payload.suitcaseVariants}
+      filenamePrefix={settings?.payload.filenamePrefix ?? "SlotCrate_Box"}
     />
   );
 }

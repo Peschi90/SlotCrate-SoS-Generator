@@ -32,6 +32,7 @@
     "generator": {
         "title": "Einzelkasten-Generator",
         "subtitle": "Mit intuitiven Schiebereglern für Breite, Tiefe und Schubladenhöhe.",
+        "variant": "Koffervariante",
         "width": "Breite (Rasterfelder)",
         "depth": "Tiefe (Rasterfelder)",
         "height": "Höhe (mm)",
@@ -47,6 +48,8 @@
     "planner": {
         "title": "Layout-Planer",
         "description": "Ziehe ein Rechteck über der Rasterplatte, um einen Kasten zu erzeugen. Gültige Bereiche werden grün, ungültige rot dargestellt.",
+        "variant": "Koffervariante",
+        "scaleFactor": "Skalierung: {factor}x",
         "undo": "Rückgängig ({count})",
         "redo": "Wiederholen ({count})",
         "reset": "Zurücksetzen",
@@ -76,6 +79,15 @@
             "orientation": "Grundausrichtung"
         },
         "settingsTitle": "Änderbare Parameter",
+        "variantsTitle": "Koffervarianten",
+        "variantAdd": "Variante hinzufügen",
+        "variantRemove": "Entfernen",
+        "variantId": "Varianten-ID",
+        "variantLabel": "Bezeichnung",
+        "variantMaxWidth": "Max. Breite (Raster)",
+        "variantMaxDepth": "Max. Tiefe (Raster)",
+        "variantScale": "Skalierungsfaktor",
+        "variantDefaultHeight": "Standardhöhe (mm)",
         "field": {
             "boxHeightMm": "Kastenhöhe (mm)",
             "wallThicknessMm": "Wandstärke (mm)",

@@ -21,11 +21,12 @@ def cache_key(
     depth_cells: int,
     height_mm: float,
     settings_version: int,
+    scale_factor: float,
     geometry_version: str = GEOMETRY_VERSION,
 ) -> str:
     payload = (
         f"{width_cells}|{depth_cells}|{round(height_mm, 4)}|"
-        f"{settings_version}|{geometry_version}"
+        f"{settings_version}|{round(scale_factor, 4)}|{geometry_version}"
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

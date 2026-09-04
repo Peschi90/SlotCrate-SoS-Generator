@@ -48,22 +48,30 @@ def build_box(
     width_cells: int,
     depth_cells: int,
     height_mm: float = DEFAULT_BOX_HEIGHT_MM,
+    scale_factor: float = 1.0,
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
+    if scale_factor <= 0:
+        raise ValueError("scale_factor muss > 0 sein")
 
     if _is_default_height(height_mm):
         if width_cells == 1 and depth_cells == 1:
-            return reference.load_normalized_box_1x1()
+            ref = reference.load_normalized_box_1x1()
+            return ref if abs(scale_factor - 1.0) < 1e-9 else cq.Workplane(obj=ref).scale(scale_factor).val()
         if width_cells == 2 and depth_cells == 2:
-            return reference.load_normalized_box_2x2()
+            ref = reference.load_normalized_box_2x2()
+            return ref if abs(scale_factor - 1.0) < 1e-9 else cq.Workplane(obj=ref).scale(scale_factor).val()
 
-    return _build_parametric_cached(
+    shape = _build_parametric_cached(
         width_cells,
         depth_cells,
         round(height_mm, 4),
         round(DEFAULT_WALL_THICKNESS_MM, 4),
         round(DEFAULT_FLOOR_THICKNESS_MM, 4),
     )
+    if abs(scale_factor - 1.0) < 1e-9:
+        return shape
+    return cq.Workplane(obj=shape).scale(scale_factor).val()
 
 
 @lru_cache(maxsize=64)

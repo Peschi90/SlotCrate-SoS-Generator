@@ -1,5 +1,20 @@
 import { z } from "zod";
 
+const suitcaseVariantSchema = z
+  .object({
+    id: z
+      .string()
+      .min(1)
+      .max(32)
+      .regex(/^[a-z0-9-]+$/),
+    label: z.string().min(1).max(64),
+    maxWidthCells: z.number().int().min(1).max(10),
+    maxDepthCells: z.number().int().min(1).max(10),
+    scaleFactor: z.number().min(0.7).max(1.5).default(1),
+    defaultHeightMm: z.number().min(6).max(200).default(35.8)
+  })
+  .strict();
+
 /**
  * Whitelist aller Admin-änderbaren Generator-Parameter mit harten
  * Ober- und Untergrenzen. Serverseitige Prüfung: wer diese Werte
@@ -36,10 +51,35 @@ export const generatorSettingsPayloadSchema = z
         valid: "#3ea86a",
         invalid: "#e2483b"
       }),
-    featureFlags: z.record(z.string(), z.boolean()).default({})
+    featureFlags: z.record(z.string(), z.boolean()).default({}),
+    suitcaseVariants: z.array(suitcaseVariantSchema).min(1).max(12).default([
+      {
+        id: "classic",
+        label: "Classic",
+        maxWidthCells: 10,
+        maxDepthCells: 10,
+        scaleFactor: 1,
+        defaultHeightMm: 35.8
+      }
+    ])
   })
   .strict()
-  .refine((v) => v.minCells <= v.maxCells, "minCells muss ≤ maxCells sein");
+  .refine((v) => v.minCells <= v.maxCells, "minCells muss ≤ maxCells sein")
+  .refine(
+    (v) =>
+      v.suitcaseVariants.every(
+        (variant) =>
+          variant.maxWidthCells >= v.minCells &&
+          variant.maxWidthCells <= v.maxCells &&
+          variant.maxDepthCells >= v.minCells &&
+          variant.maxDepthCells <= v.maxCells
+      ),
+    "Varianten muessen innerhalb minCells/maxCells liegen"
+  )
+  .refine(
+    (v) => new Set(v.suitcaseVariants.map((variant) => variant.id)).size === v.suitcaseVariants.length,
+    "Varianten-IDs muessen eindeutig sein"
+  );
 
 export type GeneratorSettingsPayload = z.infer<typeof generatorSettingsPayloadSchema>;
 
@@ -60,5 +100,15 @@ export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettingsPayload = {
     valid: "#3ea86a",
     invalid: "#e2483b"
   },
-  featureFlags: {}
+  featureFlags: {},
+  suitcaseVariants: [
+    {
+      id: "classic",
+      label: "Classic",
+      maxWidthCells: 10,
+      maxDepthCells: 10,
+      scaleFactor: 1,
+      defaultHeightMm: 35.8
+    }
+  ]
 };

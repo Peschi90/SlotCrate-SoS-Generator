@@ -76,12 +76,19 @@ def create_app() -> FastAPI:
             "box_stl", client_key(request), settings.rate_limit_box_stl_per_minute
         )
         key = cache_key(
-            payload.widthCells, payload.depthCells, payload.heightMm, payload.settingsVersion
+            payload.widthCells,
+            payload.depthCells,
+            payload.heightMm,
+            payload.settingsVersion,
+            payload.scaleFactor,
         )
         cached = cache.get(key)
         if cached is None:
             data = stl_bytes_for_box(
-                payload.widthCells, payload.depthCells, payload.heightMm
+                payload.widthCells,
+                payload.depthCells,
+                payload.heightMm,
+                scale_factor=payload.scaleFactor,
             )
             cache.store_bytes(key, data)
         else:

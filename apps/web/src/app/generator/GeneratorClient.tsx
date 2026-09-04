@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BoxPreview } from "@/components/BoxPreview";
-import { SYSTEM } from "@/lib/system";
+import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 
 const DRAWER_HEIGHT_PRESETS = [
   { label: "20 mm", actualMm: 15.8 },
@@ -14,28 +14,43 @@ const DRAWER_HEIGHT_PRESETS = [
 ] as const;
 
 type DrawerHeightPreset = (typeof DRAWER_HEIGHT_PRESETS)[number];
+type SuitcaseVariant = GeneratorSettingsPayload["suitcaseVariants"][number];
 
 export function GeneratorClient({
   defaultHeightMm,
   minHeightMm,
   maxHeightMm,
+  minCells,
+  maxCells,
+  suitcaseVariants,
   filenamePrefix
 }: {
   defaultHeightMm: number;
   minHeightMm: number;
   maxHeightMm: number;
+  minCells: number;
+  maxCells: number;
+  suitcaseVariants?: SuitcaseVariant[];
   filenamePrefix: string;
 }) {
   const t = useTranslations();
+  const variants = suitcaseVariants?.length
+    ? suitcaseVariants
+    : [{ id: "classic", label: "Classic", maxWidthCells: maxCells, maxDepthCells: maxCells, scaleFactor: 1, defaultHeightMm }];
+  const [variantId, setVariantId] = useState(variants[0]!.id);
+  const activeVariant = variants.find((variant) => variant.id === variantId) ?? variants[0]!;
   const initialPreset = presetForHeight(defaultHeightMm);
-  const [widthCells, setWidthCells] = useState(1);
-  const [depthCells, setDepthCells] = useState(1);
+  const [widthCells, setWidthCells] = useState(minCells);
+  const [depthCells, setDepthCells] = useState(minCells);
   const [drawerPreset, setDrawerPreset] = useState<DrawerHeightPreset>(initialPreset);
-  const [heightMm, setHeightMm] = useState(initialPreset.actualMm);
+  const [heightMm, setHeightMm] = useState(
+    Math.min(maxHeightMm, Math.max(minHeightMm, initialPreset.actualMm))
+  );
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
   const busy = pending || controller !== null;
+  const clampHeight = (value: number) => Math.min(maxHeightMm, Math.max(minHeightMm, value));
 
   async function download() {
     setError(null);
@@ -45,7 +60,7 @@ export function GeneratorClient({
       const res = await fetch("/api/box/stl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ widthCells, depthCells, heightMm }),
+        body: JSON.stringify({ widthCells, depthCells, heightMm, scaleFactor: activeVariant.scaleFactor }),
         signal: ac.signal
       });
       if (!res.ok) {
@@ -56,7 +71,7 @@ export function GeneratorClient({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${filenamePrefix}_${widthCells}x${depthCells}_H${heightMm}.stl`;
+      a.download = `${filenamePrefix}_${activeVariant.id}_${widthCells}x${depthCells}_H${heightMm}.stl`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -92,12 +107,39 @@ export function GeneratorClient({
           <p className="text-sm text-neutral-400">{t("generator.subtitle")}</p>
         </header>
 
+        <section className="space-y-2">
+          <label htmlFor="variant" className="text-sm font-medium text-neutral-100">
+            {t("generator.variant")}
+          </label>
+          <select
+            id="variant"
+            value={activeVariant.id}
+            onChange={(e) => {
+              const next = variants.find((variant) => variant.id === e.target.value);
+              if (!next) return;
+              setVariantId(next.id);
+              setWidthCells((curr) => Math.min(next.maxWidthCells, Math.max(minCells, curr)));
+              setDepthCells((curr) => Math.min(next.maxDepthCells, Math.max(minCells, curr)));
+              const nextPreset = presetForHeight(next.defaultHeightMm);
+              setDrawerPreset(nextPreset);
+              setHeightMm(clampHeight(nextPreset.actualMm));
+            }}
+            className="w-full rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-sm"
+          >
+            {variants.map((variant) => (
+              <option key={variant.id} value={variant.id}>
+                {variant.label} ({variant.maxWidthCells}x{variant.maxDepthCells}, {variant.scaleFactor}x)
+              </option>
+            ))}
+          </select>
+        </section>
+
         <SliderField
           id="w"
           label={t("generator.width")}
           value={widthCells}
-          min={SYSTEM.minCells}
-          max={SYSTEM.maxCells}
+          min={minCells}
+          max={Math.min(maxCells, activeVariant.maxWidthCells)}
           unit="x"
           onChange={setWidthCells}
         />
@@ -106,8 +148,8 @@ export function GeneratorClient({
           id="d"
           label={t("generator.depth")}
           value={depthCells}
-          min={SYSTEM.minCells}
-          max={SYSTEM.maxCells}
+          min={minCells}
+          max={Math.min(maxCells, activeVariant.maxDepthCells)}
           unit="x"
           onChange={setDepthCells}
         />
@@ -135,7 +177,7 @@ export function GeneratorClient({
                   type="button"
                   onClick={() => {
                     setDrawerPreset(preset);
-                    setHeightMm(preset.actualMm);
+                    setHeightMm(clampHeight(preset.actualMm));
                   }}
                   className={[
                     "rounded-xl border px-3 py-2 text-left transition",
@@ -164,7 +206,7 @@ export function GeneratorClient({
                   clampInt(e.target.value, 0, DRAWER_HEIGHT_PRESETS.length - 1)
                 );
                 setDrawerPreset(next);
-                setHeightMm(next.actualMm);
+                setHeightMm(clampHeight(next.actualMm));
               }}
               className="slotcrate-range"
               aria-label={t("generator.height")}
@@ -204,7 +246,12 @@ export function GeneratorClient({
         )}
       </form>
       <div className="min-h-[460px] h-[62vh] sm:h-[66vh] lg:h-[76vh] xl:h-[80vh] 2xl:h-[84vh] rounded-2xl border border-neutral-800/80 overflow-hidden bg-neutral-950">
-        <BoxPreview widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} />
+        <BoxPreview
+          widthCells={widthCells}
+          depthCells={depthCells}
+          heightMm={heightMm}
+          scaleFactor={activeVariant.scaleFactor}
+        />
       </div>
     </div>
   );

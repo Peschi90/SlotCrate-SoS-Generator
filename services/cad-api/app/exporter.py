@@ -29,8 +29,13 @@ class UniqueBox:
         return f"{prefix}_{self.width_cells}x{self.depth_cells}_H{h}.stl"
 
 
-def stl_bytes_for_box(width_cells: int, depth_cells: int, height_mm: float) -> bytes:
-    shape = build_box(width_cells, depth_cells, height_mm)
+def stl_bytes_for_box(
+    width_cells: int,
+    depth_cells: int,
+    height_mm: float,
+    scale_factor: float = 1.0,
+) -> bytes:
+    shape = build_box(width_cells, depth_cells, height_mm, scale_factor=scale_factor)
     with tempfile.NamedTemporaryFile(suffix=".stl", delete=False) as tmp:
         tmp_path = Path(tmp.name)
     try:
@@ -52,7 +57,12 @@ def build_layout_zip(layout: LayoutRequest, filename_prefix: str) -> bytes:
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
         for unique, count in counter.items():
-            stl = stl_bytes_for_box(unique.width_cells, unique.depth_cells, unique.height_mm)
+            stl = stl_bytes_for_box(
+                unique.width_cells,
+                unique.depth_cells,
+                unique.height_mm,
+                scale_factor=layout.scaleFactor,
+            )
             zf.writestr(f"models/{unique.filename(filename_prefix)}", stl)
         zf.writestr("configuration.json", layout.model_dump_json(indent=2))
         zf.writestr("parts-list.csv", _parts_list_csv(counter, filename_prefix))

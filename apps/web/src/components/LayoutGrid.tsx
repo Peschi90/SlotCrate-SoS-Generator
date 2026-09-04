@@ -14,7 +14,13 @@ interface DragState {
  * neuer Kästen. Nutzt SVG; kein 3D. Rasterzellen bleiben rein logisch – die
  * Rasterplatte selbst wird nicht editierbar dargestellt.
  */
-export function LayoutGrid() {
+export function LayoutGrid({
+  maxWidthCells = SYSTEM.maxCells,
+  maxDepthCells = SYSTEM.maxCells
+}: {
+  maxWidthCells?: number;
+  maxDepthCells?: number;
+}) {
   const boxes = useLayoutStore((s) => s.boxes);
   const selectedId = useLayoutStore((s) => s.selectedId);
   const addBox = useLayoutStore((s) => s.addBox);
@@ -24,13 +30,16 @@ export function LayoutGrid() {
 
   const svgRef = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<DragState | null>(null);
-  const cellPx = 40;
+  const cellPx = 36;
   const w = SYSTEM.gridColumns * cellPx;
   const h = SYSTEM.gridRows * cellPx;
 
   const previewRect = useMemo(() => rectFromDrag(drag), [drag]);
+  const previewWithinVariant = previewRect
+    ? previewRect.widthCells <= maxWidthCells && previewRect.depthCells <= maxDepthCells
+    : false;
   const previewValid = previewRect
-    ? canPlace(previewRect.x, previewRect.y, previewRect.widthCells, previewRect.depthCells)
+    ? previewWithinVariant && canPlace(previewRect.x, previewRect.y, previewRect.widthCells, previewRect.depthCells)
     : false;
 
   function cellFromEvent(e: React.PointerEvent<SVGSVGElement>): { x: number; y: number } | null {
@@ -76,7 +85,7 @@ export function LayoutGrid() {
       onPointerUp={() => {
         if (!drag) return;
         const r = rectFromDrag(drag);
-        if (r) {
+        if (r && r.widthCells <= maxWidthCells && r.depthCells <= maxDepthCells) {
           const created = addBox(r.x, r.y, r.widthCells, r.depthCells);
           if (created) select(created.id);
         }

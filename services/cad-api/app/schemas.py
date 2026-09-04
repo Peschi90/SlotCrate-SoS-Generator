@@ -33,6 +33,7 @@ class BoxRequest(BaseModel):
     depthCells: Annotated[int, Field(ge=MIN_CELLS, le=MAX_CELLS)]
     heightMm: Annotated[float, Field(ge=MIN_HEIGHT_MM, le=MAX_HEIGHT_MM)] = DEFAULT_BOX_HEIGHT_MM
     settingsVersion: Annotated[int, Field(ge=1)] = 1
+    scaleFactor: Annotated[float, Field(ge=0.7, le=1.5)] = 1.0
 
 
 class LayoutBox(BaseModel):
@@ -66,6 +67,7 @@ class LayoutRequest(BaseModel):
     schemaVersion: Literal[1] = 1
     geometryVersion: Literal[GEOMETRY_VERSION] = GEOMETRY_VERSION
     settingsVersion: Annotated[int, Field(ge=1)] = 1
+    scaleFactor: Annotated[float, Field(ge=0.7, le=1.5)] = 1.0
     grid: LayoutGrid = LayoutGrid()
     boxes: list[LayoutBox]
 

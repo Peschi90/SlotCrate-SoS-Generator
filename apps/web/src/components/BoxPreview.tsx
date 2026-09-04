@@ -8,18 +8,26 @@ interface Props {
   widthCells: number;
   depthCells: number;
   heightMm: number;
+  scaleFactor?: number;
 }
 
-export function BoxPreview({ widthCells, depthCells, heightMm }: Props) {
-  const outerW = widthCells * SYSTEM.gridPitchMm;
-  const outerD = depthCells * SYSTEM.gridPitchMm;
+export function BoxPreview({ widthCells, depthCells, heightMm, scaleFactor = 1 }: Props) {
+  const pitchMm = SYSTEM.gridPitchMm * scaleFactor;
+  const outerW = widthCells * pitchMm;
+  const outerD = depthCells * pitchMm;
   const centerX = outerW / 2;
   const centerY = outerD / 2;
-  const centerZ = heightMm / 2;
-  const radius = Math.max(outerW, outerD, heightMm) * 0.9;
+  const scaledHeightMm = heightMm * scaleFactor;
+  const centerZ = scaledHeightMm / 2;
+  const radius = Math.max(outerW, outerD, scaledHeightMm) * 0.9;
   return (
     <CadCanvas center={[centerX, centerY, centerZ]} radius={radius}>
-      <BoxMesh widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} />
+      <BoxMesh
+        widthCells={widthCells}
+        depthCells={depthCells}
+        heightMm={heightMm}
+        scaleFactor={scaleFactor}
+      />
     </CadCanvas>
   );
 }

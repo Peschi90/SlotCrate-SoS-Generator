@@ -9,6 +9,7 @@ interface Props {
   widthCells: number;
   depthCells: number;
   heightMm: number;
+  scaleFactor?: number;
   color?: string;
   opacity?: number;
   cornerRadiusMm?: number;
@@ -24,20 +25,23 @@ export function BoxMesh({
   widthCells,
   depthCells,
   heightMm,
+  scaleFactor = 1,
   color = "#7fb0ff",
   opacity = 1,
   cornerRadiusMm = 1.5
 }: Props) {
-  const outerW = widthCells * SYSTEM.gridPitchMm;
-  const outerD = depthCells * SYSTEM.gridPitchMm;
-  const pickupTop = SYSTEM.pickupTopZMm;
-  const wall = SYSTEM.wallThicknessMm;
-  const floorT = SYSTEM.floorThicknessMm;
-  const bodyH = Math.max(0.1, heightMm - pickupTop - floorT);
+  const pitchMm = SYSTEM.gridPitchMm * scaleFactor;
+  const outerW = widthCells * pitchMm;
+  const outerD = depthCells * pitchMm;
+  const pickupTop = SYSTEM.pickupTopZMm * scaleFactor;
+  const wall = SYSTEM.wallThicknessMm * scaleFactor;
+  const floorT = SYSTEM.floorThicknessMm * scaleFactor;
+  const bodyH = Math.max(0.1, heightMm * scaleFactor - pickupTop - floorT);
+  const cornerRadiusScaled = cornerRadiusMm * scaleFactor;
 
   const wallGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusMm);
+    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusScaled);
     const hole = new THREE.Path();
     drawRoundedRect(
       hole,
@@ -45,7 +49,7 @@ export function BoxMesh({
       wall,
       outerW - 2 * wall,
       outerD - 2 * wall,
-      Math.max(0, cornerRadiusMm - wall)
+      Math.max(0, cornerRadiusScaled - wall)
     );
     shape.holes.push(hole);
     const geom = new THREE.ExtrudeGeometry(shape, {
@@ -55,11 +59,11 @@ export function BoxMesh({
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, wall, bodyH, cornerRadiusMm]);
+  }, [outerW, outerD, wall, bodyH, cornerRadiusScaled]);
 
   const floorGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusMm);
+    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusScaled);
     const geom = new THREE.ExtrudeGeometry(shape, {
       depth: floorT,
       bevelEnabled: false,
@@ -67,17 +71,17 @@ export function BoxMesh({
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, floorT, cornerRadiusMm]);
+  }, [outerW, outerD, floorT, cornerRadiusScaled]);
 
   const pickupPositions = useMemo(() => {
     const positions: [number, number][] = [];
     for (let i = 0; i < widthCells; i++) {
       for (let j = 0; j < depthCells; j++) {
-        positions.push([(i + 0.5) * SYSTEM.gridPitchMm, (j + 0.5) * SYSTEM.gridPitchMm]);
+        positions.push([(i + 0.5) * pitchMm, (j + 0.5) * pitchMm]);
       }
     }
     return positions;
-  }, [widthCells, depthCells]);
+  }, [widthCells, depthCells, pitchMm]);
 
   return (
     <group>
@@ -102,8 +106,8 @@ export function BoxMesh({
       {pickupPositions.map(([x, y], idx) => (
         <RoundedBox
           key={idx}
-          args={[18.49, 18.49, pickupTop]}
-          radius={0.6}
+          args={[18.49 * scaleFactor, 18.49 * scaleFactor, pickupTop]}
+          radius={0.6 * scaleFactor}
           smoothness={4}
           creaseAngle={0.4}
           position={[x, y, pickupTop / 2]}

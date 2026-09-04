@@ -32,6 +32,7 @@
     "generator": {
         "title": "Single Box Generator",
         "subtitle": "With intuitive sliders for width, depth, and drawer height.",
+        "variant": "Suitcase variant",
         "width": "Width (grid cells)",
         "depth": "Depth (grid cells)",
         "height": "Height (mm)",
@@ -47,6 +48,8 @@
     "planner": {
         "title": "Layout Planner",
         "description": "Drag a rectangle over the grid plate to create a box. Valid areas are shown in green, invalid areas in red.",
+        "variant": "Suitcase variant",
+        "scaleFactor": "Scale: {factor}x",
         "undo": "Undo ({count})",
         "redo": "Redo ({count})",
         "reset": "Reset",
@@ -76,6 +79,15 @@
             "orientation": "Base orientation"
         },
         "settingsTitle": "Editable parameters",
+        "variantsTitle": "Suitcase variants",
+        "variantAdd": "Add variant",
+        "variantRemove": "Remove",
+        "variantId": "Variant ID",
+        "variantLabel": "Label",
+        "variantMaxWidth": "Max width (cells)",
+        "variantMaxDepth": "Max depth (cells)",
+        "variantScale": "Scale factor",
+        "variantDefaultHeight": "Default height (mm)",
         "field": {
             "boxHeightMm": "Box height (mm)",
             "wallThicknessMm": "Wall thickness (mm)",

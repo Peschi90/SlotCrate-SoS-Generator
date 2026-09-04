@@ -12,14 +12,15 @@ import { useLayoutStore } from "@/lib/layout-store";
  * Die Platte wird als flache Fläche mit den 100 Raster­öffnungen als Löchern
  * dargestellt (Preview-Charakter, exakte Maße stimmen mit der Referenz überein).
  */
-export function Layout3DView() {
+export function Layout3DView({ scaleFactor = 1 }: { scaleFactor?: number }) {
   const boxes = useLayoutStore((s) => s.boxes);
   const selectedId = useLayoutStore((s) => s.selectedId);
   const select = useLayoutStore((s) => s.select);
 
-  const plateW = SYSTEM.gridColumns * SYSTEM.gridPitchMm;
-  const plateD = SYSTEM.gridRows * SYSTEM.gridPitchMm;
-  const plateT = SYSTEM.pickupTopZMm;
+  const pitchMm = SYSTEM.gridPitchMm * scaleFactor;
+  const plateW = SYSTEM.gridColumns * pitchMm;
+  const plateD = SYSTEM.gridRows * pitchMm;
+  const plateT = SYSTEM.pickupTopZMm * scaleFactor;
 
   const plateGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -32,8 +33,8 @@ export function Layout3DView() {
     const openingR = 1.2;
     for (let i = 0; i < SYSTEM.gridColumns; i++) {
       for (let j = 0; j < SYSTEM.gridRows; j++) {
-        const cx = (i + 0.5) * SYSTEM.gridPitchMm;
-        const cy = (j + 0.5) * SYSTEM.gridPitchMm;
+        const cx = (i + 0.5) * pitchMm;
+        const cy = (j + 0.5) * pitchMm;
         const hole = new THREE.Path();
         drawRoundedRect(
           hole,
@@ -53,11 +54,11 @@ export function Layout3DView() {
     });
     geom.computeVertexNormals();
     return geom;
-  }, [plateW, plateD, plateT]);
+  }, [plateW, plateD, plateT, pitchMm]);
 
   const centerX = plateW / 2;
   const centerY = plateD / 2;
-  const centerZ = SYSTEM.defaultBoxHeightMm / 2;
+  const centerZ = (SYSTEM.defaultBoxHeightMm * scaleFactor) / 2;
   const radius = Math.max(plateW, plateD) * 0.9;
 
   return (
@@ -73,13 +74,14 @@ export function Layout3DView() {
         <meshStandardMaterial color="#d6d1bf" metalness={0.05} roughness={0.85} />
       </mesh>
       {boxes.map((b) => {
-        const w = b.widthCells * SYSTEM.gridPitchMm;
-        const d = b.depthCells * SYSTEM.gridPitchMm;
+        const w = b.widthCells * pitchMm;
+        const d = b.depthCells * pitchMm;
+        const h = b.heightMm * scaleFactor;
         const isSel = b.id === selectedId;
         return (
           <group
             key={b.id}
-            position={[b.x * SYSTEM.gridPitchMm, b.y * SYSTEM.gridPitchMm, 0]}
+            position={[b.x * pitchMm, b.y * pitchMm, 0]}
             onPointerDown={(e) => {
               e.stopPropagation();
               select(b.id);
@@ -89,16 +91,17 @@ export function Layout3DView() {
               widthCells={b.widthCells}
               depthCells={b.depthCells}
               heightMm={b.heightMm}
+              scaleFactor={scaleFactor}
               color={isSel ? "#4c8cff" : "#7fb0ff"}
               opacity={isSel ? 1 : 0.92}
             />
             {isSel && (
               <lineSegments
-                position={[w / 2, d / 2, b.heightMm / 2]}
+                position={[w / 2, d / 2, h / 2]}
                 renderOrder={2}
               >
                 <edgesGeometry
-                  args={[new THREE.BoxGeometry(w + 0.4, d + 0.4, b.heightMm + 0.4)]}
+                  args={[new THREE.BoxGeometry(w + 0.4, d + 0.4, h + 0.4)]}
                 />
                 <lineBasicMaterial color="#ffffff" />
               </lineSegments>
