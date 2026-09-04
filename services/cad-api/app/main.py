@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Dict
 
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.responses import JSONResponse
@@ -42,7 +43,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="SlotCrate CAD API", version="0.4.0")
 
     @app.get("/health")
-    def health() -> dict[str, str]:
+    def health() -> Dict[str, str]:
         return {"status": "ok", "geometryVersion": GEOMETRY_VERSION}
 
     @app.get("/v1/settings/active", response_model=ActiveSettingsResponse)
