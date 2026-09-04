@@ -1,0 +1,1 @@
+# SlotCrate-SoS-Generator
