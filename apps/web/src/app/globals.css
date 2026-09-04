@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 @import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
-
 :root {
     --green: #5fbb2e;
     --green-bright: #7ed321;
