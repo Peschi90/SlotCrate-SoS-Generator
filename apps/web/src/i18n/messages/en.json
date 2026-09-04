@@ -55,6 +55,7 @@
         "reset": "Reset",
         "usedCells": "Used cells: {used} / {total}",
         "boxCount": "Box count: {count}",
+        "gridPitch": "Grid pitch: {pitch} mm",
         "selection": "Selection",
         "gridSize": "Grid: {width}×{depth}",
         "outerSize": "Outer size: {width} × {depth} mm",

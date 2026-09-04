@@ -55,6 +55,7 @@
         "reset": "Zurücksetzen",
         "usedCells": "Belegte Zellen: {used} / {total}",
         "boxCount": "Anzahl Kästen: {count}",
+        "gridPitch": "Rasterteilung: {pitch} mm",
         "selection": "Auswahl",
         "gridSize": "Raster: {width}×{depth}",
         "outerSize": "Außenmaß: {width} × {depth} mm",
