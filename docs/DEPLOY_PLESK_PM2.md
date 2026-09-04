@@ -101,3 +101,52 @@ npx pm2 save
 - Die CAD-API sollte nicht direkt per Domain erreichbar sein.
 - Wenn Plesk den App-Prozess selbst verwaltet, nutze entweder Plesk oder PM2 für denselben Dienst, nicht beides gleichzeitig.
 - Nach Code-Updates immer `npm --prefix apps/web run build` für die Web-App und bei Python-Änderungen die PM2-Prozesse neu starten.
+
+## Fehlerbild Domain zeigt keine Seite
+
+Prüfe zuerst, ob die App lokal auf dem Server antwortet:
+
+```bash
+curl -I http://127.0.0.1:6293
+```
+
+- Kein HTTP-Response: PM2-Prozess oder Build ist fehlerhaft.
+- HTTP-Response vorhanden: Problem liegt im Plesk-Proxy oder in der Domain-Zuordnung.
+
+PM2-Checks:
+
+```bash
+npx pm2 status
+npx pm2 logs slotcrate-web --lines 100
+```
+
+Wenn der Prozess fehlerhaft ist, einmal sauber neu starten:
+
+```bash
+npx pm2 delete slotcrate-web
+npm --prefix apps/web run build
+npx pm2 start ecosystem.config.cjs --only slotcrate-web --update-env
+```
+
+Wenn `curl` lokal funktioniert, in Plesk prüfen:
+
+- Domain zeigt auf die richtige Subscription und den richtigen Document Root.
+- Reverse Proxy ist aktiv.
+- Es läuft kein zweiter Plesk-Node-Prozess parallel zu PM2.
+
+Wichtig für Plesk: In `Additional nginx directives` **keinen** eigenen `location / { ... }`-Block anlegen, sonst entsteht "duplicate location /".
+
+Nutze stattdessen nur Direktiven, die im vorhandenen Location-Kontext gelten, z. B.:
+
+```nginx
+proxy_pass http://127.0.0.1:6293;
+proxy_http_version 1.1;
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+proxy_set_header X-Forwarded-Proto $scheme;
+proxy_set_header Upgrade $http_upgrade;
+proxy_set_header Connection "upgrade";
+```
+
+Bei Subdomains gilt exakt dasselbe Verhalten.

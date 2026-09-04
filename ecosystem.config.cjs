@@ -2,15 +2,15 @@ module.exports = {
     apps: [{
             name: "slotcrate-web",
             cwd: "./apps/web",
-            script: "npm",
-            args: "start",
+            script: "./node_modules/next/dist/bin/next",
+            args: "start -p 6293",
             env: {
                 NODE_ENV: "production"
             },
             max_restarts: 10,
             restart_delay: 3000,
-                script: "./node_modules/next/dist/bin/next",
-                args: "start -p 6293",
+            autorestart: true,
+            watch: false
         },
         {
             name: "slotcrate-cad-api",
