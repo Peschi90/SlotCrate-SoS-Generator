@@ -74,6 +74,8 @@ pm2 start ecosystem.config.cjs --only slotcrate-web
 python3 -m pip install -r services/cad-api/requirements.txt
 ```
 
+Hinweis: `cadquery==2.8.0` ist derzeit nicht auf PyPI verfügbar. Das Projekt pinnt deshalb auf `cadquery==2.4.0`. Falls dein System-Python zu neu ist und kein passendes Wheel findet, nutze eine virtuelle Umgebung mit Python `3.11`.
+
 2. CAD-API mit PM2 starten:
 
 ```powershell
