@@ -4,7 +4,7 @@
  */
 import { PrismaClient } from "@prisma/client";
 import { hash } from "@node-rs/argon2";
-import { DEFAULT_GENERATOR_SETTINGS } from "../src/lib/generator-settings-schema";
+import { DEFAULT_GENERATOR_SETTINGS } from "../src/lib/generator-settings-schema.ts";
 
 const prisma = new PrismaClient();
 
