@@ -31,7 +31,7 @@ scripts/
   analyze_reference_steps.py
 reference/          unveränderliche STEP-Dateien
 docs/               Plan, Referenzanalyse
-```
+```   
 
 ## Projektstand (M0 – M10 abgeschlossen)
 
