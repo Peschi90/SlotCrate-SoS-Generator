@@ -91,7 +91,7 @@ export function Layout3DView({
         return (
           <group
             key={b.id}
-            position={[b.x * pitchMm, b.y * pitchMm, 0]}
+            position={[b.x * pitchMm, b.y * pitchMm, 0.01]}
             onPointerDown={(e) => {
               e.stopPropagation();
               select(b.id);

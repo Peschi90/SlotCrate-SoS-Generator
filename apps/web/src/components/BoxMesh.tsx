@@ -44,6 +44,8 @@ export function BoxMesh({
   const floorT = SYSTEM.floorThicknessMm;
   const bodyH = Math.max(0.1, heightMm - pickupTop - floorT);
   const cornerRadiusScaled = Math.max(cornerRadiusMm, innerFloorRadiusMm);
+  // small overlap eliminates z-fighting at coplanar seams between pickup/floor/wall
+  const zEps = 0.02;
 
   const wallGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -59,25 +61,25 @@ export function BoxMesh({
     );
     shape.holes.push(hole);
     const geom = new THREE.ExtrudeGeometry(shape, {
-      depth: bodyH,
+      depth: bodyH + zEps,
       bevelEnabled: false,
       curveSegments: 12
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, wall, bodyH, cornerRadiusScaled]);
+  }, [outerW, outerD, wall, bodyH, cornerRadiusScaled, zEps]);
 
   const floorGeometry = useMemo(() => {
     const shape = new THREE.Shape();
     drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusScaled);
     const geom = new THREE.ExtrudeGeometry(shape, {
-      depth: floorT,
+      depth: floorT + 2 * zEps,
       bevelEnabled: false,
       curveSegments: 12
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, floorT, cornerRadiusScaled]);
+  }, [outerW, outerD, floorT, cornerRadiusScaled, zEps]);
 
   const pickupPositions = useMemo(() => {
     const positions: [number, number][] = [];
@@ -91,7 +93,7 @@ export function BoxMesh({
 
   return (
     <group>
-      <mesh position={[0, 0, pickupTop]} geometry={floorGeometry}>
+      <mesh position={[0, 0, pickupTop - zEps]} geometry={floorGeometry}>
         <meshStandardMaterial
           color={color}
           metalness={0.15}
@@ -100,7 +102,7 @@ export function BoxMesh({
           opacity={opacity}
         />
       </mesh>
-      <mesh position={[0, 0, pickupTop + floorT]} geometry={wallGeometry}>
+      <mesh position={[0, 0, pickupTop + floorT - zEps]} geometry={wallGeometry}>
         <meshStandardMaterial
           color={color}
           metalness={0.15}
@@ -112,11 +114,11 @@ export function BoxMesh({
       {pickupPositions.map(([x, y], idx) => (
         <RoundedBox
           key={idx}
-          args={[18.49 * (pitchMm / SYSTEM.gridPitchMm), 18.49 * (pitchMm / SYSTEM.gridPitchMm), pickupTop]}
+          args={[18.49 * (pitchMm / SYSTEM.gridPitchMm), 18.49 * (pitchMm / SYSTEM.gridPitchMm), pickupTop + zEps]}
           radius={0.6 * (pitchMm / SYSTEM.gridPitchMm)}
           smoothness={4}
           creaseAngle={0.4}
-          position={[x, y, pickupTop / 2]}
+          position={[x, y, (pickupTop + zEps) / 2]}
         >
           <meshStandardMaterial color={color} metalness={0.2} roughness={0.55} />
         </RoundedBox>
