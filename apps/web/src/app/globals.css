@@ -1,12 +1,115 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
 html,
 body {
     height: 100%;
-    background: #0e1116;
-    color: #e6e6e6;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #090b10;
+    color: #f2f3f6;
+    font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+.slotcrate-theme {
+    position: relative;
+    background: radial-gradient(1200px 700px at 8% -20%, rgba(232, 106, 51, 0.25), transparent 65%), radial-gradient(900px 600px at 95% 0%, rgba(29, 81, 171, 0.2), transparent 60%), #090b10;
+    overflow-x: hidden;
+}
+
+.slotcrate-bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+}
+
+.slotcrate-grid {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.24;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(circle at center, black 45%, transparent 95%);
+}
+
+.slotcrate-brand {
+    font-family: "Rajdhani", "Inter", sans-serif;
+}
+
+.slotcrate-navlink {
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+    padding: 0.35rem 0.9rem;
+    transition: 180ms ease;
+}
+
+.slotcrate-navlink:hover {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.slotcrate-navcta {
+    border-radius: 9999px;
+    padding: 0.38rem 1rem;
+    background: linear-gradient(135deg, #e86a33, #d45521);
+    color: #fff;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    transition: filter 180ms ease;
+}
+
+.slotcrate-navcta:hover {
+    filter: brightness(1.08);
+}
+
+.slotcrate-button-primary,
+.slotcrate-button-secondary {
+    border-radius: 9999px;
+    padding: 0.72rem 1.2rem;
+    font-weight: 600;
+    transition: 180ms ease;
+}
+
+.slotcrate-button-primary {
+    color: #fff;
+    background: linear-gradient(130deg, #e86a33, #d45521);
+}
+
+.slotcrate-button-primary:hover {
+    filter: brightness(1.08);
+}
+
+.slotcrate-button-secondary {
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.slotcrate-button-secondary:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.09);
+}
+
+.slotcrate-card {
+    padding: 1.3rem 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.slotcrate-card:last-child {
+    border-right: 0;
+}
+
+.slotcrate-inline-link {
+    color: #f7a277;
+    font-weight: 600;
+}
+
+.slotcrate-inline-link:hover {
+    color: #ffb38e;
 }
 
 .slotcrate-range {

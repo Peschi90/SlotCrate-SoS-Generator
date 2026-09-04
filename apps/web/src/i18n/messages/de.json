@@ -6,17 +6,26 @@
     },
     "nav": {
         "generator": "Einzelkasten",
-        "planner": "Layout-Planer"
+        "planner": "Layout-Planer",
+        "website": "SlotCrate Website"
     },
     "home": {
         "title": "SlotCrate Konfigurator",
+        "subtitle": "Konfiguriere passgenaue Boxen und komplette Layouts fuer dein SlotCrate-System. Direkt im Browser, mit Live-Vorschau und Export.",
         "generator": {
             "title": "Einzelkasten-Generator",
-            "description": "Einen einzelnen Kasten in Rasterfeldern konfigurieren und als STL herunterladen."
+            "description": "Einen einzelnen Kasten in Rasterfeldern konfigurieren und als STL herunterladen.",
+            "cta": "Generator starten"
         },
         "planner": {
             "title": "Layout-Planer",
-            "description": "Mehrere Kästen auf der 10×10-Rasterplatte platzieren und gemeinsam exportieren."
+            "description": "Mehrere Kaesten auf der 10x10-Rasterplatte platzieren und gemeinsam exportieren.",
+            "cta": "Planer oeffnen"
+        },
+        "website": {
+            "title": "Zur SlotCrate-Hauptseite",
+            "description": "Infos, Galerie und Downloads zum gesamten SlotCrate-Projekt auf der offiziellen Website.",
+            "cta": "slotcrate.i3ull3t.de besuchen"
         }
     },
     "generator": {

@@ -134,19 +134,22 @@ Wenn `curl` lokal funktioniert, in Plesk prüfen:
 - Reverse Proxy ist aktiv.
 - Es läuft kein zweiter Plesk-Node-Prozess parallel zu PM2.
 
-Wichtig für Plesk: In `Additional nginx directives` **keinen** eigenen `location / { ... }`-Block anlegen, sonst entsteht "duplicate location /".
+Wichtig für Plesk: Je nach Plesk-Version landen `Additional nginx directives` im `server`-Kontext. Dann sind `proxy_pass`-Direktiven dort ungültig ("directive is not allowed here") oder ein eigener `location /` kollidiert ("duplicate location /").
 
-Nutze stattdessen nur Direktiven, die im vorhandenen Location-Kontext gelten, z. B.:
+Nutze in diesem Fall **kein** Nginx-Override, sondern den Apache-Reverse-Proxy in `Additional Apache directives`:
 
-```nginx
-proxy_pass http://127.0.0.1:6293;
-proxy_http_version 1.1;
-proxy_set_header Host $host;
-proxy_set_header X-Real-IP $remote_addr;
-proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-proxy_set_header X-Forwarded-Proto $scheme;
-proxy_set_header Upgrade $http_upgrade;
-proxy_set_header Connection "upgrade";
+```apache
+ProxyPreserveHost On
+ProxyPass / http://127.0.0.1:6293/
+ProxyPassReverse / http://127.0.0.1:6293/
+RequestHeader set X-Forwarded-Proto "https"
 ```
 
-Bei Subdomains gilt exakt dasselbe Verhalten.
+Die obigen `Proxy*`-Zeilen sind **Apache-Syntax** und duerfen nicht in `Additional nginx directives` eingetragen werden.
+Wenn Plesk danach "Ungültige nginx-Konfiguration" meldet, sind sie im falschen Feld gelandet: Inhalt aus `Additional nginx directives` entfernen, speichern und danach erst in `Additional Apache directives` eintragen.
+
+Zusätzlich in Plesk sicherstellen:
+
+- `Proxy mode` ist aktiv (nginx leitet an Apache weiter).
+- Es gibt keinen zweiten Plesk-Node.js-Dienst auf derselben Domain.
+- Subdomain und Hauptdomain verhalten sich hierbei gleich.

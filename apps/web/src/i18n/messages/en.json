@@ -6,17 +6,26 @@
     },
     "nav": {
         "generator": "Single Box",
-        "planner": "Layout Planner"
+        "planner": "Layout Planner",
+        "website": "SlotCrate Website"
     },
     "home": {
         "title": "SlotCrate Configurator",
+        "subtitle": "Build precise bins and complete layouts for your SlotCrate setup in the browser, with live preview and export.",
         "generator": {
             "title": "Single Box Generator",
-            "description": "Configure a single box in grid cells and download it as STL."
+            "description": "Configure a single box in grid cells and download it as STL.",
+            "cta": "Open Generator"
         },
         "planner": {
             "title": "Layout Planner",
-            "description": "Place multiple boxes on the 10×10 grid plate and export them together."
+            "description": "Place multiple boxes on the 10x10 grid plate and export them together.",
+            "cta": "Open Planner"
+        },
+        "website": {
+            "title": "Go to the SlotCrate main site",
+            "description": "Visit the official SlotCrate page for product details, gallery, and downloads.",
+            "cta": "Visit slotcrate.i3ull3t.de"
         }
     },
     "generator": {
