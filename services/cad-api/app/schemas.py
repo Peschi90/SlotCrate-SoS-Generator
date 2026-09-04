@@ -6,7 +6,7 @@ Layout-Anfragen.
 """
 from __future__ import annotations
 
-from typing import Literal
+from typing import Dict, List, Literal, Tuple
 try:
     from typing import Annotated
 except ImportError:  # Python 3.8 fallback
@@ -89,13 +89,13 @@ class LayoutRequest(BaseModel):
     stlTessellationLinearMm: Annotated[float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)] = 0.05
     stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
     grid: LayoutGrid = LayoutGrid()
-    boxes: list[LayoutBox]
+    boxes: List[LayoutBox]
 
     @model_validator(mode="after")
     def _boxes_stay_within_grid_and_do_not_overlap(self) -> "LayoutRequest":
         if abs(self.grid.pitch - self.gridPitchMm) > 1e-6:
             raise ValueError("grid.pitch muss gridPitchMm entsprechen")
-        occupied: dict[tuple[int, int], UUID] = {}
+        occupied: Dict[Tuple[int, int], UUID] = {}
         for box in self.boxes:
             if box.x + box.widthCells > GRID_COLUMNS:
                 raise ValueError(
@@ -123,6 +123,6 @@ class ActiveSettingsResponse(BaseModel):
     geometryVersion: str
     settingsVersion: int
     grid: LayoutGrid
-    box: dict[str, float]
-    limits: dict[str, float]
+    box: Dict[str, float]
+    limits: Dict[str, float]
     filenamePrefix: str
