@@ -6,7 +6,11 @@ Layout-Anfragen.
 """
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Literal
+try:
+    from typing import Annotated
+except ImportError:  # Python 3.8 fallback
+    from typing_extensions import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
