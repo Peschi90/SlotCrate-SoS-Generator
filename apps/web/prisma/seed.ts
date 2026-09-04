@@ -3,10 +3,15 @@
  * Erfordert ADMIN_BOOTSTRAP_EMAIL + ADMIN_BOOTSTRAP_PASSWORD in der Umgebung.
  */
 import { dirname, resolve } from "node:path";
+import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "@node-rs/argon2";
-import { loadEnvConfig } from "@next/env";
+
+const require = createRequire(import.meta.url);
+const { loadEnvConfig } = require("@next/env") as {
+  loadEnvConfig: (dir: string, dev?: boolean) => void;
+};
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const webRoot = resolve(scriptDir, "..");
