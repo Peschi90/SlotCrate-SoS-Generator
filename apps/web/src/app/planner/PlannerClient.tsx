@@ -32,21 +32,21 @@ export function PlannerClient({
   const selectedHeightMm = useLayoutStore((s) => s.selectedHeightMm);
   const setHeightMm = useLayoutStore((s) => s.setHeightMm);
 
-  const [variantId, setVariantId] = useState(variants[0]?.id ?? "classic");
+  const [variantId, setVariantId] = useState(variants[0]?.id ?? "sc-124-v2");
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ac, setAc] = useState<AbortController | null>(null);
 
   const activeVariant = variants.find((variant) => variant.id === variantId) ?? variants[0]!;
-  const pitchMm = SYSTEM.gridPitchMm * activeVariant.scaleFactor;
+  const pitchMm = activeVariant.gridPitchMm;
   const selected = boxes.find((b) => b.id === selectedId) ?? null;
   const usedCells = boxes.reduce((s, b) => s + b.widthCells * b.depthCells, 0);
   const totalCells = SYSTEM.gridColumns * SYSTEM.gridRows;
 
   useEffect(() => {
-    const preferred = activeVariant?.defaultHeightMm ?? defaultHeightMm;
+    const preferred = activeVariant?.boxHeightMm ?? defaultHeightMm;
     setHeightMm(preferred);
-  }, [activeVariant?.id, activeVariant?.defaultHeightMm, defaultHeightMm, setHeightMm]);
+  }, [activeVariant?.id, activeVariant?.boxHeightMm, defaultHeightMm, setHeightMm]);
 
   const selectedPreset = useMemo(() => {
     let best: (typeof DRAWER_HEIGHT_PRESETS)[number] = DRAWER_HEIGHT_PRESETS[0];
@@ -70,7 +70,20 @@ export function PlannerClient({
       const res = await fetch("/api/layout/zip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ boxes, scaleFactor: activeVariant.scaleFactor }),
+        body: JSON.stringify({
+          boxes,
+          grid: {
+            columns: SYSTEM.gridColumns,
+            rows: SYSTEM.gridRows,
+            pitch: activeVariant.gridPitchMm
+          },
+          gridPitchMm: activeVariant.gridPitchMm,
+          wallThicknessMm: activeVariant.wallThicknessMm,
+          innerFloorRadiusMm: activeVariant.innerFloorRadiusMm,
+          outerClearanceMm: activeVariant.outerClearanceMm,
+          stlTessellationLinearMm: activeVariant.stlTessellationLinearMm,
+          stlTessellationAngularRad: activeVariant.stlTessellationAngularRad
+        }),
         signal: controller.signal
       });
       if (!res.ok) {
@@ -99,12 +112,18 @@ export function PlannerClient({
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[calc(100vh-170px)]">
         <div className="rounded-2xl border border-neutral-800/80 overflow-hidden bg-neutral-950 min-h-[38vh] lg:min-h-0">
           <LayoutGrid
+            minCells={activeVariant.minCells}
             maxWidthCells={activeVariant.maxWidthCells}
             maxDepthCells={activeVariant.maxDepthCells}
           />
         </div>
         <div className="rounded-2xl border border-neutral-800/80 overflow-hidden bg-neutral-950 min-h-[38vh] lg:min-h-0">
-          <Layout3DView scaleFactor={activeVariant.scaleFactor} />
+          <Layout3DView
+            gridPitchMm={activeVariant.gridPitchMm}
+            wallThicknessMm={activeVariant.wallThicknessMm}
+            innerFloorRadiusMm={activeVariant.innerFloorRadiusMm}
+            outerClearanceMm={activeVariant.outerClearanceMm}
+          />
         </div>
       </section>
 
@@ -130,7 +149,7 @@ export function PlannerClient({
           >
             {variants.map((variant) => (
               <option key={variant.id} value={variant.id}>
-                {variant.label} ({variant.maxWidthCells}x{variant.maxDepthCells}, {variant.scaleFactor}x)
+                {variant.label} ({variant.maxWidthCells}x{variant.maxDepthCells}, {variant.gridPitchMm.toFixed(2)} mm)
               </option>
             ))}
           </select>
@@ -180,7 +199,7 @@ export function PlannerClient({
         <div className="border-t border-neutral-800 pt-3">
           <div>{t("planner.usedCells", { used: usedCells, total: totalCells })}</div>
           <div>{t("planner.boxCount", { count: boxes.length })}</div>
-          <div>{t("planner.scaleFactor", { factor: activeVariant.scaleFactor.toFixed(2) })}</div>
+          <div>{t("planner.gridPitch", { pitch: activeVariant.gridPitchMm.toFixed(2) })}</div>
         </div>
 
         {selected && (

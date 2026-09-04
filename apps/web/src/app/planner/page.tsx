@@ -14,12 +14,18 @@ export default async function PlannerPage() {
 
   const variants = settings?.payload.suitcaseVariants ?? [
     {
-      id: "classic",
-      label: "Classic",
+      id: "sc-124-v2",
+      label: "SC 124 V2",
+      minCells: SYSTEM.minCells,
       maxWidthCells: SYSTEM.maxCells,
       maxDepthCells: SYSTEM.maxCells,
-      scaleFactor: 1,
-      defaultHeightMm: SYSTEM.defaultBoxHeightMm
+      gridPitchMm: SYSTEM.gridPitchMm,
+      boxHeightMm: SYSTEM.defaultBoxHeightMm,
+      wallThicknessMm: SYSTEM.wallThicknessMm,
+      innerFloorRadiusMm: 2.5,
+      outerClearanceMm: 0,
+      stlTessellationLinearMm: 0.05,
+      stlTessellationAngularRad: 0.5
     }
   ];
 

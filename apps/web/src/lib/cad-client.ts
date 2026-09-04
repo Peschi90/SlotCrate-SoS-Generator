@@ -6,7 +6,7 @@
 import { headers } from "next/headers";
 import { BoxRequest, LayoutRequest } from "./schema";
 
-const API_URL = process.env.CAD_API_URL ?? "http://localhost:6294";
+const API_URL = process.env.CAD_API_URL ?? "http://127.0.0.1:6294";
 const TOKEN = process.env.CAD_API_INTERNAL_TOKEN;
 
 function authHeaders(): HeadersInit {

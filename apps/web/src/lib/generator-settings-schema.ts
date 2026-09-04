@@ -8,10 +8,16 @@ const suitcaseVariantSchema = z
       .max(32)
       .regex(/^[a-z0-9-]+$/),
     label: z.string().min(1).max(64),
+    minCells: z.number().int().min(1).max(10).default(1),
     maxWidthCells: z.number().int().min(1).max(10),
     maxDepthCells: z.number().int().min(1).max(10),
-    scaleFactor: z.number().min(0.7).max(1.5).default(1),
-    defaultHeightMm: z.number().min(6).max(200).default(35.8)
+    gridPitchMm: z.number().min(15).max(30).default(21.09),
+    boxHeightMm: z.number().min(6).max(200).default(35.8),
+    wallThicknessMm: z.number().min(0.6).max(4).default(1.2),
+    innerFloorRadiusMm: z.number().min(0).max(4).default(2.5),
+    outerClearanceMm: z.number().min(0).max(0.5).default(0),
+    stlTessellationLinearMm: z.number().min(0.005).max(0.5).default(0.05),
+    stlTessellationAngularRad: z.number().min(0.05).max(1.0).default(0.5)
   })
   .strict();
 
@@ -54,12 +60,18 @@ export const generatorSettingsPayloadSchema = z
     featureFlags: z.record(z.string(), z.boolean()).default({}),
     suitcaseVariants: z.array(suitcaseVariantSchema).min(1).max(12).default([
       {
-        id: "classic",
-        label: "Classic",
+        id: "sc-124-v2",
+        label: "SC 124 V2",
+        minCells: 1,
         maxWidthCells: 10,
         maxDepthCells: 10,
-        scaleFactor: 1,
-        defaultHeightMm: 35.8
+        gridPitchMm: 21.09,
+        boxHeightMm: 35.8,
+        wallThicknessMm: 1.2,
+        innerFloorRadiusMm: 2.5,
+        outerClearanceMm: 0,
+        stlTessellationLinearMm: 0.05,
+        stlTessellationAngularRad: 0.5
       }
     ])
   })
@@ -71,8 +83,11 @@ export const generatorSettingsPayloadSchema = z
         (variant) =>
           variant.maxWidthCells >= v.minCells &&
           variant.maxWidthCells <= v.maxCells &&
+          variant.minCells >= v.minCells &&
+          variant.minCells <= variant.maxWidthCells &&
           variant.maxDepthCells >= v.minCells &&
-          variant.maxDepthCells <= v.maxCells
+          variant.maxDepthCells <= v.maxCells &&
+          variant.minCells <= variant.maxDepthCells
       ),
     "Varianten muessen innerhalb minCells/maxCells liegen"
   )
@@ -103,12 +118,18 @@ export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettingsPayload = {
   featureFlags: {},
   suitcaseVariants: [
     {
-      id: "classic",
-      label: "Classic",
+      id: "sc-124-v2",
+      label: "SC 124 V2",
+      minCells: 1,
       maxWidthCells: 10,
       maxDepthCells: 10,
-      scaleFactor: 1,
-      defaultHeightMm: 35.8
+      gridPitchMm: 21.09,
+      boxHeightMm: 35.8,
+      wallThicknessMm: 1.2,
+      innerFloorRadiusMm: 2.5,
+      outerClearanceMm: 0,
+      stlTessellationLinearMm: 0.05,
+      stlTessellationAngularRad: 0.5
     }
   ]
 };

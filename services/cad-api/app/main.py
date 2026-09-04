@@ -80,7 +80,12 @@ def create_app() -> FastAPI:
             payload.depthCells,
             payload.heightMm,
             payload.settingsVersion,
-            payload.scaleFactor,
+            payload.gridPitchMm,
+            payload.wallThicknessMm,
+            payload.innerFloorRadiusMm,
+            payload.outerClearanceMm,
+            payload.stlTessellationLinearMm,
+            payload.stlTessellationAngularRad,
         )
         cached = cache.get(key)
         if cached is None:
@@ -88,7 +93,12 @@ def create_app() -> FastAPI:
                 payload.widthCells,
                 payload.depthCells,
                 payload.heightMm,
-                scale_factor=payload.scaleFactor,
+                grid_pitch_mm=payload.gridPitchMm,
+                wall_thickness_mm=payload.wallThicknessMm,
+                inner_floor_radius_mm=payload.innerFloorRadiusMm,
+                outer_clearance_mm=payload.outerClearanceMm,
+                stl_tessellation_linear_mm=payload.stlTessellationLinearMm,
+                stl_tessellation_angular_rad=payload.stlTessellationAngularRad,
             )
             cache.store_bytes(key, data)
         else:

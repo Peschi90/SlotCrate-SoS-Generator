@@ -24,6 +24,18 @@ MIN_CELLS: int = 1
 MAX_CELLS: int = 10
 MIN_HEIGHT_MM: float = PICKUP_TOP_Z_MM + 2.0  # sinnvolle Untergrenze mit Boden + Wand
 MAX_HEIGHT_MM: float = 200.0
+MIN_GRID_PITCH_MM: float = 15.0
+MAX_GRID_PITCH_MM: float = 30.0
+MIN_WALL_THICKNESS_MM: float = 0.6
+MAX_WALL_THICKNESS_MM: float = 4.0
+MIN_INNER_FLOOR_RADIUS_MM: float = 0.0
+MAX_INNER_FLOOR_RADIUS_MM: float = 4.0
+MIN_OUTER_CLEARANCE_MM: float = 0.0
+MAX_OUTER_CLEARANCE_MM: float = 0.5
+MIN_STL_LINEAR_MM: float = 0.005
+MAX_STL_LINEAR_MM: float = 0.5
+MIN_STL_ANGULAR_RAD: float = 0.05
+MAX_STL_ANGULAR_RAD: float = 1.0
 
 
 class BoxRequest(BaseModel):
@@ -33,7 +45,12 @@ class BoxRequest(BaseModel):
     depthCells: Annotated[int, Field(ge=MIN_CELLS, le=MAX_CELLS)]
     heightMm: Annotated[float, Field(ge=MIN_HEIGHT_MM, le=MAX_HEIGHT_MM)] = DEFAULT_BOX_HEIGHT_MM
     settingsVersion: Annotated[int, Field(ge=1)] = 1
-    scaleFactor: Annotated[float, Field(ge=0.7, le=1.5)] = 1.0
+    gridPitchMm: Annotated[float, Field(ge=MIN_GRID_PITCH_MM, le=MAX_GRID_PITCH_MM)] = GRID_PITCH_MM
+    wallThicknessMm: Annotated[float, Field(ge=MIN_WALL_THICKNESS_MM, le=MAX_WALL_THICKNESS_MM)] = 1.2
+    innerFloorRadiusMm: Annotated[float, Field(ge=MIN_INNER_FLOOR_RADIUS_MM, le=MAX_INNER_FLOOR_RADIUS_MM)] = 2.5
+    outerClearanceMm: Annotated[float, Field(ge=MIN_OUTER_CLEARANCE_MM, le=MAX_OUTER_CLEARANCE_MM)] = 0.0
+    stlTessellationLinearMm: Annotated[float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)] = 0.05
+    stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
 
 
 class LayoutBox(BaseModel):
@@ -54,12 +71,6 @@ class LayoutGrid(BaseModel):
     rows: Literal[GRID_ROWS] = GRID_ROWS
     pitch: float = Field(default=GRID_PITCH_MM)
 
-    @model_validator(mode="after")
-    def _pitch_is_invariant(self) -> "LayoutGrid":
-        if abs(self.pitch - GRID_PITCH_MM) > 1e-6:
-            raise ValueError("pitch ist unveränderlich und muss 21.09 mm sein")
-        return self
-
 
 class LayoutRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -67,12 +78,19 @@ class LayoutRequest(BaseModel):
     schemaVersion: Literal[1] = 1
     geometryVersion: Literal[GEOMETRY_VERSION] = GEOMETRY_VERSION
     settingsVersion: Annotated[int, Field(ge=1)] = 1
-    scaleFactor: Annotated[float, Field(ge=0.7, le=1.5)] = 1.0
+    gridPitchMm: Annotated[float, Field(ge=MIN_GRID_PITCH_MM, le=MAX_GRID_PITCH_MM)] = GRID_PITCH_MM
+    wallThicknessMm: Annotated[float, Field(ge=MIN_WALL_THICKNESS_MM, le=MAX_WALL_THICKNESS_MM)] = 1.2
+    innerFloorRadiusMm: Annotated[float, Field(ge=MIN_INNER_FLOOR_RADIUS_MM, le=MAX_INNER_FLOOR_RADIUS_MM)] = 2.5
+    outerClearanceMm: Annotated[float, Field(ge=MIN_OUTER_CLEARANCE_MM, le=MAX_OUTER_CLEARANCE_MM)] = 0.0
+    stlTessellationLinearMm: Annotated[float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)] = 0.05
+    stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
     grid: LayoutGrid = LayoutGrid()
     boxes: list[LayoutBox]
 
     @model_validator(mode="after")
     def _boxes_stay_within_grid_and_do_not_overlap(self) -> "LayoutRequest":
+        if abs(self.grid.pitch - self.gridPitchMm) > 1e-6:
+            raise ValueError("grid.pitch muss gridPitchMm entsprechen")
         occupied: dict[tuple[int, int], UUID] = {}
         for box in self.boxes:
             if box.x + box.widthCells > GRID_COLUMNS:

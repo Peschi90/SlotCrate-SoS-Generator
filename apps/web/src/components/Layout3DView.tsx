@@ -12,15 +12,25 @@ import { useLayoutStore } from "@/lib/layout-store";
  * Die Platte wird als flache Fläche mit den 100 Raster­öffnungen als Löchern
  * dargestellt (Preview-Charakter, exakte Maße stimmen mit der Referenz überein).
  */
-export function Layout3DView({ scaleFactor = 1 }: { scaleFactor?: number }) {
+export function Layout3DView({
+  gridPitchMm = SYSTEM.gridPitchMm,
+  wallThicknessMm = SYSTEM.wallThicknessMm,
+  innerFloorRadiusMm = 2.5,
+  outerClearanceMm = 0
+}: {
+  gridPitchMm?: number;
+  wallThicknessMm?: number;
+  innerFloorRadiusMm?: number;
+  outerClearanceMm?: number;
+}) {
   const boxes = useLayoutStore((s) => s.boxes);
   const selectedId = useLayoutStore((s) => s.selectedId);
   const select = useLayoutStore((s) => s.select);
 
-  const pitchMm = SYSTEM.gridPitchMm * scaleFactor;
+  const pitchMm = gridPitchMm;
   const plateW = SYSTEM.gridColumns * pitchMm;
   const plateD = SYSTEM.gridRows * pitchMm;
-  const plateT = SYSTEM.pickupTopZMm * scaleFactor;
+  const plateT = SYSTEM.pickupTopZMm * (pitchMm / SYSTEM.gridPitchMm);
 
   const plateGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -29,7 +39,7 @@ export function Layout3DView({ scaleFactor = 1 }: { scaleFactor?: number }) {
     shape.lineTo(plateW, plateD);
     shape.lineTo(0, plateD);
     shape.lineTo(0, 0);
-    const openingSize = 18.69;
+    const openingSize = 18.69 * (pitchMm / SYSTEM.gridPitchMm);
     const openingR = 1.2;
     for (let i = 0; i < SYSTEM.gridColumns; i++) {
       for (let j = 0; j < SYSTEM.gridRows; j++) {
@@ -58,7 +68,7 @@ export function Layout3DView({ scaleFactor = 1 }: { scaleFactor?: number }) {
 
   const centerX = plateW / 2;
   const centerY = plateD / 2;
-  const centerZ = (SYSTEM.defaultBoxHeightMm * scaleFactor) / 2;
+  const centerZ = SYSTEM.defaultBoxHeightMm / 2;
   const radius = Math.max(plateW, plateD) * 0.9;
 
   return (
@@ -76,7 +86,7 @@ export function Layout3DView({ scaleFactor = 1 }: { scaleFactor?: number }) {
       {boxes.map((b) => {
         const w = b.widthCells * pitchMm;
         const d = b.depthCells * pitchMm;
-        const h = b.heightMm * scaleFactor;
+        const h = b.heightMm;
         const isSel = b.id === selectedId;
         return (
           <group
@@ -91,7 +101,10 @@ export function Layout3DView({ scaleFactor = 1 }: { scaleFactor?: number }) {
               widthCells={b.widthCells}
               depthCells={b.depthCells}
               heightMm={b.heightMm}
-              scaleFactor={scaleFactor}
+              gridPitchMm={gridPitchMm}
+              wallThicknessMm={wallThicknessMm}
+              innerFloorRadiusMm={innerFloorRadiusMm}
+              outerClearanceMm={outerClearanceMm}
               color={isSel ? "#4c8cff" : "#7fb0ff"}
               opacity={isSel ? 1 : 0.92}
             />

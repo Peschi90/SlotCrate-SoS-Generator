@@ -15,9 +15,11 @@ interface DragState {
  * Rasterplatte selbst wird nicht editierbar dargestellt.
  */
 export function LayoutGrid({
+  minCells = SYSTEM.minCells,
   maxWidthCells = SYSTEM.maxCells,
   maxDepthCells = SYSTEM.maxCells
 }: {
+  minCells?: number;
   maxWidthCells?: number;
   maxDepthCells?: number;
 }) {
@@ -36,7 +38,10 @@ export function LayoutGrid({
 
   const previewRect = useMemo(() => rectFromDrag(drag), [drag]);
   const previewWithinVariant = previewRect
-    ? previewRect.widthCells <= maxWidthCells && previewRect.depthCells <= maxDepthCells
+    ? previewRect.widthCells >= minCells &&
+      previewRect.depthCells >= minCells &&
+      previewRect.widthCells <= maxWidthCells &&
+      previewRect.depthCells <= maxDepthCells
     : false;
   const previewValid = previewRect
     ? previewWithinVariant && canPlace(previewRect.x, previewRect.y, previewRect.widthCells, previewRect.depthCells)
@@ -46,8 +51,15 @@ export function LayoutGrid({
     const svg = svgRef.current;
     if (!svg) return null;
     const rect = svg.getBoundingClientRect();
-    const px = ((e.clientX - rect.left) / rect.width) * w;
-    const py = ((e.clientY - rect.top) / rect.height) * h;
+    const drawSize = Math.min(rect.width, rect.height);
+    const offsetX = (rect.width - drawSize) / 2;
+    const offsetY = (rect.height - drawSize) / 2;
+    const localX = e.clientX - rect.left - offsetX;
+    const localY = e.clientY - rect.top - offsetY;
+    if (localX < 0 || localY < 0 || localX >= drawSize || localY >= drawSize) return null;
+
+    const px = (localX / drawSize) * w;
+    const py = (localY / drawSize) * h;
     const gx = Math.floor(px / cellPx);
     const gy = Math.floor(py / cellPx);
     if (gx < 0 || gy < 0 || gx >= SYSTEM.gridColumns || gy >= SYSTEM.gridRows) return null;
@@ -85,7 +97,13 @@ export function LayoutGrid({
       onPointerUp={() => {
         if (!drag) return;
         const r = rectFromDrag(drag);
-        if (r && r.widthCells <= maxWidthCells && r.depthCells <= maxDepthCells) {
+        if (
+          r &&
+          r.widthCells >= minCells &&
+          r.depthCells >= minCells &&
+          r.widthCells <= maxWidthCells &&
+          r.depthCells <= maxDepthCells
+        ) {
           const created = addBox(r.x, r.y, r.widthCells, r.depthCells);
           if (created) select(created.id);
         }

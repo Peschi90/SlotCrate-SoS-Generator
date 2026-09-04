@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BoxPreview } from "@/components/BoxPreview";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
+import { SYSTEM } from "@/lib/system";
 
 const DRAWER_HEIGHT_PRESETS = [
   { label: "20 mm", actualMm: 15.8 },
@@ -36,12 +37,27 @@ export function GeneratorClient({
   const t = useTranslations();
   const variants = suitcaseVariants?.length
     ? suitcaseVariants
-    : [{ id: "classic", label: "Classic", maxWidthCells: maxCells, maxDepthCells: maxCells, scaleFactor: 1, defaultHeightMm }];
+    : [
+        {
+          id: "sc-124-v2",
+          label: "SC 124 V2",
+          minCells,
+          maxWidthCells: maxCells,
+          maxDepthCells: maxCells,
+          gridPitchMm: SYSTEM.gridPitchMm,
+          boxHeightMm: defaultHeightMm,
+          wallThicknessMm: SYSTEM.wallThicknessMm,
+          innerFloorRadiusMm: 2.5,
+          outerClearanceMm: 0,
+          stlTessellationLinearMm: 0.05,
+          stlTessellationAngularRad: 0.5
+        }
+      ];
   const [variantId, setVariantId] = useState(variants[0]!.id);
   const activeVariant = variants.find((variant) => variant.id === variantId) ?? variants[0]!;
-  const initialPreset = presetForHeight(defaultHeightMm);
-  const [widthCells, setWidthCells] = useState(minCells);
-  const [depthCells, setDepthCells] = useState(minCells);
+  const initialPreset = presetForHeight(activeVariant.boxHeightMm);
+  const [widthCells, setWidthCells] = useState(activeVariant.minCells);
+  const [depthCells, setDepthCells] = useState(activeVariant.minCells);
   const [drawerPreset, setDrawerPreset] = useState<DrawerHeightPreset>(initialPreset);
   const [heightMm, setHeightMm] = useState(
     Math.min(maxHeightMm, Math.max(minHeightMm, initialPreset.actualMm))
@@ -60,7 +76,17 @@ export function GeneratorClient({
       const res = await fetch("/api/box/stl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ widthCells, depthCells, heightMm, scaleFactor: activeVariant.scaleFactor }),
+        body: JSON.stringify({
+          widthCells,
+          depthCells,
+          heightMm,
+          gridPitchMm: activeVariant.gridPitchMm,
+          wallThicknessMm: activeVariant.wallThicknessMm,
+          innerFloorRadiusMm: activeVariant.innerFloorRadiusMm,
+          outerClearanceMm: activeVariant.outerClearanceMm,
+          stlTessellationLinearMm: activeVariant.stlTessellationLinearMm,
+          stlTessellationAngularRad: activeVariant.stlTessellationAngularRad
+        }),
         signal: ac.signal
       });
       if (!res.ok) {
@@ -118,9 +144,9 @@ export function GeneratorClient({
               const next = variants.find((variant) => variant.id === e.target.value);
               if (!next) return;
               setVariantId(next.id);
-              setWidthCells((curr) => Math.min(next.maxWidthCells, Math.max(minCells, curr)));
-              setDepthCells((curr) => Math.min(next.maxDepthCells, Math.max(minCells, curr)));
-              const nextPreset = presetForHeight(next.defaultHeightMm);
+              setWidthCells((curr) => Math.min(next.maxWidthCells, Math.max(next.minCells, curr)));
+              setDepthCells((curr) => Math.min(next.maxDepthCells, Math.max(next.minCells, curr)));
+              const nextPreset = presetForHeight(next.boxHeightMm);
               setDrawerPreset(nextPreset);
               setHeightMm(clampHeight(nextPreset.actualMm));
             }}
@@ -128,7 +154,7 @@ export function GeneratorClient({
           >
             {variants.map((variant) => (
               <option key={variant.id} value={variant.id}>
-                {variant.label} ({variant.maxWidthCells}x{variant.maxDepthCells}, {variant.scaleFactor}x)
+                {variant.label} ({variant.maxWidthCells}x{variant.maxDepthCells}, {variant.gridPitchMm.toFixed(2)} mm)
               </option>
             ))}
           </select>
@@ -138,7 +164,7 @@ export function GeneratorClient({
           id="w"
           label={t("generator.width")}
           value={widthCells}
-          min={minCells}
+          min={Math.max(minCells, activeVariant.minCells)}
           max={Math.min(maxCells, activeVariant.maxWidthCells)}
           unit="x"
           onChange={setWidthCells}
@@ -148,7 +174,7 @@ export function GeneratorClient({
           id="d"
           label={t("generator.depth")}
           value={depthCells}
-          min={minCells}
+          min={Math.max(minCells, activeVariant.minCells)}
           max={Math.min(maxCells, activeVariant.maxDepthCells)}
           unit="x"
           onChange={setDepthCells}
@@ -250,7 +276,10 @@ export function GeneratorClient({
           widthCells={widthCells}
           depthCells={depthCells}
           heightMm={heightMm}
-          scaleFactor={activeVariant.scaleFactor}
+          gridPitchMm={activeVariant.gridPitchMm}
+          wallThicknessMm={activeVariant.wallThicknessMm}
+          innerFloorRadiusMm={activeVariant.innerFloorRadiusMm}
+          outerClearanceMm={activeVariant.outerClearanceMm}
         />
       </div>
     </div>

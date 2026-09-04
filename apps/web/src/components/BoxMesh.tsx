@@ -9,7 +9,10 @@ interface Props {
   widthCells: number;
   depthCells: number;
   heightMm: number;
-  scaleFactor?: number;
+  gridPitchMm?: number;
+  wallThicknessMm?: number;
+  innerFloorRadiusMm?: number;
+  outerClearanceMm?: number;
   color?: string;
   opacity?: number;
   cornerRadiusMm?: number;
@@ -25,19 +28,22 @@ export function BoxMesh({
   widthCells,
   depthCells,
   heightMm,
-  scaleFactor = 1,
+  gridPitchMm = SYSTEM.gridPitchMm,
+  wallThicknessMm = SYSTEM.wallThicknessMm,
+  innerFloorRadiusMm = 2.5,
+  outerClearanceMm = 0,
   color = "#7fb0ff",
   opacity = 1,
   cornerRadiusMm = 1.5
 }: Props) {
-  const pitchMm = SYSTEM.gridPitchMm * scaleFactor;
-  const outerW = widthCells * pitchMm;
-  const outerD = depthCells * pitchMm;
-  const pickupTop = SYSTEM.pickupTopZMm * scaleFactor;
-  const wall = SYSTEM.wallThicknessMm * scaleFactor;
-  const floorT = SYSTEM.floorThicknessMm * scaleFactor;
-  const bodyH = Math.max(0.1, heightMm * scaleFactor - pickupTop - floorT);
-  const cornerRadiusScaled = cornerRadiusMm * scaleFactor;
+  const pitchMm = gridPitchMm;
+  const outerW = Math.max(1, widthCells * pitchMm - 2 * outerClearanceMm);
+  const outerD = Math.max(1, depthCells * pitchMm - 2 * outerClearanceMm);
+  const pickupTop = SYSTEM.pickupTopZMm * (pitchMm / SYSTEM.gridPitchMm);
+  const wall = wallThicknessMm;
+  const floorT = SYSTEM.floorThicknessMm;
+  const bodyH = Math.max(0.1, heightMm - pickupTop - floorT);
+  const cornerRadiusScaled = Math.max(cornerRadiusMm, innerFloorRadiusMm);
 
   const wallGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -106,8 +112,8 @@ export function BoxMesh({
       {pickupPositions.map(([x, y], idx) => (
         <RoundedBox
           key={idx}
-          args={[18.49 * scaleFactor, 18.49 * scaleFactor, pickupTop]}
-          radius={0.6 * scaleFactor}
+          args={[18.49 * (pitchMm / SYSTEM.gridPitchMm), 18.49 * (pitchMm / SYSTEM.gridPitchMm), pickupTop]}
+          radius={0.6 * (pitchMm / SYSTEM.gridPitchMm)}
           smoothness={4}
           creaseAngle={0.4}
           position={[x, y, pickupTop / 2]}

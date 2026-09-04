@@ -21,12 +21,20 @@ def cache_key(
     depth_cells: int,
     height_mm: float,
     settings_version: int,
-    scale_factor: float,
+    grid_pitch_mm: float,
+    wall_thickness_mm: float,
+    inner_floor_radius_mm: float,
+    outer_clearance_mm: float,
+    stl_tessellation_linear_mm: float,
+    stl_tessellation_angular_rad: float,
     geometry_version: str = GEOMETRY_VERSION,
 ) -> str:
     payload = (
         f"{width_cells}|{depth_cells}|{round(height_mm, 4)}|"
-        f"{settings_version}|{round(scale_factor, 4)}|{geometry_version}"
+        f"{settings_version}|{round(grid_pitch_mm, 4)}|{round(wall_thickness_mm, 4)}|"
+        f"{round(inner_floor_radius_mm, 4)}|{round(outer_clearance_mm, 4)}|"
+        f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
+        f"{geometry_version}"
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

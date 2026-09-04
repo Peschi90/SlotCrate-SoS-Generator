@@ -54,10 +54,16 @@ export function AdminSettingsForm({
           {
             id: `variant-${nextIndex}`,
             label: `Variant ${nextIndex}`,
+            minCells: d.minCells,
             maxWidthCells: d.maxCells,
             maxDepthCells: d.maxCells,
-            scaleFactor: 1,
-            defaultHeightMm: d.boxHeightMm
+            gridPitchMm: 21.09,
+            boxHeightMm: d.boxHeightMm,
+            wallThicknessMm: d.wallThicknessMm,
+            innerFloorRadiusMm: d.innerFloorRadiusMm,
+            outerClearanceMm: d.outerClearanceMm,
+            stlTessellationLinearMm: d.stlTessellationLinearMm,
+            stlTessellationAngularRad: d.stlTessellationAngularRad
           }
         ]
       };
@@ -144,9 +150,17 @@ export function AdminSettingsForm({
                   onChange={(v) => updVariant(index, { label: v })}
                 />
                 <NumField
+                  label={t("admin.variantMinCells")}
+                  value={variant.minCells}
+                  min={draft.minCells}
+                  max={draft.maxCells}
+                  step={1}
+                  onChange={(v) => updVariant(index, { minCells: Math.round(v) })}
+                />
+                <NumField
                   label={t("admin.variantMaxWidth")}
                   value={variant.maxWidthCells}
-                  min={draft.minCells}
+                  min={variant.minCells}
                   max={draft.maxCells}
                   step={1}
                   onChange={(v) => updVariant(index, { maxWidthCells: Math.round(v) })}
@@ -154,26 +168,66 @@ export function AdminSettingsForm({
                 <NumField
                   label={t("admin.variantMaxDepth")}
                   value={variant.maxDepthCells}
-                  min={draft.minCells}
+                  min={variant.minCells}
                   max={draft.maxCells}
                   step={1}
                   onChange={(v) => updVariant(index, { maxDepthCells: Math.round(v) })}
                 />
                 <NumField
-                  label={t("admin.variantScale")}
-                  value={variant.scaleFactor}
-                  min={0.7}
-                  max={1.5}
+                  label={t("admin.variantGridPitch")}
+                  value={variant.gridPitchMm}
+                  min={15}
+                  max={30}
                   step={0.01}
-                  onChange={(v) => updVariant(index, { scaleFactor: v })}
+                  onChange={(v) => updVariant(index, { gridPitchMm: v })}
                 />
                 <NumField
                   label={t("admin.variantDefaultHeight")}
-                  value={variant.defaultHeightMm}
+                  value={variant.boxHeightMm}
                   min={6}
                   max={200}
                   step={0.1}
-                  onChange={(v) => updVariant(index, { defaultHeightMm: v })}
+                  onChange={(v) => updVariant(index, { boxHeightMm: v })}
+                />
+                <NumField
+                  label={t("admin.variantWallThickness")}
+                  value={variant.wallThicknessMm}
+                  min={0.6}
+                  max={4}
+                  step={0.05}
+                  onChange={(v) => updVariant(index, { wallThicknessMm: v })}
+                />
+                <NumField
+                  label={t("admin.variantInnerFloorRadius")}
+                  value={variant.innerFloorRadiusMm}
+                  min={0}
+                  max={4}
+                  step={0.1}
+                  onChange={(v) => updVariant(index, { innerFloorRadiusMm: v })}
+                />
+                <NumField
+                  label={t("admin.variantOuterClearance")}
+                  value={variant.outerClearanceMm}
+                  min={0}
+                  max={0.5}
+                  step={0.01}
+                  onChange={(v) => updVariant(index, { outerClearanceMm: v })}
+                />
+                <NumField
+                  label={t("admin.variantStlLinear")}
+                  value={variant.stlTessellationLinearMm}
+                  min={0.005}
+                  max={0.5}
+                  step={0.005}
+                  onChange={(v) => updVariant(index, { stlTessellationLinearMm: v })}
+                />
+                <NumField
+                  label={t("admin.variantStlAngular")}
+                  value={variant.stlTessellationAngularRad}
+                  min={0.05}
+                  max={1}
+                  step={0.05}
+                  onChange={(v) => updVariant(index, { stlTessellationAngularRad: v })}
                 />
               </div>
             </div>

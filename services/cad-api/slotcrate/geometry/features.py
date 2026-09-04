@@ -186,12 +186,16 @@ def pickup_template() -> cq.Shape:
     return p.translate((-cx, -cy, -zmin))
 
 
-def expected_pickup_positions_mm(width_cells: int, depth_cells: int) -> list[tuple[float, float]]:
+def expected_pickup_positions_mm(
+    width_cells: int,
+    depth_cells: int,
+    grid_pitch_mm: float = GRID_PITCH_MM,
+) -> list[tuple[float, float]]:
     """Mittelpunkte aller Rasterfelder eines NxM-Kastens (relativ zur Ecke 0,0)."""
     positions: list[tuple[float, float]] = []
     for j in range(depth_cells):
         for i in range(width_cells):
-            positions.append(((i + 0.5) * GRID_PITCH_MM, (j + 0.5) * GRID_PITCH_MM))
+            positions.append(((i + 0.5) * grid_pitch_mm, (j + 0.5) * grid_pitch_mm))
     return positions
 
 
