@@ -111,18 +111,50 @@ export function BoxMesh({
           opacity={opacity}
         />
       </mesh>
-      {pickupPositions.map(([x, y], idx) => (
-        <RoundedBox
-          key={idx}
-          args={[18.49 * (pitchMm / SYSTEM.gridPitchMm), 18.49 * (pitchMm / SYSTEM.gridPitchMm), pickupTop + zEps]}
-          radius={2.5 * (pitchMm / SYSTEM.gridPitchMm)}
-          smoothness={4}
-          creaseAngle={0.4}
-          position={[x, y, (pickupTop + zEps) / 2]}
-        >
-          <meshStandardMaterial color={color} metalness={0.2} roughness={0.55} />
-        </RoundedBox>
-      ))}
+      {pickupPositions.map(([x, y], idx) => {
+        const s = pitchMm / SYSTEM.gridPitchMm;
+        // Kopfhöhe aus PICKUP_VOLUME_MM3 (1053,03), Kopf-Grundfläche
+        // (18,49² − 4·(2,5²−π·2,5²/4)) und Sockel-Grundfläche π·6,327²
+        // rückgerechnet; Gesamthöhe = PICKUP_TOP_Z_MM (4 mm).
+        const headH = 2.61 * s;
+        const socketH = pickupTop - headH;
+        const headZ = pickupTop - headH / 2;
+        const socketZ = socketH / 2;
+        return (
+          <group key={idx} position={[x, y, 0]}>
+            <mesh
+              position={[0, 0, socketZ]}
+              rotation={[Math.PI / 2, 0, 0]}
+            >
+              <cylinderGeometry
+                args={[6.327 * s, 6.327 * s, socketH + zEps, 32]}
+              />
+              <meshStandardMaterial
+                color={color}
+                metalness={0.15}
+                roughness={0.6}
+                transparent={opacity < 1}
+                opacity={opacity}
+              />
+            </mesh>
+            <RoundedBox
+              args={[18.49 * s, 18.49 * s, headH + zEps]}
+              radius={2.5 * s}
+              smoothness={4}
+              creaseAngle={0.4}
+              position={[0, 0, headZ]}
+            >
+              <meshStandardMaterial
+                color={color}
+                metalness={0.15}
+                roughness={0.6}
+                transparent={opacity < 1}
+                opacity={opacity}
+              />
+            </RoundedBox>
+          </group>
+        );
+      })}
     </group>
   );
 }
