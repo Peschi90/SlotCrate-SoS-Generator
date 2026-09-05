@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { LayoutGrid } from "@/components/LayoutGrid";
 import { Layout3DView } from "@/components/Layout3DView";
+import { PlannerPersistencePanel } from "@/components/PlannerPersistencePanel";
 import { useLayoutStore } from "@/lib/layout-store";
 import { SYSTEM } from "@/lib/system";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
@@ -262,6 +263,12 @@ export function PlannerClient({
           )}
         </div>
         {error && <div className="text-red-400 text-sm">{error}</div>}
+
+        <PlannerPersistencePanel
+          variantIds={variants.map((v) => v.id)}
+          activeVariantId={activeVariant.id}
+          onVariantChange={setVariantId}
+        />
       </aside>
     </div>
   );

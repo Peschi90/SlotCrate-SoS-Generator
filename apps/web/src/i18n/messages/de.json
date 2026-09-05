@@ -65,7 +65,41 @@
         "remove": "Entfernen",
         "exportZip": "ZIP + Stückliste",
         "exporting": "Erzeuge ZIP …",
-        "cancel": "Abbrechen"
+        "cancel": "Abbrechen",
+        "persistence": {
+            "title": "Speichern & Teilen",
+            "autoSaved": "Automatisch gespeichert · {time}",
+            "autoSavedNever": "Noch nicht automatisch gespeichert",
+            "exportJson": "Als JSON exportieren",
+            "importJson": "JSON importieren",
+            "importInvalid": "Datei konnte nicht als Layout gelesen werden.",
+            "draftsTitle": "Benannte Entwürfe",
+            "draftNamePlaceholder": "Name des Entwurfs",
+            "draftSave": "Aktuellen Stand speichern",
+            "draftSaved": "Entwurf „{name}“ gespeichert.",
+            "draftLoad": "Laden",
+            "draftDelete": "Löschen",
+            "draftDeleteConfirm": "Entwurf wirklich löschen?",
+            "draftEmpty": "Noch keine Entwürfe gespeichert.",
+            "shareTitle": "Teilbarer Link",
+            "shareCreate": "Link erstellen",
+            "shareCreating": "Erstelle Link …",
+            "shareCopy": "Link kopieren",
+            "shareCopied": "Link in Zwischenablage kopiert.",
+            "shareExpires": "Läuft ab {date}",
+            "shareFailed": "Link konnte nicht erstellt werden ({code}).",
+            "shareLoadFailed": "Geteiltes Layout konnte nicht geladen werden ({code}).",
+            "loadedFromShare": "Layout aus geteiltem Link geladen.",
+            "loadSummary": "{placed} Kästen geladen, {skipped} übersprungen.",
+            "warnings": {
+                "DRAFT_UNKNOWN_KIND": "Datei hat keine SlotCrate-Kennung — Best-Effort geladen.",
+                "DRAFT_SCHEMA_MISMATCH": "Andere Schema-Version — evtl. fehlen Details.",
+                "DRAFT_GEOMETRY_MISMATCH": "Andere Geometrie-Version — Ergebnis kann abweichen.",
+                "DRAFT_VARIANT_UNKNOWN": "Koffervariante unbekannt — aktive Variante beibehalten.",
+                "DRAFT_BOX_DROPPED": "Ungültige Kästen wurden verworfen.",
+                "DRAFT_BOX_OVERLAP": "Überlappende Kästen wurden übersprungen."
+            }
+        }
     },
     "admin": {
         "title": "Admin-Panel",

@@ -133,3 +133,16 @@ model GeneratorAnalyticsEvent {
   @@index([variantId])
   @@index([visitorHash])
 }
+
+// Anonym geteilte Layout-Entwürfe für den Planer. Keine Anmeldung nötig,
+// deshalb strikt auf TTL, Größenlimit und Rate-Limit (IP) beschränkt.
+model SharedLayout {
+  id            String   @id @db.VarChar(16)
+  payload       Json
+  createdAt     DateTime @default(now())
+  expiresAt     DateTime
+  hitCount      Int      @default(0)
+  createdIpHash String?  @db.VarChar(64)
+
+  @@index([expiresAt])
+}

@@ -46,6 +46,8 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
 - **Wichtigste Funktionen:**
   - Einzelkasten-Generator mit R3F-Live-Vorschau (`/generator`).
   - Layout-Planer mit SVG-Drag, 3D-Ansicht, Undo/Redo, ZIP-Export (`/planner`).
+  - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
+    benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Admin-Panel mit versionierten Einstellungen und Analytics (`/admin`).
   - Zweisprachige Oberfläche (Deutsch/Englisch) via `next-intl`.
 - **Entwicklungsstand:** Milestones M0–M10 abgeschlossen (siehe unten).
@@ -366,6 +368,8 @@ Basis: `.env.example`. Reale `.env` niemals committen.
 | `RATE_LIMIT_LOGIN` | Requests/Minute | optional | `5` | Web |
 | `RATE_LIMIT_BOX_STL` | Requests/Minute | optional | `30` | Web+CAD-API |
 | `RATE_LIMIT_LAYOUT_ZIP` | Requests/Minute | optional | `10` | Web+CAD-API |
+| `RATE_LIMIT_LAYOUT_SHARE` | Requests/Minute je IP für geteilte Layout-Links | optional | `10` | Web |
+| `SHARE_LAYOUT_TTL_DAYS` | Ablaufzeit für geteilte Layout-Kurz-URLs (Tage, max. 365) | optional | `90` | Web |
 | `ADMIN_BOOTSTRAP_EMAIL` | Einmaliger Seed | optional | – | Web-Seed |
 | `ADMIN_BOOTSTRAP_PASSWORD` | Einmaliger Seed (≥12 Zeichen) | optional | – | Web-Seed |
 | `PYTHON_BIN` | Absoluter Pfad zum venv-Python (PM2) | Linux/Plesk empfohlen | `/…/.venv-cad/bin/python` | PM2 |

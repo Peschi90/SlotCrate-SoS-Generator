@@ -30,6 +30,10 @@ interface LayoutState {
   redo(): void;
   reset(): void;
   canPlace(x: number, y: number, widthCells: number, depthCells: number, ignoreId?: string): boolean;
+  loadBoxes(
+    incoming: Array<{ x: number; y: number; widthCells: number; depthCells: number; heightMm: number }>,
+    selectedHeightMm?: number
+  ): { placed: number; skipped: number };
 }
 
 function occupiedMap(boxes: PlacedBox[], ignoreId?: string): Set<number> {
@@ -169,6 +173,37 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       future: [],
       selectedId: null
     });
+  },
+
+  loadBoxes(incoming, selectedHeightMm) {
+    const s = get();
+    const occ = new Set<number>();
+    const placed: PlacedBox[] = [];
+    let skipped = 0;
+    for (const b of incoming) {
+      if (fits(b.x, b.y, b.widthCells, b.depthCells, occ)) {
+        placed.push({ id: makeId(), ...b });
+        for (let i = b.x; i < b.x + b.widthCells; i++) {
+          for (let j = b.y; j < b.y + b.depthCells; j++) {
+            occ.add(i * SYSTEM.gridColumns + j);
+          }
+        }
+      } else {
+        skipped++;
+      }
+    }
+    const nextHeight =
+      selectedHeightMm !== undefined
+        ? Math.min(SYSTEM.maxHeightMm, Math.max(SYSTEM.minHeightMm, selectedHeightMm))
+        : s.selectedHeightMm;
+    set({
+      boxes: placed,
+      past: [...s.past, snapshot(s)],
+      future: [],
+      selectedId: null,
+      selectedHeightMm: nextHeight
+    });
+    return { placed: placed.length, skipped };
   }
 }));
 

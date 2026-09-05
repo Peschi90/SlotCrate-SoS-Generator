@@ -65,7 +65,41 @@
         "remove": "Remove",
         "exportZip": "ZIP + bill of materials",
         "exporting": "Creating ZIP …",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "persistence": {
+            "title": "Save & share",
+            "autoSaved": "Auto-saved · {time}",
+            "autoSavedNever": "Not auto-saved yet",
+            "exportJson": "Export as JSON",
+            "importJson": "Import JSON",
+            "importInvalid": "File could not be read as a layout.",
+            "draftsTitle": "Named drafts",
+            "draftNamePlaceholder": "Draft name",
+            "draftSave": "Save current state",
+            "draftSaved": "Draft \"{name}\" saved.",
+            "draftLoad": "Load",
+            "draftDelete": "Delete",
+            "draftDeleteConfirm": "Really delete this draft?",
+            "draftEmpty": "No drafts saved yet.",
+            "shareTitle": "Shareable link",
+            "shareCreate": "Create link",
+            "shareCreating": "Creating link …",
+            "shareCopy": "Copy link",
+            "shareCopied": "Link copied to clipboard.",
+            "shareExpires": "Expires {date}",
+            "shareFailed": "Could not create link ({code}).",
+            "shareLoadFailed": "Shared layout could not be loaded ({code}).",
+            "loadedFromShare": "Layout loaded from shared link.",
+            "loadSummary": "{placed} boxes loaded, {skipped} skipped.",
+            "warnings": {
+                "DRAFT_UNKNOWN_KIND": "File has no SlotCrate marker — loaded best-effort.",
+                "DRAFT_SCHEMA_MISMATCH": "Different schema version — some details may be missing.",
+                "DRAFT_GEOMETRY_MISMATCH": "Different geometry version — result may differ.",
+                "DRAFT_VARIANT_UNKNOWN": "Unknown suitcase variant — keeping active variant.",
+                "DRAFT_BOX_DROPPED": "Invalid boxes were dropped.",
+                "DRAFT_BOX_OVERLAP": "Overlapping boxes were skipped."
+            }
+        }
     },
     "admin": {
         "title": "Admin panel",

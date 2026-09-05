@@ -78,4 +78,22 @@ describe("layout store", () => {
     expect(useLayoutStore.getState().canPlace(0, 0, 2, 2)).toBe(false);
     expect(useLayoutStore.getState().canPlace(0, 0, 2, 2, a.id)).toBe(true);
   });
+
+  it("loadBoxes replaces the layout and skips overlapping entries", () => {
+    useLayoutStore.getState().addBox(0, 0, 1, 1);
+    const result = useLayoutStore.getState().loadBoxes(
+      [
+        { x: 0, y: 0, widthCells: 2, depthCells: 2, heightMm: 35 },
+        { x: 1, y: 1, widthCells: 2, depthCells: 2, heightMm: 35 },
+        { x: 5, y: 5, widthCells: 1, depthCells: 1, heightMm: 35 }
+      ],
+      42
+    );
+    expect(result.placed).toBe(2);
+    expect(result.skipped).toBe(1);
+    expect(useLayoutStore.getState().boxes).toHaveLength(2);
+    expect(useLayoutStore.getState().selectedHeightMm).toBe(42);
+    useLayoutStore.getState().undo();
+    expect(useLayoutStore.getState().boxes).toHaveLength(1);
+  });
 });
