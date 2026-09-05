@@ -36,6 +36,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     });
   } catch (err) {
+    await recordAnalyticsEventSafe(req, {
+      eventType: "box.download.failed",
+      generator: "single-box",
+      details: {
+        widthCells: parsed.data.widthCells,
+        depthCells: parsed.data.depthCells,
+        heightMm: parsed.data.heightMm,
+        reason: (err as Error).message.slice(0, 200)
+      }
+    });
     return NextResponse.json({ error: (err as Error).message }, { status: 502 });
   }
 }

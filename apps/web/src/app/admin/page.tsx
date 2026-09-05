@@ -20,15 +20,34 @@ export default async function AdminPage() {
   const active = await getActiveSettings();
   const analytics = await getAnalyticsSnapshot(30).catch(() => ({
     days: 30,
+    filters: {
+      generator: "all",
+      eventType: "all",
+      variantId: "all",
+      from: null,
+      to: null,
+      limit: 100
+    },
     totalEvents: 0,
     uniqueVisitors: 0,
+    opens: 0,
+    downloadClicks: 0,
+    successfulDownloads: 0,
+    failedDownloads: 0,
+    conversionRatePercent: 0,
+    avgBoxesPerLayoutDownload: 0,
     generatorUsage: [],
     eventTypes: [],
     topVariants: [],
+    topBoxSizes: [],
+    dailySeries: [],
+    availableGenerators: [],
+    availableEventTypes: [],
+    availableVariants: [],
     recentEvents: []
   }));
   return (
-    <div className="p-6 max-w-3xl space-y-6">
+    <div className="p-4 sm:p-6 max-w-[1800px] w-full mx-auto space-y-6">
       <header className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-semibold">{t("admin.title")}</h1>
@@ -48,7 +67,7 @@ export default async function AdminPage() {
 
       <section className="border border-neutral-800 rounded-md p-4">
         <h2 className="font-semibold mb-2">{t("admin.constantsTitle")}</h2>
-        <ul className="text-sm text-neutral-300 grid grid-cols-2 gap-y-1">
+        <ul className="text-sm text-neutral-300 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-1">
           <li>{t("admin.constant.basePlate")}</li>
           <li>{t("admin.constant.grid10x10")}</li>
           <li>{t("admin.constant.pitch")}</li>

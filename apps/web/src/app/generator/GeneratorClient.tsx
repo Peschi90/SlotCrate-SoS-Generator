@@ -69,20 +69,34 @@ export function GeneratorClient({
   const busy = pending || controller !== null;
   const clampHeight = (value: number) => Math.min(maxHeightMm, Math.max(minHeightMm, value));
 
+  async function trackEvent(eventType: string, details?: Record<string, string | number | boolean | null>) {
+    try {
+      await fetch("/api/analytics/event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType,
+          generator: "single-box",
+          variantId: activeVariant.id,
+          details: details ?? {}
+        })
+      });
+    } catch {
+      // fire-and-forget
+    }
+  }
+
   useEffect(() => {
-    void fetch("/api/analytics/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType: "generator.open",
-        generator: "single-box",
-        variantId: activeVariant.id
-      })
-    });
+    void trackEvent("generator.open");
   }, [activeVariant.id]);
 
   async function download() {
     setError(null);
+    void trackEvent("generator.download.click", {
+      widthCells,
+      depthCells,
+      heightMm: Number(heightMm.toFixed(1))
+    });
     const ac = new AbortController();
     setController(ac);
     try {
@@ -156,6 +170,10 @@ export function GeneratorClient({
             onChange={(e) => {
               const next = variants.find((variant) => variant.id === e.target.value);
               if (!next) return;
+              void trackEvent("generator.variant.change", {
+                from: activeVariant.id,
+                to: next.id
+              });
               setVariantId(next.id);
               setWidthCells((curr) => Math.min(next.maxWidthCells, Math.max(next.minCells, curr)));
               setDepthCells((curr) => Math.min(next.maxDepthCells, Math.max(next.minCells, curr)));

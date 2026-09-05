@@ -43,21 +43,30 @@ export function PlannerClient({
   const usedCells = boxes.reduce((s, b) => s + b.widthCells * b.depthCells, 0);
   const totalCells = SYSTEM.gridColumns * SYSTEM.gridRows;
 
+  async function trackEvent(eventType: string, details?: Record<string, string | number | boolean | null>) {
+    try {
+      await fetch("/api/analytics/event", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventType,
+          generator: "layout-planner",
+          variantId: activeVariant.id,
+          details: details ?? {}
+        })
+      });
+    } catch {
+      // fire-and-forget
+    }
+  }
+
   useEffect(() => {
     const preferred = activeVariant?.boxHeightMm ?? defaultHeightMm;
     setHeightMm(preferred);
   }, [activeVariant?.id, activeVariant?.boxHeightMm, defaultHeightMm, setHeightMm]);
 
   useEffect(() => {
-    void fetch("/api/analytics/event", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        eventType: "planner.open",
-        generator: "layout-planner",
-        variantId: activeVariant.id
-      })
-    });
+    void trackEvent("planner.open");
   }, [activeVariant.id]);
 
   const selectedPreset = useMemo(() => {
@@ -75,6 +84,7 @@ export function PlannerClient({
 
   async function exportZip() {
     setError(null);
+    void trackEvent("planner.download.click", { boxes: boxes.length });
     const controller = new AbortController();
     setAc(controller);
     setDownloading(true);
@@ -158,7 +168,11 @@ export function PlannerClient({
           <select
             id="planner-variant"
             value={activeVariant.id}
-            onChange={(e) => setVariantId(e.target.value)}
+            onChange={(e) => {
+              const next = e.target.value;
+              void trackEvent("planner.variant.change", { from: activeVariant.id, to: next });
+              setVariantId(next);
+            }}
             className="w-full rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2"
           >
             {variants.map((variant) => (

@@ -39,6 +39,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       }
     });
   } catch (err) {
+    await recordAnalyticsEventSafe(req, {
+      eventType: "layout.download.failed",
+      generator: "layout-planner",
+      variantId: parsed.data.suitcaseVariantId,
+      details: {
+        boxes: parsed.data.boxes.length,
+        plateStepFile: parsed.data.plateStepFile,
+        reason: (err as Error).message.slice(0, 200)
+      }
+    });
     return NextResponse.json({ error: (err as Error).message }, { status: 502 });
   }
 }

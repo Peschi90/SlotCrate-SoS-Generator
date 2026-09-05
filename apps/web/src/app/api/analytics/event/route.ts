@@ -6,9 +6,17 @@ import { recordAnalyticsEventSafe } from "@/lib/analytics-service";
 export const runtime = "nodejs";
 
 const payloadSchema = z.object({
-  eventType: z.enum(["generator.open", "planner.open"]),
+  eventType: z.enum([
+    "generator.open",
+    "planner.open",
+    "generator.variant.change",
+    "planner.variant.change",
+    "generator.download.click",
+    "planner.download.click"
+  ]),
   generator: z.enum(["single-box", "layout-planner"]),
-  variantId: z.string().min(1).max(64).optional()
+  variantId: z.string().min(1).max(64).optional(),
+  details: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).optional()
 });
 
 function sourceKey(req: NextRequest): string {
@@ -35,7 +43,10 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     eventType: parsed.data.eventType,
     generator: parsed.data.generator,
     variantId: parsed.data.variantId ?? null,
-    details: { source: "client-open" }
+    details: {
+      source: "client",
+      ...(parsed.data.details ?? {})
+    }
   });
 
   return NextResponse.json({ ok: true });
