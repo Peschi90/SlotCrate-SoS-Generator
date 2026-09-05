@@ -69,7 +69,7 @@ export function Layout3DView({
   const centerX = plateW / 2;
   const centerY = plateD / 2;
   const centerZ = SYSTEM.defaultBoxHeightMm / 2;
-  const radius = Math.max(plateW, plateD) * 0.9;
+  const radius = Math.max(plateW, plateD) * 1.2;
 
   return (
     <CadCanvas center={[centerX, centerY, centerZ]} radius={radius}>

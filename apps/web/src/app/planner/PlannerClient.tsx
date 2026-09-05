@@ -174,8 +174,8 @@ export function PlannerClient({
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full p-4 sm:p-6 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-5">
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[calc(100vh-170px)]">
+    <div className="max-w-[1600px] mx-auto w-full p-4 sm:p-6 grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-5 xl:items-start">
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-[calc(100vh-170px)] self-start">
         <div className="rounded-2xl border border-neutral-800/80 overflow-hidden bg-neutral-950 min-h-[38vh] lg:min-h-0">
           <LayoutGrid
             minCells={activeVariant.minCells}
