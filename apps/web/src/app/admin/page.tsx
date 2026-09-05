@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/session";
 import { getActiveSettings } from "@/lib/settings-service";
 import { getAnalyticsSnapshot } from "@/lib/analytics-service";
 import { AdminTabs } from "./AdminTabs";
+import { DEFAULT_GENERATOR_SETTINGS } from "@/lib/generator-settings-schema";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,12 @@ export default async function AdminPage() {
   if (currentUser.role !== "ADMIN") {
     redirect("/");
   }
-  const active = await getActiveSettings();
+
+  const active = await getActiveSettings().catch(() => ({
+    version: 0,
+    createdAt: new Date(0),
+    payload: DEFAULT_GENERATOR_SETTINGS
+  }));
   const analytics = await getAnalyticsSnapshot(30).catch(() => ({
     days: 30,
     filters: {

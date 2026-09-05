@@ -6,6 +6,26 @@ import {
   type GeneratorSettingsPayload
 } from "./generator-settings-schema";
 
+export function buildSettingsSnapshot(
+  row: { id: number; createdAt: Date; payload: unknown } | null | undefined
+): { version: number; createdAt: Date; payload: GeneratorSettingsPayload } | null {
+  if (!row) return null;
+
+  try {
+    return {
+      version: row.id,
+      createdAt: row.createdAt,
+      payload: parseGeneratorSettingsPayload(row.payload)
+    };
+  } catch {
+    return {
+      version: row.id,
+      createdAt: row.createdAt,
+      payload: DEFAULT_GENERATOR_SETTINGS
+    };
+  }
+}
+
 /**
  * Liefert die aktuell aktive Version. Falls noch keine existiert (frisch
  * migrierte DB), wird die Default-Version transaktional angelegt.
@@ -16,16 +36,19 @@ export async function getActiveSettings(): Promise<{
   payload: GeneratorSettingsPayload;
 }> {
   const current = await prisma.generatorSettings.findUnique({
-    where: { singleton: true },
-    include: { activeVersion: true }
+    where: { singleton: true }
   });
+
   if (current) {
-    return {
-      version: current.activeVersion.id,
-      createdAt: current.activeVersion.createdAt,
-      payload: parseGeneratorSettingsPayload(current.activeVersion.payload)
-    };
+    const activeVersion = await prisma.generatorSettingsVersion.findUnique({
+      where: { id: current.activeVersionId }
+    });
+    const snapshot = buildSettingsSnapshot(activeVersion);
+    if (snapshot) {
+      return snapshot;
+    }
   }
+
   return await prisma.$transaction(async (tx) => {
     const created = await tx.generatorSettingsVersion.create({
       data: {
@@ -33,8 +56,10 @@ export async function getActiveSettings(): Promise<{
         payload: DEFAULT_GENERATOR_SETTINGS as unknown as object
       }
     });
-    await tx.generatorSettings.create({
-      data: { singleton: true, activeVersionId: created.id }
+    await tx.generatorSettings.upsert({
+      where: { singleton: true },
+      update: { activeVersionId: created.id },
+      create: { singleton: true, activeVersionId: created.id }
     });
     return {
       version: created.id,
