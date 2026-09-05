@@ -39,6 +39,21 @@ def cache_key(
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def plate_cache_key(
+    plate_step_file: str,
+    settings_version: int,
+    stl_tessellation_linear_mm: float,
+    stl_tessellation_angular_rad: float,
+    geometry_version: str = GEOMETRY_VERSION,
+) -> str:
+    payload = (
+        f"plate|{plate_step_file}|{settings_version}|"
+        f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
+        f"{geometry_version}"
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 class StlCache:
     def __init__(self, root: Path) -> None:
         self.root = root

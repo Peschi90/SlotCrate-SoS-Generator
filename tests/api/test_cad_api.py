@@ -146,3 +146,34 @@ def test_secured_endpoints_require_bearer(secured_client: TestClient) -> None:
         headers={"Authorization": "Bearer test-token"},
     )
     assert r.status_code == 200
+
+
+def test_plate_stl_returns_binary_and_hits_cache(client: TestClient) -> None:
+    payload = {"plateStepFile": "SlotCrate.step", "suitcaseVariantId": "sc-124-v2"}
+    r1 = client.post("/v1/plate/stl", json=payload)
+    assert r1.status_code == 200, r1.text
+    assert r1.headers["content-type"] == "model/stl"
+    assert len(r1.content) > 1024
+    assert "sc-124-v2_Rasterplatte_SlotCrate.stl" in r1.headers["content-disposition"]
+    key1 = r1.headers["x-slotcrate-cache-key"]
+
+    r2 = client.post("/v1/plate/stl", json=payload)
+    assert r2.status_code == 200
+    assert r2.content == r1.content
+    assert r2.headers["x-slotcrate-cache-key"] == key1
+
+
+def test_plate_stl_rejects_extra_fields_and_bad_names(client: TestClient) -> None:
+    r = client.post("/v1/plate/stl", json={"plateStepFile": "SlotCrate.step", "hackFlag": True})
+    assert r.status_code == 422
+    r = client.post("/v1/plate/stl", json={"plateStepFile": "../etc/passwd"})
+    assert r.status_code == 422
+    r = client.post("/v1/plate/stl", json={"plateStepFile": "SlotCrate.step", "suitcaseVariantId": "Bad_ID"})
+    assert r.status_code == 422
+
+
+def test_plate_stl_returns_400_for_missing_step_file(client: TestClient) -> None:
+    r = client.post("/v1/plate/stl", json={"plateStepFile": "Missing.step"})
+    assert r.status_code == 400
+    body = r.json()
+    assert body["error"] == "PLATE_STEP_NOT_AVAILABLE"

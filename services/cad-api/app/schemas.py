@@ -59,6 +59,24 @@ class BoxRequest(BaseModel):
     stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
 
 
+class PlateRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    plateStepFile: Annotated[str, Field(min_length=1, max_length=128)] = "SlotCrate.step"
+    suitcaseVariantId: Annotated[str, Field(min_length=1, max_length=32)] = "sc-124-v2"
+    settingsVersion: Annotated[int, Field(ge=1)] = 1
+    stlTessellationLinearMm: Annotated[float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)] = 0.05
+    stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
+
+    @model_validator(mode="after")
+    def _validate_names(self) -> "PlateRequest":
+        if not SAFE_STEP_FILE_RE.fullmatch(self.plateStepFile):
+            raise ValueError("plateStepFile muss ein sicherer Dateiname mit .step/.stp sein")
+        if not re.fullmatch(r"^[a-z0-9-]+$", self.suitcaseVariantId):
+            raise ValueError("suitcaseVariantId hat ein ungültiges Format")
+        return self
+
+
 class LayoutBox(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

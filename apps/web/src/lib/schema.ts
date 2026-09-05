@@ -25,6 +25,21 @@ export const boxRequestSchema = z.object({
 
 export type BoxRequest = z.infer<typeof boxRequestSchema>;
 
+export const plateRequestSchema = z.object({
+  plateStepFile: z
+    .string()
+    .min(1)
+    .max(128)
+    .regex(/^[A-Za-z0-9_.-]+\.(step|stp)$/i)
+    .default("SlotCrate.step"),
+  suitcaseVariantId: z.string().min(1).max(32).regex(/^[a-z0-9-]+$/).default("sc-124-v2"),
+  settingsVersion: z.number().int().min(1).default(1),
+  stlTessellationLinearMm,
+  stlTessellationAngularRad
+});
+
+export type PlateRequest = z.infer<typeof plateRequestSchema>;
+
 export const layoutBoxSchema = z.object({
   id: z.string().uuid(),
   x: z.number().int().min(0).max(SYSTEM.gridColumns - 1),

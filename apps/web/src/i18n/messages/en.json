@@ -43,6 +43,9 @@
         "preview": "Live preview",
         "download": "Download STL",
         "downloading": "Generating …",
+        "downloadPlate": "Download grid plate",
+        "downloadingPlate": "Generating plate …",
+        "plateHint": "Based on the selected suitcase variant (file: {file}).",
         "cancel": "Cancel",
         "error": "Generation failed: {message}",
         "hint": "Bottom pickups and grid pitch are invariant."

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Dict
 
 from fastapi import Depends, FastAPI, Request, Response
@@ -17,9 +18,10 @@ from slotcrate.geometry.constants import (
     GRID_ROWS,
     PICKUP_TOP_Z_MM,
 )
+from slotcrate.geometry.reference import load_normalized_plate_from_step_file
 
-from .cache import StlCache, cache_key
-from .exporter import build_layout_zip, stl_bytes_for_box
+from .cache import StlCache, cache_key, plate_cache_key
+from .exporter import build_layout_zip, stl_bytes_for_box, stl_bytes_for_shape
 from .schemas import (
     ActiveSettingsResponse,
     BoxRequest,
@@ -29,6 +31,7 @@ from .schemas import (
     MAX_HEIGHT_MM,
     MIN_CELLS,
     MIN_HEIGHT_MM,
+    PlateRequest,
 )
 from .security import SlidingWindowRateLimiter, bearer_dependency, client_key
 from .settings import load_settings
@@ -131,6 +134,49 @@ def create_app() -> FastAPI:
             content=data,
             media_type="application/zip",
             headers={"Content-Disposition": 'attachment; filename="slotcrate_layout.zip"'},
+        )
+
+    @app.post(
+        "/v1/plate/stl",
+        dependencies=[Depends(require_bearer)],
+        responses={200: {"content": {"model/stl": {}}}},
+    )
+    def plate_stl(payload: PlateRequest, request: Request) -> Response:
+        rate_limiter.check(
+            "plate_stl", client_key(request), settings.rate_limit_plate_stl_per_minute
+        )
+        key = plate_cache_key(
+            payload.plateStepFile,
+            payload.settingsVersion,
+            payload.stlTessellationLinearMm,
+            payload.stlTessellationAngularRad,
+        )
+        cached = cache.get(key)
+        if cached is None:
+            try:
+                shape = load_normalized_plate_from_step_file(payload.plateStepFile)
+            except (FileNotFoundError, ValueError) as err:
+                return JSONResponse(
+                    status_code=400,
+                    content={"error": "PLATE_STEP_NOT_AVAILABLE", "detail": str(err)},
+                )
+            data = stl_bytes_for_shape(
+                shape,
+                stl_tessellation_linear_mm=payload.stlTessellationLinearMm,
+                stl_tessellation_angular_rad=payload.stlTessellationAngularRad,
+            )
+            cache.store_bytes(key, data)
+        else:
+            data = cached.read_bytes()
+        plate_stem = Path(payload.plateStepFile).stem
+        filename = f"{payload.suitcaseVariantId}_Rasterplatte_{plate_stem}.stl"
+        return Response(
+            content=data,
+            media_type="model/stl",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "X-SlotCrate-Cache-Key": key,
+            },
         )
 
     return app

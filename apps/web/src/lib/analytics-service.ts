@@ -14,6 +14,9 @@ export type AnalyticsEventType =
   | "planner.download.click"
   | "box.download"
   | "box.download.failed"
+  | "plate.download.click"
+  | "plate.download"
+  | "plate.download.failed"
   | "layout.download"
   | "layout.download.failed";
 

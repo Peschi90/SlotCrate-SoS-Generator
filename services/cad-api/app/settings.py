@@ -28,6 +28,7 @@ class ApiSettings:
     cache_dir: Path
     rate_limit_box_stl_per_minute: int
     rate_limit_layout_zip_per_minute: int
+    rate_limit_plate_stl_per_minute: int
     filename_prefix: str
     active_settings_version: int
 
@@ -38,6 +39,7 @@ def load_settings() -> ApiSettings:
         cache_dir=Path(os.environ.get("CAD_API_CACHE_DIR", str(DEFAULT_CACHE_DIR))),
         rate_limit_box_stl_per_minute=_int_env("RATE_LIMIT_BOX_STL", 30),
         rate_limit_layout_zip_per_minute=_int_env("RATE_LIMIT_LAYOUT_ZIP", 10),
+        rate_limit_plate_stl_per_minute=_int_env("RATE_LIMIT_PLATE_STL", 15),
         filename_prefix=os.environ.get("SLOTCRATE_FILENAME_PREFIX", "SlotCrate_Box"),
         active_settings_version=_int_env("SLOTCRATE_ACTIVE_SETTINGS_VERSION", 1),
     )

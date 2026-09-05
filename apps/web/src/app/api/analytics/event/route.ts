@@ -12,7 +12,8 @@ const payloadSchema = z.object({
     "generator.variant.change",
     "planner.variant.change",
     "generator.download.click",
-    "planner.download.click"
+    "planner.download.click",
+    "plate.download.click"
   ]),
   generator: z.enum(["single-box", "layout-planner"]),
   variantId: z.string().min(1).max(64).optional(),

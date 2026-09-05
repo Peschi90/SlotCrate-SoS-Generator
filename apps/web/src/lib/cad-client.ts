@@ -4,7 +4,7 @@
  * niemals im Browser landet.
  */
 import { headers } from "next/headers";
-import { BoxRequest, LayoutRequest } from "./schema";
+import { BoxRequest, LayoutRequest, PlateRequest } from "./schema";
 
 const API_URL = process.env.CAD_API_URL ?? "http://127.0.0.1:6294";
 const TOKEN = process.env.CAD_API_INTERNAL_TOKEN;
@@ -62,5 +62,16 @@ export async function requestLayoutZip(payload: LayoutRequest, signal?: AbortSig
     signal
   });
   if (!res.ok) throw new Error(`layout/zip failed: ${res.status}`);
+  return await res.blob();
+}
+
+export async function requestPlateStl(payload: PlateRequest, signal?: AbortSignal): Promise<Blob> {
+  const res = await fetch(`${API_URL}/v1/plate/stl`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    body: JSON.stringify(payload),
+    signal
+  });
+  if (!res.ok) throw new Error(`plate/stl failed: ${res.status}`);
   return await res.blob();
 }

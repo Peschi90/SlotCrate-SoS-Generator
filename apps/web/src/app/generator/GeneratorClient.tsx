@@ -62,6 +62,7 @@ export function GeneratorClient({
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
+  const [plateBusy, setPlateBusy] = useState(false);
   const busy = pending || controller !== null;
   const clampHeight = (value: number) => Math.min(maxHeightMm, Math.max(minHeightMm, value));
 
@@ -137,6 +138,44 @@ export function GeneratorClient({
   function cancel() {
     controller?.abort();
     setController(null);
+  }
+
+  async function downloadPlate() {
+    setError(null);
+    setPlateBusy(true);
+    void trackEvent("plate.download.click", {
+      plateStepFile: activeVariant.plateStepFile
+    });
+    try {
+      const res = await fetch("/api/plate/stl", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          plateStepFile: activeVariant.plateStepFile,
+          suitcaseVariantId: activeVariant.id,
+          stlTessellationLinearMm: activeVariant.stlTessellationLinearMm,
+          stlTessellationAngularRad: activeVariant.stlTessellationAngularRad
+        })
+      });
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(`${res.status}: ${msg.slice(0, 200)}`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      const stem = activeVariant.plateStepFile.replace(/\.(step|stp)$/i, "");
+      a.download = `${activeVariant.id}_Rasterplatte_${stem}.stl`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setPlateBusy(false);
+    }
   }
 
   return (
@@ -274,13 +313,21 @@ export function GeneratorClient({
           <p className="text-xs text-neutral-400">{t("generator.hint")}</p>
         </section>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <button
             type="submit"
             disabled={busy}
             className="px-4 py-2 rounded-xl bg-crate-box text-neutral-950 font-medium hover:brightness-110 disabled:opacity-50"
           >
             {busy ? t("generator.downloading") : t("generator.download")}
+          </button>
+          <button
+            type="button"
+            onClick={downloadPlate}
+            disabled={plateBusy}
+            className="px-4 py-2 rounded-xl border border-neutral-700 bg-neutral-900/80 text-sm font-medium text-neutral-100 transition hover:border-neutral-500 disabled:opacity-50"
+          >
+            {plateBusy ? t("generator.downloadingPlate") : t("generator.downloadPlate")}
           </button>
           {busy && (
             <button
@@ -292,6 +339,9 @@ export function GeneratorClient({
             </button>
           )}
         </div>
+        <p className="text-[11px] text-neutral-500">
+          {t("generator.plateHint", { file: activeVariant.plateStepFile })}
+        </p>
         {error && (
           <div className="text-sm text-red-400" role="alert">
             {t("generator.error", { message: error })}

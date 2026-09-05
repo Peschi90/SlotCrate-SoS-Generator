@@ -43,6 +43,9 @@
         "preview": "Live-Vorschau",
         "download": "STL herunterladen",
         "downloading": "Wird erzeugt …",
+        "downloadPlate": "Rasterplatte herunterladen",
+        "downloadingPlate": "Erzeuge Rasterplatte …",
+        "plateHint": "Basierend auf der Koffervariante (Datei: {file}).",
         "cancel": "Abbrechen",
         "error": "Fehler beim Erzeugen: {message}",
         "hint": "Bodenaufnahmen und Rasterteilung sind unveränderlich."
