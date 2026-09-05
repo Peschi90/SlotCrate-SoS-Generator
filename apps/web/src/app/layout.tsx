@@ -62,12 +62,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/planner" className="slotcrate-navlink">
                   {t("nav.planner")}
                 </Link>
-                <Link href="/impressum" className="slotcrate-navlink">
-                  {t("nav.imprint")}
-                </Link>
-                <Link href="/datenschutz" className="slotcrate-navlink">
-                  {t("nav.privacy")}
-                </Link>
                 <a
                   href={slotcrateHref}
                   target="_blank"
@@ -80,6 +74,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               </nav>
             </header>
             <main className="flex-1 relative z-10">{children}</main>
+            <footer className="border-t border-white/10 bg-black/35 backdrop-blur-md px-6 py-4 mt-auto relative z-10">
+              <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-white/70">
+                <Link href="/impressum" className="hover:text-white underline-offset-4 hover:underline">
+                  {t("nav.imprint")}
+                </Link>
+                <span aria-hidden="true" className="text-white/30">·</span>
+                <Link href="/datenschutz" className="hover:text-white underline-offset-4 hover:underline">
+                  {t("nav.privacy")}
+                </Link>
+              </nav>
+            </footer>
           </div>
         </NextIntlClientProvider>
       </body>
