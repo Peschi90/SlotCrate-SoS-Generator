@@ -2,7 +2,8 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/session";
 import { getActiveSettings } from "@/lib/settings-service";
-import { AdminSettingsForm } from "./AdminSettingsForm";
+import { getAnalyticsSnapshot } from "@/lib/analytics-service";
+import { AdminTabs } from "./AdminTabs";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,15 @@ export default async function AdminPage() {
     redirect("/");
   }
   const active = await getActiveSettings();
+  const analytics = await getAnalyticsSnapshot(30).catch(() => ({
+    days: 30,
+    totalEvents: 0,
+    uniqueVisitors: 0,
+    generatorUsage: [],
+    eventTypes: [],
+    topVariants: [],
+    recentEvents: []
+  }));
   return (
     <div className="p-6 max-w-3xl space-y-6">
       <header className="flex items-center justify-between gap-4">
@@ -49,7 +59,7 @@ export default async function AdminPage() {
         <p className="text-xs text-neutral-500 mt-2">{t("admin.constantsHint")}</p>
       </section>
 
-      <AdminSettingsForm current={active.payload} />
+      <AdminTabs current={active.payload} analytics={analytics} />
     </div>
   );
 }

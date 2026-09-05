@@ -6,6 +6,7 @@ Layout-Anfragen.
 """
 from __future__ import annotations
 
+import re
 from typing import Dict, List, Literal, Tuple
 try:
     from typing import Annotated
@@ -40,6 +41,7 @@ MIN_STL_LINEAR_MM: float = 0.005
 MAX_STL_LINEAR_MM: float = 0.5
 MIN_STL_ANGULAR_RAD: float = 0.05
 MAX_STL_ANGULAR_RAD: float = 1.0
+SAFE_STEP_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.(step|stp)$", re.IGNORECASE)
 
 
 class BoxRequest(BaseModel):
@@ -82,6 +84,8 @@ class LayoutRequest(BaseModel):
     schemaVersion: Literal[1] = 1
     geometryVersion: Literal[GEOMETRY_VERSION] = GEOMETRY_VERSION
     settingsVersion: Annotated[int, Field(ge=1)] = 1
+    suitcaseVariantId: Annotated[str, Field(min_length=1, max_length=32)] = "sc-124-v2"
+    plateStepFile: Annotated[str, Field(min_length=1, max_length=128)] = "SlotCrate.step"
     gridPitchMm: Annotated[float, Field(ge=MIN_GRID_PITCH_MM, le=MAX_GRID_PITCH_MM)] = GRID_PITCH_MM
     wallThicknessMm: Annotated[float, Field(ge=MIN_WALL_THICKNESS_MM, le=MAX_WALL_THICKNESS_MM)] = 1.2
     innerFloorRadiusMm: Annotated[float, Field(ge=MIN_INNER_FLOOR_RADIUS_MM, le=MAX_INNER_FLOOR_RADIUS_MM)] = 2.5
@@ -95,6 +99,10 @@ class LayoutRequest(BaseModel):
     def _boxes_stay_within_grid_and_do_not_overlap(self) -> "LayoutRequest":
         if abs(self.grid.pitch - self.gridPitchMm) > 1e-6:
             raise ValueError("grid.pitch muss gridPitchMm entsprechen")
+        if not re.fullmatch(r"^[a-z0-9-]+$", self.suitcaseVariantId):
+            raise ValueError("suitcaseVariantId hat ein ungültiges Format")
+        if not SAFE_STEP_FILE_RE.fullmatch(self.plateStepFile):
+            raise ValueError("plateStepFile muss ein sicherer Dateiname mit .step/.stp sein")
         occupied: Dict[Tuple[int, int], UUID] = {}
         for box in self.boxes:
             if box.x + box.widthCells > GRID_COLUMNS:

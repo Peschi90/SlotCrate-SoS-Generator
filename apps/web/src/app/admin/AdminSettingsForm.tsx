@@ -63,7 +63,8 @@ export function AdminSettingsForm({
             innerFloorRadiusMm: d.innerFloorRadiusMm,
             outerClearanceMm: d.outerClearanceMm,
             stlTessellationLinearMm: d.stlTessellationLinearMm,
-            stlTessellationAngularRad: d.stlTessellationAngularRad
+            stlTessellationAngularRad: d.stlTessellationAngularRad,
+            plateStepFile: "SlotCrate.step"
           }
         ]
       };
@@ -228,6 +229,11 @@ export function AdminSettingsForm({
                   max={1}
                   step={0.05}
                   onChange={(v) => updVariant(index, { stlTessellationAngularRad: v })}
+                />
+                <TextField
+                  label={t("admin.variantPlateStepFile")}
+                  value={variant.plateStepFile}
+                  onChange={(v) => updVariant(index, { plateStepFile: v })}
                 />
               </div>
             </div>

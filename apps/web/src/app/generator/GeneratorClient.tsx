@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BoxPreview } from "@/components/BoxPreview";
@@ -50,7 +50,8 @@ export function GeneratorClient({
           innerFloorRadiusMm: 2.5,
           outerClearanceMm: 0,
           stlTessellationLinearMm: 0.05,
-          stlTessellationAngularRad: 0.5
+          stlTessellationAngularRad: 0.5,
+          plateStepFile: "SlotCrate.step"
         }
       ];
   const [variantId, setVariantId] = useState(variants[0]!.id);
@@ -67,6 +68,18 @@ export function GeneratorClient({
   const [pending, startTransition] = useTransition();
   const busy = pending || controller !== null;
   const clampHeight = (value: number) => Math.min(maxHeightMm, Math.max(minHeightMm, value));
+
+  useEffect(() => {
+    void fetch("/api/analytics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "generator.open",
+        generator: "single-box",
+        variantId: activeVariant.id
+      })
+    });
+  }, [activeVariant.id]);
 
   async function download() {
     setError(null);

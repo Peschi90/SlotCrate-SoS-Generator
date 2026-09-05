@@ -8,7 +8,9 @@
         "home": "Home",
         "generator": "Single Box",
         "planner": "Layout Planner",
-        "website": "SlotCrate Website"
+        "website": "SlotCrate Website",
+        "imprint": "Imprint",
+        "privacy": "Privacy"
     },
     "home": {
         "title": "SlotCrate Sorting System Configurator",
@@ -81,14 +83,41 @@
         },
         "settingsTitle": "Editable parameters",
         "variantsTitle": "Suitcase variants",
+        "tab": {
+            "settings": "Settings",
+            "analytics": "Analytics"
+        },
+        "analyticsTitle": "Analytics (last {days} days)",
+        "analytics": {
+            "totalEvents": "Total events",
+            "uniqueVisitors": "Unique users",
+            "downloads": "Downloads",
+            "byGenerator": "By generator",
+            "byEvent": "By event type",
+            "topVariants": "Top variants",
+            "recentEvents": "Recent events",
+            "colTime": "Time",
+            "colGenerator": "Generator",
+            "colEvent": "Event",
+            "colVariant": "Variant",
+            "colDetails": "Details"
+        },
         "variantAdd": "Add variant",
         "variantRemove": "Remove",
         "variantId": "Variant ID",
         "variantLabel": "Label",
+        "variantMinCells": "Min cells (variant)",
         "variantMaxWidth": "Max width (cells)",
         "variantMaxDepth": "Max depth (cells)",
         "variantScale": "Scale factor",
         "variantDefaultHeight": "Default height (mm)",
+        "variantGridPitch": "Grid pitch (mm)",
+        "variantWallThickness": "Wall thickness (mm)",
+        "variantInnerFloorRadius": "Inner floor radius (mm)",
+        "variantOuterClearance": "Outer clearance (mm)",
+        "variantStlLinear": "STL linear (mm)",
+        "variantStlAngular": "STL angular (rad)",
+        "variantPlateStepFile": "Plate STEP file",
         "field": {
             "boxHeightMm": "Box height (mm)",
             "wallThicknessMm": "Wall thickness (mm)",

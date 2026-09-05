@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { boxRequestSchema } from "@/lib/schema";
 import { requestBoxStl } from "@/lib/cad-client";
+import { recordAnalyticsEventSafe } from "@/lib/analytics-service";
 
 export const runtime = "nodejs";
 
@@ -17,6 +18,16 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
   try {
     const blob = await requestBoxStl(parsed.data);
+    await recordAnalyticsEventSafe(req, {
+      eventType: "box.download",
+      generator: "single-box",
+      details: {
+        widthCells: parsed.data.widthCells,
+        depthCells: parsed.data.depthCells,
+        heightMm: parsed.data.heightMm,
+        gridPitchMm: parsed.data.gridPitchMm
+      }
+    });
     return new NextResponse(blob, {
       status: 200,
       headers: {

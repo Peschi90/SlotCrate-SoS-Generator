@@ -45,6 +45,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/planner" className="slotcrate-navlink">
                   {t("nav.planner")}
                 </Link>
+                <Link href="/impressum" className="slotcrate-navlink">
+                  {t("nav.imprint")}
+                </Link>
+                <Link href="/datenschutz" className="slotcrate-navlink">
+                  {t("nav.privacy")}
+                </Link>
                 <a
                   href={slotcrateHref}
                   target="_blank"

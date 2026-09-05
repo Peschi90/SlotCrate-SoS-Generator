@@ -83,14 +83,21 @@ def test_layout_zip_deduplicates_stls(client: TestClient) -> None:
         {"id": str(uuid4()), "x": 1, "y": 0, "widthCells": 1, "depthCells": 1},
         {"id": str(uuid4()), "x": 0, "y": 1, "widthCells": 2, "depthCells": 2},
     ]
-    r = client.post("/v1/layout/zip", json={"boxes": boxes})
+    r = client.post(
+        "/v1/layout/zip",
+        json={
+            "boxes": boxes,
+            "suitcaseVariantId": "sc-124-v2",
+            "plateStepFile": "SlotCrate.step",
+        },
+    )
     assert r.status_code == 200, r.text
     assert r.headers["content-type"] == "application/zip"
     with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
         names = set(zf.namelist())
         stl_files = {n for n in names if n.startswith("models/") and n.endswith(".stl")}
-        assert len(stl_files) == 3  # 1×1, 2×2 + feste Rasterplatte aus Referenz
-        assert "models/SlotCrate_Rasterplatte_Referenz.stl" in stl_files
+        assert len(stl_files) == 3  # 1×1, 2×2 + kofferabhängige Rasterplatte aus Referenz
+        assert "models/sc-124-v2_Rasterplatte_SlotCrate.stl" in stl_files
         assert "configuration.json" in names
         assert "parts-list.csv" in names
         assert "README.txt" in names

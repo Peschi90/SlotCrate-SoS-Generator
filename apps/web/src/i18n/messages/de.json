@@ -8,7 +8,9 @@
         "home": "Startseite",
         "generator": "Einzelkasten",
         "planner": "Layout-Planer",
-        "website": "SlotCrate Website"
+        "website": "SlotCrate Website",
+        "imprint": "Impressum",
+        "privacy": "Datenschutz"
     },
     "home": {
         "title": "SlotCrate Sorting System Konfigurator",
@@ -81,14 +83,41 @@
         },
         "settingsTitle": "Änderbare Parameter",
         "variantsTitle": "Koffervarianten",
+        "tab": {
+            "settings": "Einstellungen",
+            "analytics": "Analytics"
+        },
+        "analyticsTitle": "Analytics (letzte {days} Tage)",
+        "analytics": {
+            "totalEvents": "Events gesamt",
+            "uniqueVisitors": "Eindeutige Nutzer",
+            "downloads": "Downloads",
+            "byGenerator": "Nach Generator",
+            "byEvent": "Nach Eventtyp",
+            "topVariants": "Top Varianten",
+            "recentEvents": "Letzte Events",
+            "colTime": "Zeit",
+            "colGenerator": "Generator",
+            "colEvent": "Event",
+            "colVariant": "Variante",
+            "colDetails": "Details"
+        },
         "variantAdd": "Variante hinzufügen",
         "variantRemove": "Entfernen",
         "variantId": "Varianten-ID",
         "variantLabel": "Bezeichnung",
+        "variantMinCells": "Min. Raster (Variante)",
         "variantMaxWidth": "Max. Breite (Raster)",
         "variantMaxDepth": "Max. Tiefe (Raster)",
         "variantScale": "Skalierungsfaktor",
         "variantDefaultHeight": "Standardhöhe (mm)",
+        "variantGridPitch": "Rasterteilung (mm)",
+        "variantWallThickness": "Wandstärke (mm)",
+        "variantInnerFloorRadius": "Innenradius Boden (mm)",
+        "variantOuterClearance": "Außenabstand (mm)",
+        "variantStlLinear": "STL linear (mm)",
+        "variantStlAngular": "STL angular (rad)",
+        "variantPlateStepFile": "Rasterplatten-STEP-Datei",
         "field": {
             "boxHeightMm": "Kastenhöhe (mm)",
             "wallThicknessMm": "Wandstärke (mm)",

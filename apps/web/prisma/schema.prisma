@@ -114,3 +114,22 @@ model AdminAuditLog {
   @@index([createdAt])
   @@index([action])
 }
+
+model GeneratorAnalyticsEvent {
+  id          BigInt   @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  eventType   String   @db.VarChar(64)
+  generator   String   @db.VarChar(32)
+  variantId   String?  @db.VarChar(64)
+  sessionHash String?  @db.VarChar(64)
+  visitorHash String?  @db.VarChar(64)
+  ipHash      String?  @db.VarChar(64)
+  userAgent   String?  @db.VarChar(255)
+  details     Json?
+
+  @@index([createdAt])
+  @@index([eventType])
+  @@index([generator])
+  @@index([variantId])
+  @@index([visitorHash])
+}

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+import re
 
 import cadquery as cq
 
@@ -25,6 +26,7 @@ REFERENCE_DIR: Path = REPO_ROOT / "reference"
 PLATE_STEP: Path = REFERENCE_DIR / "SlotCrate.step"
 BOX_1X1_STEP: Path = REFERENCE_DIR / "SlotCrate_1x1.step"
 BOX_2X2_STEP: Path = REFERENCE_DIR / "SlotCrate_2x2.step"
+_SAFE_STEP_BASENAME = re.compile(r"^[A-Za-z0-9_.-]+\.(step|stp)$", re.IGNORECASE)
 
 
 def _load_step(path: Path) -> cq.Shape:
@@ -69,6 +71,16 @@ def tight_dimensions(shape: cq.Shape) -> tuple[float, float, float]:
 @lru_cache(maxsize=1)
 def load_normalized_plate() -> cq.Shape:
     return _normalize_z_up(_load_step(PLATE_STEP))
+
+
+@lru_cache(maxsize=32)
+def load_normalized_plate_from_step_file(step_file: str) -> cq.Shape:
+    if not _SAFE_STEP_BASENAME.fullmatch(step_file):
+        raise ValueError(f"Ungültiger STEP-Dateiname: {step_file}")
+    step_path = (REFERENCE_DIR / step_file).resolve()
+    if step_path.parent != REFERENCE_DIR.resolve():
+        raise ValueError(f"STEP-Datei außerhalb reference/ ist nicht erlaubt: {step_file}")
+    return _normalize_z_up(_load_step(step_path))
 
 
 @lru_cache(maxsize=1)

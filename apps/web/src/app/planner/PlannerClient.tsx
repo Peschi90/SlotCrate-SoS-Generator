@@ -48,6 +48,18 @@ export function PlannerClient({
     setHeightMm(preferred);
   }, [activeVariant?.id, activeVariant?.boxHeightMm, defaultHeightMm, setHeightMm]);
 
+  useEffect(() => {
+    void fetch("/api/analytics/event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        eventType: "planner.open",
+        generator: "layout-planner",
+        variantId: activeVariant.id
+      })
+    });
+  }, [activeVariant.id]);
+
   const selectedPreset = useMemo(() => {
     let best: (typeof DRAWER_HEIGHT_PRESETS)[number] = DRAWER_HEIGHT_PRESETS[0];
     let bestDelta = Number.POSITIVE_INFINITY;
@@ -72,6 +84,8 @@ export function PlannerClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           boxes,
+          suitcaseVariantId: activeVariant.id,
+          plateStepFile: activeVariant.plateStepFile,
           grid: {
             columns: SYSTEM.gridColumns,
             rows: SYSTEM.gridRows,

@@ -14,7 +14,7 @@ import cadquery as cq
 
 from slotcrate.geometry.box import build_box
 from slotcrate.geometry.export import export_stl
-from slotcrate.geometry.reference import load_normalized_plate
+from slotcrate.geometry.reference import load_normalized_plate_from_step_file
 
 from .schemas import LayoutRequest
 
@@ -103,11 +103,13 @@ def build_layout_zip(layout: LayoutRequest, filename_prefix: str) -> bytes:
 
         # Add the immutable reference plate from SlotCrate.step as STL.
         plate_stl = stl_bytes_for_shape(
-            load_normalized_plate(),
+            load_normalized_plate_from_step_file(layout.plateStepFile),
             stl_tessellation_linear_mm=layout.stlTessellationLinearMm,
             stl_tessellation_angular_rad=layout.stlTessellationAngularRad,
         )
-        zf.writestr("models/SlotCrate_Rasterplatte_Referenz.stl", plate_stl)
+        plate_step_stem = Path(layout.plateStepFile).stem
+        plate_name = f"models/{layout.suitcaseVariantId}_Rasterplatte_{plate_step_stem}.stl"
+        zf.writestr(plate_name, plate_stl)
 
         zf.writestr("configuration.json", layout.model_dump_json(indent=2))
         zf.writestr("parts-list.csv", _parts_list_csv(counter, filename_prefix))
@@ -144,7 +146,7 @@ def _readme_text(counter: Counter[UniqueBox], filename_prefix: str) -> str:
     ]
     for unique, count in sorted(counter.items(), key=lambda kv: (kv[0].width_cells, kv[0].depth_cells)):
         lines.append(f"  models/{unique.filename(filename_prefix)} – Anzahl {count}")
-    lines.append("  models/SlotCrate_Rasterplatte_Referenz.stl – 1x (aus SlotCrate.step)")
+    lines.append("  models/<variant>_Rasterplatte_<step-datei>.stl – 1x (aus Referenz-STEP)")
     lines.append("")
-    lines.append("Die Rasterplatte ist als unveränderte Referenz aus SlotCrate.step enthalten.")
+    lines.append("Die Rasterplatte ist als unveränderte Referenz aus der gewählten STEP-Datei enthalten.")
     return "\n".join(lines)

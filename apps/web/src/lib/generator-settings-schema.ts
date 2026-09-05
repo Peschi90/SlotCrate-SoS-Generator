@@ -17,7 +17,12 @@ const suitcaseVariantSchema = z
     innerFloorRadiusMm: z.number().min(0).max(4).default(2.5),
     outerClearanceMm: z.number().min(0).max(0.5).default(0),
     stlTessellationLinearMm: z.number().min(0.005).max(0.5).default(0.05),
-    stlTessellationAngularRad: z.number().min(0.05).max(1.0).default(0.5)
+    stlTessellationAngularRad: z.number().min(0.05).max(1.0).default(0.5),
+    plateStepFile: z
+      .string()
+      .min(1)
+      .max(128)
+      .regex(/^[A-Za-z0-9_.-]+\.(step|stp)$/i, "nur Dateinamen mit .step/.stp erlaubt")
   })
   .strict();
 
@@ -71,7 +76,8 @@ export const generatorSettingsPayloadSchema = z
         innerFloorRadiusMm: 2.5,
         outerClearanceMm: 0,
         stlTessellationLinearMm: 0.05,
-        stlTessellationAngularRad: 0.5
+        stlTessellationAngularRad: 0.5,
+        plateStepFile: "SlotCrate.step"
       }
     ])
   })
@@ -129,7 +135,8 @@ export const DEFAULT_GENERATOR_SETTINGS: GeneratorSettingsPayload = {
       innerFloorRadiusMm: 2.5,
       outerClearanceMm: 0,
       stlTessellationLinearMm: 0.05,
-      stlTessellationAngularRad: 0.5
+      stlTessellationAngularRad: 0.5,
+      plateStepFile: "SlotCrate.step"
     }
   ]
 };

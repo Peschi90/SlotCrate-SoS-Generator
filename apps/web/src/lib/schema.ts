@@ -40,6 +40,13 @@ export const layoutRequestSchema = z.object({
   schemaVersion: z.literal(1).default(1),
   geometryVersion: z.literal(SYSTEM.geometryVersion).default(SYSTEM.geometryVersion),
   settingsVersion: z.number().int().min(1).default(1),
+  suitcaseVariantId: z.string().min(1).max(32).regex(/^[a-z0-9-]+$/).default("sc-124-v2"),
+  plateStepFile: z
+    .string()
+    .min(1)
+    .max(128)
+    .regex(/^[A-Za-z0-9_.-]+\.(step|stp)$/i)
+    .default("SlotCrate.step"),
   gridPitchMm,
   wallThicknessMm,
   innerFloorRadiusMm,

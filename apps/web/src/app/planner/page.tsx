@@ -25,7 +25,8 @@ export default async function PlannerPage() {
       innerFloorRadiusMm: 2.5,
       outerClearanceMm: 0,
       stlTessellationLinearMm: 0.05,
-      stlTessellationAngularRad: 0.5
+      stlTessellationAngularRad: 0.5,
+      plateStepFile: "SlotCrate.step"
     }
   ];
 
