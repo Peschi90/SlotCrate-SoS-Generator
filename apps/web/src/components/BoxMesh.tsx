@@ -15,7 +15,6 @@ interface Props {
   outerClearanceMm?: number;
   color?: string;
   opacity?: number;
-  cornerRadiusMm?: number;
 }
 
 /**
@@ -33,8 +32,7 @@ export function BoxMesh({
   innerFloorRadiusMm = 2.5,
   outerClearanceMm = 0,
   color = "#7fb0ff",
-  opacity = 1,
-  cornerRadiusMm = 1.5
+  opacity = 1
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = Math.max(1, widthCells * pitchMm - 2 * outerClearanceMm);
@@ -43,13 +41,15 @@ export function BoxMesh({
   const wall = wallThicknessMm;
   const floorT = SYSTEM.floorThicknessMm;
   const bodyH = Math.max(0.1, heightMm - pickupTop - floorT);
-  const cornerRadiusScaled = Math.max(cornerRadiusMm, innerFloorRadiusMm);
+  // Außenschale ist im STEP scharfkantig (nur planare Flächen); der Innenraum ist
+  // an den vertikalen Kanten mit `innerFloorRadiusMm` gefillet.
+  const innerRadius = Math.max(0, innerFloorRadiusMm);
   // small overlap eliminates z-fighting at coplanar seams between pickup/floor/wall
   const zEps = 0.02;
 
   const wallGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusScaled);
+    drawRoundedRect(shape, 0, 0, outerW, outerD, 0);
     const hole = new THREE.Path();
     drawRoundedRect(
       hole,
@@ -57,7 +57,7 @@ export function BoxMesh({
       wall,
       outerW - 2 * wall,
       outerD - 2 * wall,
-      Math.max(0, cornerRadiusScaled - wall)
+      innerRadius
     );
     shape.holes.push(hole);
     const geom = new THREE.ExtrudeGeometry(shape, {
@@ -67,11 +67,11 @@ export function BoxMesh({
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, wall, bodyH, cornerRadiusScaled, zEps]);
+  }, [outerW, outerD, wall, bodyH, innerRadius, zEps]);
 
   const floorGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusScaled);
+    drawRoundedRect(shape, 0, 0, outerW, outerD, 0);
     const geom = new THREE.ExtrudeGeometry(shape, {
       depth: floorT + 2 * zEps,
       bevelEnabled: false,
@@ -79,7 +79,7 @@ export function BoxMesh({
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, floorT, cornerRadiusScaled, zEps]);
+  }, [outerW, outerD, floorT, zEps]);
 
   const pickupPositions = useMemo(() => {
     const positions: [number, number][] = [];
@@ -115,7 +115,7 @@ export function BoxMesh({
         <RoundedBox
           key={idx}
           args={[18.49 * (pitchMm / SYSTEM.gridPitchMm), 18.49 * (pitchMm / SYSTEM.gridPitchMm), pickupTop + zEps]}
-          radius={0.6 * (pitchMm / SYSTEM.gridPitchMm)}
+          radius={2.5 * (pitchMm / SYSTEM.gridPitchMm)}
           smoothness={4}
           creaseAngle={0.4}
           position={[x, y, (pickupTop + zEps) / 2]}

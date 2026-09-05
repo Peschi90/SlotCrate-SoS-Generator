@@ -40,7 +40,8 @@ export function Layout3DView({
     shape.lineTo(0, plateD);
     shape.lineTo(0, 0);
     const openingSize = 18.69 * (pitchMm / SYSTEM.gridPitchMm);
-    const openingR = 1.2;
+    // STEP-Referenz enthält nur planare Flächen — die Öffnungen sind scharfkantig.
+    const openingR = 0;
     for (let i = 0; i < SYSTEM.gridColumns; i++) {
       for (let j = 0; j < SYSTEM.gridRows; j++) {
         const cx = (i + 0.5) * pitchMm;
