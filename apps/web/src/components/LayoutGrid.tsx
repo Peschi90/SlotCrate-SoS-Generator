@@ -21,6 +21,7 @@ interface MoveDrag {
   current: Cell;
   box: PlacedBox;
   additive: boolean;
+  moveSelection: boolean;
   moved: boolean;
 }
 interface ResizeDrag {
@@ -144,6 +145,7 @@ export function LayoutGrid({
       );
     }
     if (interaction.kind === "move") {
+      if (interaction.moveSelection) return true;
       return canPlace(
         preview.x,
         preview.y,
@@ -172,13 +174,16 @@ export function LayoutGrid({
     const c = cellFromEvent(e);
     if (!c) return;
     (e.target as Element).setPointerCapture?.(e.pointerId);
+    const additive = e.ctrlKey || e.metaKey || e.shiftKey;
+    const moveSelection = !additive && selectedSet.has(box.id) && selectedIds.length > 1;
     setInteraction({
       kind: "move",
       boxId: box.id,
       origin: c,
       current: c,
       box,
-      additive: e.ctrlKey || e.metaKey || e.shiftKey,
+      additive,
+      moveSelection,
       moved: false
     });
   }
@@ -224,12 +229,20 @@ export function LayoutGrid({
         // Klick ohne Ziehen → auswählen bzw. toggeln.
         if (interaction.additive) {
           toggleSelect(interaction.boxId);
+        } else if (interaction.moveSelection) {
+          // bestehende Mehrfachauswahl beibehalten
         } else {
           select(interaction.boxId);
         }
       } else {
-        const r = computePreview(interaction);
-        if (r) moveBox(interaction.boxId, r.x, r.y);
+        if (interaction.moveSelection) {
+          const dx = interaction.current.x - interaction.origin.x;
+          const dy = interaction.current.y - interaction.origin.y;
+          moveSelected(dx, dy);
+        } else {
+          const r = computePreview(interaction);
+          if (r) moveBox(interaction.boxId, r.x, r.y);
+        }
       }
     } else {
       const r = computePreview(interaction);
@@ -296,7 +309,11 @@ export function LayoutGrid({
             e.stopPropagation();
             startBoxInteraction(e as unknown as React.PointerEvent<SVGSVGElement>, b);
           }}
-          dimmed={interaction?.kind === "move" && interaction.boxId === b.id && interaction.moved}
+          dimmed={
+            interaction?.kind === "move" &&
+            interaction.moved &&
+            (interaction.moveSelection ? selectedSet.has(b.id) : interaction.boxId === b.id)
+          }
         />
       ))}
 
