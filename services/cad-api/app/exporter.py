@@ -137,16 +137,28 @@ def _parts_list_csv(counter: Counter[UniqueBox], filename_prefix: str) -> str:
 def _readme_text(counter: Counter[UniqueBox], filename_prefix: str) -> str:
     total = sum(counter.values())
     lines = [
-        "SlotCrate Layout Export",
+        "SlotCrate Layout Export / SlotCrate-Layout-Export",
         "",
-        f"Enthaltene Kästen (dedupliziert): {len(counter)}",
-        f"Anzahl gesamt: {total}",
+        f"Enthaltene Kaesten (dedupliziert) / Included box variants (deduplicated): {len(counter)}",
+        f"Anzahl gesamt / Total quantity: {total}",
         "",
-        "Dateien:",
+        "Dateien / Files:",
     ]
     for unique, count in sorted(counter.items(), key=lambda kv: (kv[0].width_cells, kv[0].depth_cells)):
-        lines.append(f"  models/{unique.filename(filename_prefix)} – Anzahl {count}")
-    lines.append("  models/<variant>_Rasterplatte_<step-datei>.stl – 1x (aus Referenz-STEP)")
+        lines.append(f"  models/{unique.filename(filename_prefix)} - Anzahl / Quantity {count}")
+    lines.append("  models/<variant>_Rasterplatte_<step-datei>.stl - 1x (aus Referenz-STEP / from reference STEP)")
     lines.append("")
-    lines.append("Die Rasterplatte ist als unveränderte Referenz aus der gewählten STEP-Datei enthalten.")
+    lines.append("DE")
+    lines.append("Die Rasterplatte ist als unveraenderte Referenz aus der gewaehlten STEP-Datei enthalten.")
+    lines.append("SlotCrate Konfigurator: https://slotcrate.i3ull3t.de")
+    lines.append("MakerWorld Profil: https://makerworld.com/de/@I3uLL3t")
+    lines.append("Hauptwebseite: https://i3ull3t.de")
+    lines.append("Unterstuetzung via PayPal: https://www.paypal.com/paypalme/i3ull3t")
+    lines.append("")
+    lines.append("EN")
+    lines.append("The grid plate is included as an unmodified reference generated from the selected STEP file.")
+    lines.append("SlotCrate configurator: https://slotcrate.i3ull3t.de")
+    lines.append("MakerWorld profile: https://makerworld.com/de/@I3uLL3t")
+    lines.append("Main website: https://i3ull3t.de")
+    lines.append("Support via PayPal: https://www.paypal.com/paypalme/i3ull3t")
     return "\n".join(lines)

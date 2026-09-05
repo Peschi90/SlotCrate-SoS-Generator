@@ -102,8 +102,13 @@ def test_layout_zip_deduplicates_stls(client: TestClient) -> None:
         assert "parts-list.csv" in names
         assert "README.txt" in names
         csv_content = zf.read("parts-list.csv").decode("utf-8")
+        readme_content = zf.read("README.txt").decode("utf-8")
         assert "1x1" in csv_content
         assert ",2\n" in csv_content or ",2\r\n" in csv_content  # zwei 1×1
+        assert "https://slotcrate.i3ull3t.de" in readme_content
+        assert "https://makerworld.com/de/@I3uLL3t" in readme_content
+        assert "https://i3ull3t.de" in readme_content
+        assert "https://www.paypal.com/paypalme/i3ull3t" in readme_content
 
 
 def test_layout_zip_rejects_overlap(client: TestClient) -> None:
