@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Inter, Rajdhani } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
@@ -83,8 +84,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="min-h-screen flex flex-col relative">
             <header className="border-b border-white/10 bg-black/35 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4 sticky top-0 z-20">
               <div className="flex items-center gap-3">
-                <Link href="/" className="text-xl font-semibold tracking-wider slotcrate-brand hover:text-white">
-                  {t("brand")}
+                <Link href="/" className="flex items-center gap-2 text-xl font-semibold tracking-wider slotcrate-brand hover:text-white">
+                  <Image
+                    src="/SC-SOS-Logo.png"
+                    alt=""
+                    aria-hidden="true"
+                    width={34}
+                    height={34}
+                    className="h-8 w-8 rounded-md border border-white/20 bg-white/5 object-contain"
+                    priority
+                  />
+                  <span>{t("brand")}</span>
                 </Link>
                 <span className="hidden sm:inline text-xs text-white/60">Transport. Organize. Race.</span>
                 <LanguageSwitcher current={locale} className="ml-auto hidden md:flex" />
