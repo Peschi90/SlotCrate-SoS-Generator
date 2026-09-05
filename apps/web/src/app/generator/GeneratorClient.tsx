@@ -21,16 +21,12 @@ export function GeneratorClient({
   defaultHeightMm,
   minHeightMm,
   maxHeightMm,
-  minCells,
-  maxCells,
   suitcaseVariants,
   filenamePrefix
 }: {
   defaultHeightMm: number;
   minHeightMm: number;
   maxHeightMm: number;
-  minCells: number;
-  maxCells: number;
   suitcaseVariants?: SuitcaseVariant[];
   filenamePrefix: string;
 }) {
@@ -41,9 +37,9 @@ export function GeneratorClient({
         {
           id: "sc-124-v2",
           label: "SC 124 V2",
-          minCells,
-          maxWidthCells: maxCells,
-          maxDepthCells: maxCells,
+          minCells: SYSTEM.minCells,
+          maxWidthCells: SYSTEM.maxCells,
+          maxDepthCells: SYSTEM.maxCells,
           gridPitchMm: SYSTEM.gridPitchMm,
           boxHeightMm: defaultHeightMm,
           wallThicknessMm: SYSTEM.wallThicknessMm,
@@ -195,8 +191,8 @@ export function GeneratorClient({
           id="w"
           label={t("generator.width")}
           value={widthCells}
-          min={Math.max(minCells, activeVariant.minCells)}
-          max={Math.min(maxCells, activeVariant.maxWidthCells)}
+          min={Math.max(SYSTEM.minCells, activeVariant.minCells)}
+          max={Math.min(SYSTEM.maxCells, activeVariant.maxWidthCells)}
           unit="x"
           onChange={setWidthCells}
         />
@@ -205,8 +201,8 @@ export function GeneratorClient({
           id="d"
           label={t("generator.depth")}
           value={depthCells}
-          min={Math.max(minCells, activeVariant.minCells)}
-          max={Math.min(maxCells, activeVariant.maxDepthCells)}
+          min={Math.max(SYSTEM.minCells, activeVariant.minCells)}
+          max={Math.min(SYSTEM.maxCells, activeVariant.maxDepthCells)}
           unit="x"
           onChange={setDepthCells}
         />

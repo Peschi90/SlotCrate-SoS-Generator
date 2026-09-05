@@ -1,10 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Inter, Rajdhani } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getLocale, getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import type { Locale } from "@/i18n/request";
 import "./globals.css";
+
+// next/font lädt die Schriften zur Build-Zeit und bettet sie ins Bundle ein.
+// Zur Laufzeit werden keine Anfragen an fonts.googleapis.com gesendet.
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-inter"
+});
+
+const rajdhani = Rajdhani({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  display: "swap",
+  variable: "--font-rajdhani"
+});
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +39,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const t = await getTranslations();
   const slotcrateHref = locale === "en" ? "https://slotcrate.i3ull3t.de/en/" : "https://slotcrate.i3ull3t.de/";
   return (
-    <html lang={locale}>
+    <html lang={locale} className={`${inter.variable} ${rajdhani.variable}`}>
       <body className="slotcrate-theme">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <div className="slotcrate-bg" aria-hidden="true" />

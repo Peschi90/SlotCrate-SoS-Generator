@@ -30,5 +30,5 @@ export default async function PlannerPage() {
     }
   ];
 
-  return <PlannerClient variants={variants} defaultHeightMm={settings?.payload.boxHeightMm ?? SYSTEM.defaultBoxHeightMm} />;
+  return <PlannerClient variants={variants} defaultHeightMm={settings?.payload.suitcaseVariants[0]?.boxHeightMm ?? SYSTEM.defaultBoxHeightMm} />;
 }

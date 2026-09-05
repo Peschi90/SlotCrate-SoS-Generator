@@ -13,11 +13,9 @@ export default async function GeneratorPage() {
   }
   return (
     <GeneratorClient
-      defaultHeightMm={settings?.payload.boxHeightMm ?? SYSTEM.defaultBoxHeightMm}
+      defaultHeightMm={settings?.payload.suitcaseVariants[0]?.boxHeightMm ?? SYSTEM.defaultBoxHeightMm}
       minHeightMm={SYSTEM.minHeightMm}
       maxHeightMm={SYSTEM.maxHeightMm}
-      minCells={settings?.payload.minCells ?? SYSTEM.minCells}
-      maxCells={settings?.payload.maxCells ?? SYSTEM.maxCells}
       suitcaseVariants={settings?.payload.suitcaseVariants}
       filenamePrefix={settings?.payload.filenamePrefix ?? "SlotCrate_Box"}
     />

@@ -1,6 +1,7 @@
 import { prisma } from "./db";
 import {
   DEFAULT_GENERATOR_SETTINGS,
+  parseGeneratorSettingsPayload,
   generatorSettingsPayloadSchema,
   type GeneratorSettingsPayload
 } from "./generator-settings-schema";
@@ -22,7 +23,7 @@ export async function getActiveSettings(): Promise<{
     return {
       version: current.activeVersion.id,
       createdAt: current.activeVersion.createdAt,
-      payload: generatorSettingsPayloadSchema.parse(current.activeVersion.payload)
+      payload: parseGeneratorSettingsPayload(current.activeVersion.payload)
     };
   }
   return await prisma.$transaction(async (tx) => {
@@ -83,5 +84,5 @@ export async function publishNewSettingsVersion(
 export async function getSettingsVersionOrThrow(id: number): Promise<GeneratorSettingsPayload> {
   const row = await prisma.generatorSettingsVersion.findUnique({ where: { id } });
   if (!row) throw new Error(`GeneratorSettingsVersion ${id} nicht gefunden`);
-  return generatorSettingsPayloadSchema.parse(row.payload);
+  return parseGeneratorSettingsPayload(row.payload);
 }

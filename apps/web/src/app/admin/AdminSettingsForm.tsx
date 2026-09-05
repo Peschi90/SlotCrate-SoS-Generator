@@ -47,6 +47,19 @@ export function AdminSettingsForm({
   function addVariant() {
     setDraft((d) => {
       const nextIndex = d.suitcaseVariants.length + 1;
+      const template = d.suitcaseVariants[0] ?? {
+        minCells: 1,
+        maxWidthCells: 10,
+        maxDepthCells: 10,
+        gridPitchMm: 21.09,
+        boxHeightMm: 35.8,
+        wallThicknessMm: 1.2,
+        innerFloorRadiusMm: 2.5,
+        outerClearanceMm: 0,
+        stlTessellationLinearMm: 0.05,
+        stlTessellationAngularRad: 0.5,
+        plateStepFile: "SlotCrate.step"
+      };
       return {
         ...d,
         suitcaseVariants: [
@@ -54,17 +67,17 @@ export function AdminSettingsForm({
           {
             id: `variant-${nextIndex}`,
             label: `Variant ${nextIndex}`,
-            minCells: d.minCells,
-            maxWidthCells: d.maxCells,
-            maxDepthCells: d.maxCells,
-            gridPitchMm: 21.09,
-            boxHeightMm: d.boxHeightMm,
-            wallThicknessMm: d.wallThicknessMm,
-            innerFloorRadiusMm: d.innerFloorRadiusMm,
-            outerClearanceMm: d.outerClearanceMm,
-            stlTessellationLinearMm: d.stlTessellationLinearMm,
-            stlTessellationAngularRad: d.stlTessellationAngularRad,
-            plateStepFile: "SlotCrate.step"
+            minCells: template.minCells,
+            maxWidthCells: template.maxWidthCells,
+            maxDepthCells: template.maxDepthCells,
+            gridPitchMm: template.gridPitchMm,
+            boxHeightMm: template.boxHeightMm,
+            wallThicknessMm: template.wallThicknessMm,
+            innerFloorRadiusMm: template.innerFloorRadiusMm,
+            outerClearanceMm: template.outerClearanceMm,
+            stlTessellationLinearMm: template.stlTessellationLinearMm,
+            stlTessellationAngularRad: template.stlTessellationAngularRad,
+            plateStepFile: template.plateStepFile
           }
         ]
       };
@@ -103,14 +116,6 @@ export function AdminSettingsForm({
     <section className="border border-neutral-800 rounded-md p-4 space-y-4">
       <h2 className="font-semibold">{t("admin.settingsTitle")}</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <NumField label={t("admin.field.boxHeightMm")} value={draft.boxHeightMm} min={6} max={200} step={0.1} onChange={(v) => upd("boxHeightMm", v)} />
-        <NumField label={t("admin.field.wallThicknessMm")} value={draft.wallThicknessMm} min={0.6} max={4} step={0.05} onChange={(v) => upd("wallThicknessMm", v)} />
-        <NumField label={t("admin.field.innerFloorRadiusMm")} value={draft.innerFloorRadiusMm} min={0} max={4} step={0.1} onChange={(v) => upd("innerFloorRadiusMm", v)} />
-        <NumField label={t("admin.field.outerClearanceMm")} value={draft.outerClearanceMm} min={0} max={0.5} step={0.01} onChange={(v) => upd("outerClearanceMm", v)} />
-        <NumField label={t("admin.field.minCells")} value={draft.minCells} min={1} max={10} step={1} onChange={(v) => upd("minCells", v)} />
-        <NumField label={t("admin.field.maxCells")} value={draft.maxCells} min={1} max={10} step={1} onChange={(v) => upd("maxCells", v)} />
-        <NumField label={t("admin.field.stlTessellationLinearMm")} value={draft.stlTessellationLinearMm} min={0.005} max={0.5} step={0.005} onChange={(v) => upd("stlTessellationLinearMm", v)} />
-        <NumField label={t("admin.field.stlTessellationAngularRad")} value={draft.stlTessellationAngularRad} min={0.05} max={1} step={0.05} onChange={(v) => upd("stlTessellationAngularRad", v)} />
         <TextField label={t("admin.field.filenamePrefix")} value={draft.filenamePrefix} onChange={(v) => upd("filenamePrefix", v)} />
       </div>
 
@@ -153,8 +158,8 @@ export function AdminSettingsForm({
                 <NumField
                   label={t("admin.variantMinCells")}
                   value={variant.minCells}
-                  min={draft.minCells}
-                  max={draft.maxCells}
+                  min={1}
+                  max={10}
                   step={1}
                   onChange={(v) => updVariant(index, { minCells: Math.round(v) })}
                 />
@@ -162,7 +167,7 @@ export function AdminSettingsForm({
                   label={t("admin.variantMaxWidth")}
                   value={variant.maxWidthCells}
                   min={variant.minCells}
-                  max={draft.maxCells}
+                  max={10}
                   step={1}
                   onChange={(v) => updVariant(index, { maxWidthCells: Math.round(v) })}
                 />
@@ -170,7 +175,7 @@ export function AdminSettingsForm({
                   label={t("admin.variantMaxDepth")}
                   value={variant.maxDepthCells}
                   min={variant.minCells}
-                  max={draft.maxCells}
+                  max={10}
                   step={1}
                   onChange={(v) => updVariant(index, { maxDepthCells: Math.round(v) })}
                 />

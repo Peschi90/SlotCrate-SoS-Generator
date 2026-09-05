@@ -1,7 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url("https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap");
+
+/* Schriftarten werden über next/font (self-hosted, keine Anfragen an Google) geladen. */
+
 :root {
     --green: #5fbb2e;
     --green-bright: #7ed321;
@@ -16,7 +18,7 @@ body {
     height: 100%;
     background: var(--bg);
     color: var(--text);
-    font-family: "Inter", "Segoe UI", sans-serif;
+    font-family: var(--font-inter), "Segoe UI", sans-serif;
 }
 
 .slotcrate-theme {
@@ -45,7 +47,7 @@ body {
 }
 
 .slotcrate-brand {
-    font-family: "Rajdhani", "Inter", sans-serif;
+    font-family: var(--font-rajdhani), var(--font-inter), sans-serif;
 }
 
 .slotcrate-navlink {

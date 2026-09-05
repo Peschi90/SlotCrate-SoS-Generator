@@ -153,3 +153,47 @@ Zusätzlich in Plesk sicherstellen:
 - `Proxy mode` ist aktiv (nginx leitet an Apache weiter).
 - Es gibt keinen zweiten Plesk-Node.js-Dienst auf derselben Domain.
 - Subdomain und Hauptdomain verhalten sich hierbei gleich.
+
+## Sicherheits-Header und `X-Powered-By`
+
+Die Web-App setzt in `apps/web/next.config.mjs` folgende Header selbst:
+
+- `Content-Security-Policy` (self + inline styles/scripts, Blob-URLs für STL/ZIP, Web Worker aus Blob)
+- `Strict-Transport-Security`
+- `X-Content-Type-Options: nosniff`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `X-Frame-Options: DENY` und `frame-ancestors 'none'` in der CSP
+- `Permissions-Policy` (Kamera, Mikrofon, Standort, USB, FLoC etc. deaktiviert)
+- `Cross-Origin-Opener-Policy: same-origin`
+- `Cross-Origin-Resource-Policy: same-origin`
+
+`X-Powered-By` ist in Next selbst deaktiviert (`poweredByHeader: false`). Plesk
+setzt jedoch häufig zusätzlich am Reverse Proxy einen eigenen
+`X-Powered-By`-Header (z. B. `PleskLin`). Dieser muss auf Plesk-Ebene entfernt
+werden:
+
+- **Apache (`Additional Apache directives`)** — Modul `mod_headers`
+  vorausgesetzt:
+  ```apache
+  Header always unset X-Powered-By
+  Header always unset X-Powered-CMS
+  ```
+- **nginx (`Additional nginx directives`, nur wenn der Proxy im nginx-Kontext
+  läuft)**:
+  ```nginx
+  proxy_hide_header X-Powered-By;
+  proxy_hide_header X-Powered-CMS;
+  ```
+
+Header-Prüfung nach Deploy:
+
+```bash
+curl -I https://<deine-domain>/ | grep -i -E "content-security-policy|strict-transport|x-content-type|referrer-policy|permissions-policy|x-frame|x-powered"
+```
+
+`X-Powered-By` sollte nicht mehr auftauchen, alle o. g. Sicherheits-Header
+sollten gesetzt sein.
+
+Ein Header-Scan über [securityheaders.com](https://securityheaders.com) oder
+[Mozilla Observatory](https://observatory.mozilla.org) hilft, verbleibende
+Lücken zu finden.
