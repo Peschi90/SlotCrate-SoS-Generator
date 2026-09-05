@@ -9,6 +9,13 @@ interface Cell {
   y: number;
 }
 
+interface PreviewBox {
+  x: number;
+  y: number;
+  widthCells: number;
+  depthCells: number;
+}
+
 interface NewDrag {
   kind: "new";
   origin: Cell;
@@ -132,7 +139,37 @@ export function LayoutGrid({
   }, [selectedIds, removeSelected, clearSelection, moveSelected]);
 
   // --- Interaktions-Preview & Validierung ---
-  const preview = useMemo(() => computePreview(interaction), [interaction]);
+  const preview = useMemo(() => {
+    if (interaction?.kind === "move" && interaction.moveSelection) return null;
+    return computePreview(interaction);
+  }, [interaction]);
+  const groupMovePreview = useMemo(() => {
+    if (!interaction || interaction.kind !== "move" || !interaction.moveSelection) return null;
+    const dx = interaction.current.x - interaction.origin.x;
+    const dy = interaction.current.y - interaction.origin.y;
+    const occ = new Set<number>();
+    for (const b of boxes) {
+      if (selectedSet.has(b.id)) continue;
+      markPreviewOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
+    }
+    let valid = true;
+    const movedBoxes: PreviewBox[] = [];
+    for (const b of boxes) {
+      if (!selectedSet.has(b.id)) continue;
+      const x = b.x + dx;
+      const y = b.y + dy;
+      const candidate: PreviewBox = { x, y, widthCells: b.widthCells, depthCells: b.depthCells };
+      movedBoxes.push(candidate);
+      if (valid) {
+        if (!canPlacePreview(occ, x, y, b.widthCells, b.depthCells)) {
+          valid = false;
+        } else {
+          markPreviewOccupancy(occ, x, y, b.widthCells, b.depthCells);
+        }
+      }
+    }
+    return { boxes: movedBoxes, valid };
+  }, [interaction, boxes, selectedSet]);
   const previewValid = useMemo(() => {
     if (!preview || !interaction) return false;
     if (interaction.kind === "new") {
@@ -145,7 +182,6 @@ export function LayoutGrid({
       );
     }
     if (interaction.kind === "move") {
-      if (interaction.moveSelection) return true;
       return canPlace(
         preview.x,
         preview.y,
@@ -328,6 +364,22 @@ export function LayoutGrid({
         />
       )}
 
+      {groupMovePreview && (
+        <g pointerEvents="none">
+          {groupMovePreview.boxes.map((b, idx) => (
+            <rect
+              key={`gp-${idx}`}
+              x={b.x * cellPx}
+              y={b.y * cellPx}
+              width={b.widthCells * cellPx}
+              height={b.depthCells * cellPx}
+              fill={groupMovePreview.valid ? "rgba(62,168,106,0.35)" : "rgba(226,72,59,0.35)"}
+              stroke={groupMovePreview.valid ? "#3ea86a" : "#e2483b"}
+              strokeWidth={2}
+            />
+          ))}
+        </g>
+      )}
       {preview && (
         <rect
           x={preview.x * cellPx}
@@ -442,4 +494,23 @@ function computePreview(interaction: Interaction): {
     widthCells: Math.min(SYSTEM.gridColumns - interaction.box.x, w),
     depthCells: Math.min(SYSTEM.gridRows - interaction.box.y, d)
   };
+}
+
+function markPreviewOccupancy(occ: Set<number>, x: number, y: number, w: number, d: number): void {
+  for (let i = x; i < x + w; i++) {
+    for (let j = y; j < y + d; j++) {
+      occ.add(i * SYSTEM.gridColumns + j);
+    }
+  }
+}
+
+function canPlacePreview(occ: Set<number>, x: number, y: number, w: number, d: number): boolean {
+  if (x < 0 || y < 0) return false;
+  if (x + w > SYSTEM.gridColumns || y + d > SYSTEM.gridRows) return false;
+  for (let i = x; i < x + w; i++) {
+    for (let j = y; j < y + d; j++) {
+      if (occ.has(i * SYSTEM.gridColumns + j)) return false;
+    }
+  }
+  return true;
 }
