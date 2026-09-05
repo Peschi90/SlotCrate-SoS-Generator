@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/datenschutz"
+  }
+};
 
 export default async function PrivacyPage() {
   const locale = await getLocale();

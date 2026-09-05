@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { getActiveSettings } from "@/lib/settings-service";
 import { SYSTEM } from "@/lib/system";
 import { PlannerClient } from "./PlannerClient";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/planner"
+  }
+};
 
 export default async function PlannerPage() {
   let settings: Awaited<ReturnType<typeof getActiveSettings>> | null = null;

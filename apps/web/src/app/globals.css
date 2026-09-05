@@ -76,6 +76,27 @@ body {
     filter: brightness(1.08);
 }
 
+.slotcrate-menubutton {
+    list-style: none;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    padding: 0.4rem 0.95rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    user-select: none;
+}
+
+.slotcrate-menubutton::-webkit-details-marker {
+    display: none;
+}
+
+.slotcrate-menubutton:hover {
+    border-color: rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.1);
+}
+
 .slotcrate-button-primary,
 .slotcrate-button-secondary {
     border-radius: 9999px;

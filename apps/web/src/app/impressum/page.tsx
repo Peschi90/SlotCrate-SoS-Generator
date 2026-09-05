@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/impressum"
+  }
+};
 
 export default async function ImprintPage() {
   const locale = await getLocale();

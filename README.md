@@ -58,6 +58,7 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
     Restflächen.
   - Admin-Panel mit versionierten Einstellungen und Analytics (`/admin`).
   - Zweisprachige Oberfläche (Deutsch/Englisch) via `next-intl`.
+  - SEO-Basics integriert: route-spezifische Canonical-URLs, `robots.txt`, `sitemap.xml` und dynamisches Open-Graph-Bild (`/opengraph-image`) für Social-Previews.
 - **Entwicklungsstand:** Milestones M0–M10 abgeschlossen (siehe unten).
 
 ---

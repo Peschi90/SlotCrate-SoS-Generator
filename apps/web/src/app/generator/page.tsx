@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { getActiveSettings } from "@/lib/settings-service";
 import { SYSTEM } from "@/lib/system";
 import { GeneratorClient } from "./GeneratorClient";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/generator"
+  }
+};
 
 export default async function GeneratorPage() {
   let settings: Awaited<ReturnType<typeof getActiveSettings>> | null = null;

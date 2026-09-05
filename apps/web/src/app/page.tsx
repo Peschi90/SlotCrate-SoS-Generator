@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { getLocale } from "next-intl/server";
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: "/"
+  }
+};
 
 export default async function HomePage() {
   const t = await getTranslations();

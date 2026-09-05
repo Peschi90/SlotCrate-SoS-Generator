@@ -2,19 +2,21 @@
     "brand": "SlotCrate Sorting System",
     "meta": {
         "title": "SlotCrate Sorting System Konfigurator",
-        "description": "Modulare SlotCrate-Sortierkästen konfigurieren und exportieren."
+        "description": "Modulare SlotCrate-Sortierkästen konfigurieren und exportieren.",
+        "ogImageAlt": "Vorschau des SlotCrate Generators mit Raster und Box-Konfiguration"
     },
     "nav": {
         "home": "Startseite",
         "generator": "Einzelkasten",
         "planner": "Layout-Planer",
         "website": "SlotCrate Website",
+        "menu": "Menü",
         "imprint": "Impressum",
         "privacy": "Datenschutz"
     },
     "home": {
         "title": "SlotCrate Sorting System Konfigurator",
-        "subtitle": "Konfiguriere passgenaue Boxen und komplette Layouts fuer dein SlotCrate-System. Direkt im Browser, mit Live-Vorschau und Export.",
+        "subtitle": "Konfiguriere passgenaue Boxen und komplette Layouts für dein SlotCrate-System. Direkt im Browser, mit Live-Vorschau und Export.",
         "generator": {
             "title": "Einzelkasten-Generator",
             "description": "Einen einzelnen Kasten in Rasterfeldern konfigurieren und als STL herunterladen.",
@@ -22,8 +24,8 @@
         },
         "planner": {
             "title": "Layout-Planer",
-            "description": "Mehrere Kaesten auf der 10x10-Rasterplatte platzieren und gemeinsam exportieren.",
-            "cta": "Planer oeffnen"
+            "description": "Mehrere Kästen auf der 10x10-Rasterplatte platzieren und gemeinsam exportieren.",
+            "cta": "Planer öffnen"
         },
         "website": {
             "title": "Zur SlotCrate-Hauptseite",

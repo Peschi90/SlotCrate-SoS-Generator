@@ -1,9 +1,9 @@
 import { setLocaleAction } from "@/i18n/actions";
 import { LOCALES, type Locale } from "@/i18n/request";
 
-export function LanguageSwitcher({ current }: { current: Locale }) {
+export function LanguageSwitcher({ current, className = "" }: { current: Locale; className?: string }) {
   return (
-    <div className="ml-auto flex gap-1 rounded-full border border-white/20 bg-black/40 p-1 text-xs backdrop-blur">
+    <div className={`${className} flex gap-1 rounded-full border border-white/20 bg-black/40 p-1 text-xs backdrop-blur`}>
       {LOCALES.map((code) => {
         const active = code === current;
         return (
