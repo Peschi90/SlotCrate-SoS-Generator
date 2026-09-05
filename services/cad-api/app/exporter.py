@@ -137,28 +137,44 @@ def _parts_list_csv(counter: Counter[UniqueBox], filename_prefix: str) -> str:
 def _readme_text(counter: Counter[UniqueBox], filename_prefix: str) -> str:
     total = sum(counter.values())
     lines = [
-        "SlotCrate Layout Export / SlotCrate-Layout-Export",
+        "SlotCrate Layout Export",
+        "======================",
         "",
-        f"Enthaltene Kaesten (dedupliziert) / Included box variants (deduplicated): {len(counter)}",
-        f"Anzahl gesamt / Total quantity: {total}",
+        "Danke, dass du SlotCrate verwendest.",
+        "Thank you for using SlotCrate.",
         "",
-        "Dateien / Files:",
+        "In diesem ZIP findest du alle Dateien, die zu deinem aktuellen Layout gehoeren.",
+        "This ZIP contains all files for your current layout.",
+        "",
+        f"Enthaltene Kaesten (dedupliziert): {len(counter)}",
+        f"Included box variants (deduplicated): {len(counter)}",
+        f"Anzahl gesamt: {total}",
+        f"Total quantity: {total}",
+        "",
+        "Dateien / Files",
+        "---------------",
     ]
     for unique, count in sorted(counter.items(), key=lambda kv: (kv[0].width_cells, kv[0].depth_cells)):
         lines.append(f"  models/{unique.filename(filename_prefix)} - Anzahl / Quantity {count}")
     lines.append("  models/<variant>_Rasterplatte_<step-datei>.stl - 1x (aus Referenz-STEP / from reference STEP)")
     lines.append("")
-    lines.append("DE")
+    lines.append("DEUTSCH")
+    lines.append("-------")
     lines.append("Die Rasterplatte ist als unveraenderte Referenz aus der gewaehlten STEP-Datei enthalten.")
+    lines.append("Wenn du dein Setup teilen oder weitere Projekte entdecken moechtest, findest du hier alle wichtigen Links:")
     lines.append("SlotCrate Konfigurator: https://slotcrate.i3ull3t.de")
     lines.append("MakerWorld Profil: https://makerworld.com/de/@I3uLL3t")
+    lines.append("FreeSlotter Diskussionsforum: https://www.freeslotter.de/index.php?thread/108860-slotcrate-3d-druck-slotkoffer/")
     lines.append("Hauptwebseite: https://i3ull3t.de")
-    lines.append("Unterstuetzung via PayPal: https://www.paypal.com/paypalme/i3ull3t")
+    lines.append("Wenn du meine Arbeit unterstuetzen moechtest: https://www.paypal.com/paypalme/i3ull3t")
     lines.append("")
-    lines.append("EN")
+    lines.append("ENGLISH")
+    lines.append("-------")
     lines.append("The grid plate is included as an unmodified reference generated from the selected STEP file.")
+    lines.append("If you would like to share your setup or explore more of my work, here are the main links:")
     lines.append("SlotCrate configurator: https://slotcrate.i3ull3t.de")
     lines.append("MakerWorld profile: https://makerworld.com/de/@I3uLL3t")
+    lines.append("FreeSlotter discussion forum: https://www.freeslotter.de/index.php?thread/108860-slotcrate-3d-druck-slotkoffer/")
     lines.append("Main website: https://i3ull3t.de")
-    lines.append("Support via PayPal: https://www.paypal.com/paypalme/i3ull3t")
+    lines.append("If you would like to support my work: https://www.paypal.com/paypalme/i3ull3t")
     return "\n".join(lines)

@@ -105,8 +105,11 @@ def test_layout_zip_deduplicates_stls(client: TestClient) -> None:
         readme_content = zf.read("README.txt").decode("utf-8")
         assert "1x1" in csv_content
         assert ",2\n" in csv_content or ",2\r\n" in csv_content  # zwei 1×1
+        assert "Danke, dass du SlotCrate verwendest." in readme_content
+        assert "Thank you for using SlotCrate." in readme_content
         assert "https://slotcrate.i3ull3t.de" in readme_content
         assert "https://makerworld.com/de/@I3uLL3t" in readme_content
+        assert "https://www.freeslotter.de/index.php?thread/108860-slotcrate-3d-druck-slotkoffer/" in readme_content
         assert "https://i3ull3t.de" in readme_content
         assert "https://www.paypal.com/paypalme/i3ull3t" in readme_content
 
