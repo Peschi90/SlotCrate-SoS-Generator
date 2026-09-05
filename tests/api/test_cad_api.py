@@ -89,7 +89,8 @@ def test_layout_zip_deduplicates_stls(client: TestClient) -> None:
     with zipfile.ZipFile(io.BytesIO(r.content)) as zf:
         names = set(zf.namelist())
         stl_files = {n for n in names if n.startswith("models/") and n.endswith(".stl")}
-        assert len(stl_files) == 2  # 1×1 und 2×2 – zweimal 1×1 wird nur einmal exportiert
+        assert len(stl_files) == 3  # 1×1, 2×2 + feste Rasterplatte aus Referenz
+        assert "models/SlotCrate_Rasterplatte_Referenz.stl" in stl_files
         assert "configuration.json" in names
         assert "parts-list.csv" in names
         assert "README.txt" in names

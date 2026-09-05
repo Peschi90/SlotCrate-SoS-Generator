@@ -17,7 +17,8 @@ der SlotCrate-Kästen.
   - `GET  /v1/settings/active`
   - `POST /v1/box/stl` (Bearer-geschützt, Rate-Limit, SHA-256-Cache)
   - `POST /v1/layout/zip` (Bearer-geschützt, deduplizierte STLs +
-    `configuration.json` + `parts-list.csv` + `README.txt`)
+    Referenz-Rasterplatte als STL + `configuration.json` + `parts-list.csv`
+    + `README.txt`)
 
 ## Lokal starten
 

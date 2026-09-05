@@ -14,6 +14,7 @@ import cadquery as cq
 
 from slotcrate.geometry.box import build_box
 from slotcrate.geometry.export import export_stl
+from slotcrate.geometry.reference import load_normalized_plate
 
 from .schemas import LayoutRequest
 
@@ -49,6 +50,18 @@ def stl_bytes_for_box(
         inner_floor_radius_mm=inner_floor_radius_mm,
         outer_clearance_mm=outer_clearance_mm,
     )
+    return stl_bytes_for_shape(
+        shape,
+        stl_tessellation_linear_mm=stl_tessellation_linear_mm,
+        stl_tessellation_angular_rad=stl_tessellation_angular_rad,
+    )
+
+
+def stl_bytes_for_shape(
+    shape: cq.Shape,
+    stl_tessellation_linear_mm: float,
+    stl_tessellation_angular_rad: float,
+) -> bytes:
     with tempfile.NamedTemporaryFile(suffix=".stl", delete=False) as tmp:
         tmp_path = Path(tmp.name)
     try:
@@ -87,6 +100,15 @@ def build_layout_zip(layout: LayoutRequest, filename_prefix: str) -> bytes:
                 stl_tessellation_angular_rad=layout.stlTessellationAngularRad,
             )
             zf.writestr(f"models/{unique.filename(filename_prefix)}", stl)
+
+        # Add the immutable reference plate from SlotCrate.step as STL.
+        plate_stl = stl_bytes_for_shape(
+            load_normalized_plate(),
+            stl_tessellation_linear_mm=layout.stlTessellationLinearMm,
+            stl_tessellation_angular_rad=layout.stlTessellationAngularRad,
+        )
+        zf.writestr("models/SlotCrate_Rasterplatte_Referenz.stl", plate_stl)
+
         zf.writestr("configuration.json", layout.model_dump_json(indent=2))
         zf.writestr("parts-list.csv", _parts_list_csv(counter, filename_prefix))
         zf.writestr("README.txt", _readme_text(counter, filename_prefix))
@@ -122,6 +144,7 @@ def _readme_text(counter: Counter[UniqueBox], filename_prefix: str) -> str:
     ]
     for unique, count in sorted(counter.items(), key=lambda kv: (kv[0].width_cells, kv[0].depth_cells)):
         lines.append(f"  models/{unique.filename(filename_prefix)} – Anzahl {count}")
+    lines.append("  models/SlotCrate_Rasterplatte_Referenz.stl – 1x (aus SlotCrate.step)")
     lines.append("")
-    lines.append("Die Grundrasterplatte ist nicht enthalten (unveränderliche Referenz).")
+    lines.append("Die Rasterplatte ist als unveränderte Referenz aus SlotCrate.step enthalten.")
     return "\n".join(lines)
