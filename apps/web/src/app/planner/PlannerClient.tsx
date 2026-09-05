@@ -13,7 +13,14 @@ import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 
 type SuitcaseVariant = GeneratorSettingsPayload["suitcaseVariants"][number];
 
-const DRAWER_HEIGHT_PRESETS = [20, 40, 60, 80] as const;
+const DRAWER_HEIGHT_PRESETS = [
+  { label: "20 mm", actualMm: 15.8 },
+  { label: "40 mm", actualMm: 35.8 },
+  { label: "60 mm", actualMm: 55.8 },
+  { label: "80 mm", actualMm: 75.8 }
+] as const;
+
+type DrawerHeightPreset = (typeof DRAWER_HEIGHT_PRESETS)[number];
 
 export function PlannerClient({
   variants,
@@ -30,7 +37,6 @@ export function PlannerClient({
   const removeSelected = useLayoutStore((s) => s.removeSelected);
   const duplicateSelected = useLayoutStore((s) => s.duplicateSelected);
   const rotateSelected = useLayoutStore((s) => s.rotateSelected);
-  const resizeBox = useLayoutStore((s) => s.resizeBox);
   const setBoxHeight = useLayoutStore((s) => s.setBoxHeight);
   const clearSelection = useLayoutStore((s) => s.clearSelection);
   const applyFillPlan = useLayoutStore((s) => s.applyFillPlan);
@@ -101,25 +107,22 @@ export function PlannerClient({
 
   useEffect(() => {
     const preferred = activeVariant?.boxHeightMm ?? defaultHeightMm;
-    setHeightMm(preferred);
+    setHeightMm(presetForHeight(preferred).actualMm);
   }, [activeVariant?.id, activeVariant?.boxHeightMm, defaultHeightMm, setHeightMm]);
 
   useEffect(() => {
     void trackEvent("planner.open");
   }, [activeVariant.id]);
 
-  const selectedPreset = useMemo(() => {
-    let best: (typeof DRAWER_HEIGHT_PRESETS)[number] = DRAWER_HEIGHT_PRESETS[0];
-    let bestDelta = Number.POSITIVE_INFINITY;
-    for (const preset of DRAWER_HEIGHT_PRESETS) {
-      const delta = Math.abs(selectedHeightMm - mapDrawerHeightToBoxHeight(preset));
-      if (delta < bestDelta) {
-        best = preset;
-        bestDelta = delta;
-      }
+  const heightState = useMemo(() => computeHeightState(selectedBoxes, selectedHeightMm), [selectedBoxes, selectedHeightMm]);
+
+  function applyHeightPreset(preset: DrawerHeightPreset) {
+    if (selectedBoxes.length > 0) {
+      for (const b of selectedBoxes) setBoxHeight(b.id, preset.actualMm);
+    } else {
+      setHeightMm(preset.actualMm);
     }
-    return best;
-  }, [selectedHeightMm]);
+  }
 
   async function exportZip() {
     setError(null);
@@ -213,7 +216,7 @@ export function PlannerClient({
               void trackEvent("planner.variant.change", { from: activeVariant.id, to: next });
               setVariantId(next);
             }}
-            className="w-full rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2"
+            className="w-full rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-sm transition focus:border-crate-box focus:outline-none"
           >
             {variants.map((variant) => (
               <option key={variant.id} value={variant.id}>
@@ -223,29 +226,43 @@ export function PlannerClient({
           </select>
         </section>
 
-        <section className="space-y-2 border-t border-neutral-800 pt-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-neutral-100">{t("planner.height", { height: selectedHeightMm.toFixed(1) })}</span>
-            <span className="text-xs text-neutral-400">{selectedPreset} mm {t("generator.drawerLabel")}</span>
+        <section className="space-y-3 border-t border-neutral-800 pt-3">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-sm font-medium text-neutral-100">{t("planner.heightTitle")}</p>
+              <p className="text-xs text-neutral-400">
+                {heightState.scope === "selection"
+                  ? t("planner.heightScopeSelection", { count: selectedBoxes.length })
+                  : t("planner.heightScopeDefault")}
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-lg font-semibold text-white">
+                {heightState.mixed ? t("planner.heightMixed") : `${heightState.value.toFixed(1)} mm`}
+              </div>
+              <div className="text-xs text-neutral-400">
+                {heightState.preset.label} {t("generator.drawerLabel")}
+              </div>
+            </div>
           </div>
+
           <div className="grid grid-cols-4 gap-2">
             {DRAWER_HEIGHT_PRESETS.map((preset) => {
-              const mm = mapDrawerHeightToBoxHeight(preset);
-              const active = preset === selectedPreset;
+              const active = !heightState.mixed && preset.label === heightState.preset.label;
               return (
                 <button
-                  key={preset}
+                  key={preset.label}
                   type="button"
-                  onClick={() => setHeightMm(mm)}
+                  onClick={() => applyHeightPreset(preset)}
                   className={[
-                    "rounded-xl border px-2 py-2 text-left transition",
+                    "rounded-xl border px-3 py-2 text-left transition",
                     active
-                      ? "border-crate-box bg-crate-box/15 text-white"
+                      ? "border-crate-box bg-crate-box/15 text-white shadow-[0_0_0_1px_rgba(76,140,255,0.35)]"
                       : "border-neutral-700 bg-neutral-900/80 text-neutral-200 hover:border-neutral-500"
                   ].join(" ")}
                 >
-                  <div className="text-xs font-medium">{preset} mm</div>
-                  <div className="text-[11px] text-neutral-400">{mm.toFixed(1)} mm</div>
+                  <div className="text-sm font-medium">{preset.label}</div>
+                  <div className="text-xs text-neutral-400">{preset.actualMm.toFixed(1)} mm</div>
                 </button>
               );
             })}
@@ -253,182 +270,134 @@ export function PlannerClient({
         </section>
 
         <div className="flex gap-2 flex-wrap border-t border-neutral-800 pt-3">
-          <button onClick={undo} disabled={past === 0} className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50">
+          <button
+            onClick={undo}
+            disabled={past === 0}
+            className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
+          >
             {t("planner.undo", { count: past })}
           </button>
-          <button onClick={redo} disabled={future === 0} className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50">
+          <button
+            onClick={redo}
+            disabled={future === 0}
+            className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
+          >
             {t("planner.redo", { count: future })}
           </button>
-          <button onClick={reset} disabled={boxes.length === 0} className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50">
+          <button
+            onClick={reset}
+            disabled={boxes.length === 0}
+            className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
+          >
             {t("planner.reset")}
           </button>
         </div>
 
-        <div className="border-t border-neutral-800 pt-3">
+        <div className="border-t border-neutral-800 pt-3 space-y-1 text-xs text-neutral-300">
           <div>{t("planner.usedCells", { used: usedCells, total: totalCells })}</div>
           <div>{t("planner.boxCount", { count: boxes.length })}</div>
           <div>{t("planner.gridPitch", { pitch: activeVariant.gridPitchMm.toFixed(2) })}</div>
         </div>
 
         {selected && (
-          <div className="border-t border-neutral-800 pt-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-neutral-100">
-                {selectedIds.length > 1
-                  ? t("planner.multiSelection", { count: selectedIds.length })
-                  : t("planner.selection")}
-              </span>
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-900/60 p-3 space-y-3">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-0.5 text-xs text-neutral-300">
+                {selectedIds.length > 1 ? (
+                  <div className="text-sm font-medium text-neutral-100">
+                    {t("planner.multiSelection", { count: selectedIds.length })}
+                  </div>
+                ) : (
+                  <>
+                    <div>{t("planner.position", { x: selected.x, y: selected.y })}</div>
+                    <div>{t("planner.gridSize", { width: selected.widthCells, depth: selected.depthCells })}</div>
+                    <div>
+                      {t("planner.outerSize", {
+                        width: (selected.widthCells * pitchMm).toFixed(2),
+                        depth: (selected.depthCells * pitchMm).toFixed(2)
+                      })}
+                    </div>
+                  </>
+                )}
+              </div>
               <button
                 onClick={clearSelection}
-                className="text-[11px] text-neutral-400 hover:text-neutral-200"
+                aria-label={t("planner.deselect")}
+                className="rounded-full border border-neutral-700 bg-neutral-900/80 px-2 py-0.5 text-[11px] text-neutral-300 transition hover:border-neutral-500 hover:text-white"
               >
-                {t("planner.deselect")}
+                ✕
               </button>
             </div>
 
-            {selectedIds.length === 1 ? (
-              <div className="space-y-2">
-                <div>{t("planner.position", { x: selected.x, y: selected.y })}</div>
-                <div>{t("planner.gridSize", { width: selected.widthCells, depth: selected.depthCells })}</div>
-                <div>
-                  {t("planner.outerSize", {
-                    width: (selected.widthCells * pitchMm).toFixed(2),
-                    depth: (selected.depthCells * pitchMm).toFixed(2)
-                  })}
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <label className="text-[11px] text-neutral-400">
-                    {t("planner.editWidth")}
-                    <input
-                      type="number"
-                      min={activeVariant.minCells}
-                      max={activeVariant.maxWidthCells}
-                      step={1}
-                      value={selected.widthCells}
-                      onChange={(e) => {
-                        const w = Number.parseInt(e.target.value, 10);
-                        if (Number.isFinite(w)) resizeBox(selected.id, w, selected.depthCells);
-                      }}
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-sm text-neutral-100"
-                    />
-                  </label>
-                  <label className="text-[11px] text-neutral-400">
-                    {t("planner.editDepth")}
-                    <input
-                      type="number"
-                      min={activeVariant.minCells}
-                      max={activeVariant.maxDepthCells}
-                      step={1}
-                      value={selected.depthCells}
-                      onChange={(e) => {
-                        const d = Number.parseInt(e.target.value, 10);
-                        if (Number.isFinite(d)) resizeBox(selected.id, selected.widthCells, d);
-                      }}
-                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-sm text-neutral-100"
-                    />
-                  </label>
-                </div>
-
-                <label className="block text-[11px] text-neutral-400">
-                  {t("planner.height", { height: selected.heightMm.toFixed(1) })}
-                  <input
-                    type="range"
-                    min={SYSTEM.minHeightMm}
-                    max={SYSTEM.maxHeightMm}
-                    step={0.1}
-                    value={selected.heightMm}
-                    onChange={(e) => setBoxHeight(selected.id, Number.parseFloat(e.target.value))}
-                    className="mt-1 w-full"
-                  />
-                </label>
-
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => rotateSelected()}
-                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
-                  >
-                    {t("planner.rotate")}
-                  </button>
-                  <button
-                    onClick={() => duplicateSelected()}
-                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
-                  >
-                    {t("planner.duplicate")}
-                  </button>
-                  <button
-                    onClick={() => removeBox(selected.id)}
-                    className="px-3 py-1.5 rounded bg-red-700 hover:bg-red-600 text-xs"
-                  >
-                    {t("planner.remove")}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="text-xs text-neutral-400">
-                  {t("planner.multiHint")}
-                </div>
-                <ul className="max-h-24 overflow-auto text-[11px] text-neutral-300 space-y-0.5">
-                  {selectedBoxes.map((b) => (
-                    <li key={b.id}>
-                      {t("planner.multiItem", { x: b.x, y: b.y, w: b.widthCells, d: b.depthCells })}
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex gap-2 flex-wrap">
-                  <button
-                    onClick={() => rotateSelected()}
-                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
-                  >
-                    {t("planner.rotate")}
-                  </button>
-                  <button
-                    onClick={() => duplicateSelected()}
-                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
-                  >
-                    {t("planner.duplicate")}
-                  </button>
-                  <button
-                    onClick={() => removeSelected()}
-                    className="px-3 py-1.5 rounded bg-red-700 hover:bg-red-600 text-xs"
-                  >
-                    {t("planner.removeSelected", { count: selectedIds.length })}
-                  </button>
-                </div>
-              </div>
+            {selectedIds.length > 1 && (
+              <ul className="max-h-24 overflow-auto rounded-lg bg-neutral-950/60 p-2 text-[11px] text-neutral-300 space-y-0.5">
+                {selectedBoxes.map((b) => (
+                  <li key={b.id}>
+                    {t("planner.multiItem", { x: b.x, y: b.y, w: b.widthCells, d: b.depthCells })}
+                  </li>
+                ))}
+              </ul>
             )}
+
+            <div className="flex gap-2 flex-wrap">
+              <button
+                onClick={() => rotateSelected()}
+                className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500"
+              >
+                {t("planner.rotate")}
+              </button>
+              <button
+                onClick={() => duplicateSelected()}
+                className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500"
+              >
+                {t("planner.duplicate")}
+              </button>
+              {selectedIds.length > 1 ? (
+                <button
+                  onClick={() => removeSelected()}
+                  className="rounded-xl border border-red-800/60 bg-red-900/30 px-3 py-2 text-xs font-medium text-red-200 transition hover:border-red-700 hover:bg-red-900/50"
+                >
+                  {t("planner.removeSelected", { count: selectedIds.length })}
+                </button>
+              ) : (
+                <button
+                  onClick={() => removeBox(selected.id)}
+                  className="rounded-xl border border-red-800/60 bg-red-900/30 px-3 py-2 text-xs font-medium text-red-200 transition hover:border-red-700 hover:bg-red-900/50"
+                >
+                  {t("planner.remove")}
+                </button>
+              )}
+            </div>
             <div className="text-[11px] text-neutral-500">{t("planner.keyboardHint")}</div>
           </div>
         )}
 
-        <section className="border-t border-neutral-800 pt-3 space-y-2">
+        <section className="border-t border-neutral-800 pt-3 space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-medium text-neutral-100">{t("planner.autofill.title")}</h2>
-            <label className="flex items-center gap-1 text-[11px] text-neutral-400">
+            <label className="inline-flex items-center gap-2 text-[11px] text-neutral-400 cursor-pointer">
               <input
                 type="checkbox"
                 checked={highlightFree}
                 onChange={(e) => setHighlightFree(e.target.checked)}
+                className="accent-crate-box"
               />
               {t("planner.autofill.highlight")}
             </label>
           </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="planner-fill-size" className="text-[11px] text-neutral-400">
-              {t("planner.autofill.preferredSize")}
-            </label>
+          <label htmlFor="planner-fill-size" className="block space-y-1">
+            <span className="text-[11px] text-neutral-400">{t("planner.autofill.preferredSize")}</span>
             <select
               id="planner-fill-size"
               value={preferredFill.value}
               onChange={(e) => setPreferredFillSize(e.target.value)}
-              className="rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-xs"
+              className="w-full rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-sm"
             >
               {fillSizeOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-          </div>
+          </label>
           <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => {
@@ -439,7 +408,7 @@ export function PlannerClient({
                 applyFillPlan(plan);
               }}
               disabled={freeReport.freeCells === 0}
-              className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-xs"
+              className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
             >
               {t("planner.autofill.fillPreferred", { size: preferredFill.label })}
             </button>
@@ -456,7 +425,7 @@ export function PlannerClient({
                 applyFillPlan(plan);
               }}
               disabled={freeReport.freeCells === 0}
-              className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-xs"
+              className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
             >
               {t("planner.autofill.fillLargest")}
             </button>
@@ -465,7 +434,7 @@ export function PlannerClient({
             {t("planner.autofill.freeCells", { count: freeReport.freeCells })}
           </div>
           {freeReport.smallRegions > 0 && (
-            <div className="rounded-lg border border-amber-800/60 bg-amber-900/20 p-2 text-[11px] text-amber-200">
+            <div className="rounded-xl border border-amber-800/60 bg-amber-900/20 p-2 text-[11px] text-amber-200">
               {t("planner.autofill.smallRemainderWarning", {
                 regions: freeReport.smallRegions,
                 cells: freeReport.smallRegionCells
@@ -478,12 +447,15 @@ export function PlannerClient({
           <button
             onClick={exportZip}
             disabled={boxes.length === 0 || downloading}
-            className="px-4 py-2 rounded bg-crate-box hover:brightness-110 disabled:opacity-50"
+            className="rounded-xl bg-crate-box px-4 py-2 font-medium text-neutral-950 shadow-[0_0_18px_rgba(76,140,255,0.35)] transition hover:brightness-110 disabled:opacity-50 disabled:shadow-none"
           >
             {downloading ? t("planner.exporting") : t("planner.exportZip")}
           </button>
           {downloading && (
-            <button onClick={() => ac?.abort()} className="px-4 py-2 rounded bg-neutral-700 hover:bg-neutral-600">
+            <button
+              onClick={() => ac?.abort()}
+              className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-4 py-2 text-sm text-neutral-200 transition hover:border-neutral-500"
+            >
               {t("planner.cancel")}
             </button>
           )}
@@ -500,6 +472,44 @@ export function PlannerClient({
   );
 }
 
-function mapDrawerHeightToBoxHeight(drawerMm: number): number {
-  return Math.max(SYSTEM.minHeightMm, Math.min(SYSTEM.maxHeightMm, drawerMm - 4.2));
+function presetForHeight(mm: number): DrawerHeightPreset {
+  let best: DrawerHeightPreset = DRAWER_HEIGHT_PRESETS[1];
+  let bestDelta = Math.abs(best.actualMm - mm);
+  for (const preset of DRAWER_HEIGHT_PRESETS) {
+    const delta = Math.abs(preset.actualMm - mm);
+    if (delta < bestDelta) {
+      best = preset;
+      bestDelta = delta;
+    }
+  }
+  return best;
+}
+
+interface HeightState {
+  scope: "default" | "selection";
+  mixed: boolean;
+  value: number;
+  preset: DrawerHeightPreset;
+}
+
+function computeHeightState(
+  selectedBoxes: Array<{ heightMm: number }>,
+  defaultHeightMm: number
+): HeightState {
+  if (selectedBoxes.length === 0) {
+    return {
+      scope: "default",
+      mixed: false,
+      value: defaultHeightMm,
+      preset: presetForHeight(defaultHeightMm)
+    };
+  }
+  const first = selectedBoxes[0]!.heightMm;
+  const mixed = selectedBoxes.some((b) => Math.abs(b.heightMm - first) > 0.05);
+  return {
+    scope: "selection",
+    mixed,
+    value: first,
+    preset: presetForHeight(first)
+  };
 }

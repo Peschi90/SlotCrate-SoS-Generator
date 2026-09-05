@@ -246,13 +246,13 @@ export function PlannerPersistencePanel({ variantIds, activeVariantId, onVariant
         <button
           onClick={handleExport}
           disabled={boxes.length === 0}
-          className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-xs"
+          className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
         >
           {t("exportJson")}
         </button>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
+          className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500"
         >
           {t("importJson")}
         </button>
@@ -278,12 +278,12 @@ export function PlannerPersistencePanel({ variantIds, activeVariantId, onVariant
             onChange={(e) => setDraftName(e.target.value)}
             placeholder={t("draftNamePlaceholder")}
             maxLength={60}
-            className="flex-1 rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-xs"
+            className="flex-1 rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs text-neutral-100 placeholder-neutral-500 focus:border-crate-box focus:outline-none"
           />
           <button
             onClick={handleSaveDraft}
             disabled={boxes.length === 0}
-            className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-xs"
+            className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
           >
             {t("draftSave")}
           </button>
@@ -293,17 +293,17 @@ export function PlannerPersistencePanel({ variantIds, activeVariantId, onVariant
         ) : (
           <ul className="space-y-1 max-h-40 overflow-auto">
             {drafts.map((d) => (
-              <li key={d.id} className="flex items-center gap-2 text-xs bg-neutral-900/60 rounded px-2 py-1">
+              <li key={d.id} className="flex items-center gap-2 text-xs bg-neutral-900/60 rounded-xl border border-neutral-800 px-3 py-1.5">
                 <span className="flex-1 truncate" title={d.name}>{d.name}</span>
                 <button
                   onClick={() => handleLoadDraft(d.id)}
-                  className="text-neutral-300 hover:text-white"
+                  className="text-neutral-300 transition hover:text-white"
                 >
                   {t("draftLoad")}
                 </button>
                 <button
                   onClick={() => handleDeleteDraft(d.id)}
-                  className="text-red-400 hover:text-red-300"
+                  className="text-red-400 transition hover:text-red-300"
                 >
                   {t("draftDelete")}
                 </button>
@@ -319,14 +319,14 @@ export function PlannerPersistencePanel({ variantIds, activeVariantId, onVariant
           <button
             onClick={handleShare}
             disabled={boxes.length === 0 || sharing}
-            className="px-3 py-1.5 rounded bg-crate-box hover:brightness-110 disabled:opacity-50 text-xs"
+            className="rounded-xl bg-crate-box px-3 py-2 text-xs font-medium text-neutral-950 shadow-[0_0_14px_rgba(76,140,255,0.35)] transition hover:brightness-110 disabled:opacity-50 disabled:shadow-none"
           >
             {sharing ? t("shareCreating") : t("shareCreate")}
           </button>
           {share && (
             <button
               onClick={copyShareUrl}
-              className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
+              className="rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-xs font-medium text-neutral-200 transition hover:border-neutral-500"
             >
               {t("shareCopy")}
             </button>
@@ -338,7 +338,7 @@ export function PlannerPersistencePanel({ variantIds, activeVariantId, onVariant
               readOnly
               value={share.url}
               onFocus={(e) => e.currentTarget.select()}
-              className="w-full rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-[11px] text-neutral-200"
+              className="w-full rounded-xl border border-neutral-700 bg-neutral-900/80 px-3 py-2 text-[11px] text-neutral-200 focus:border-crate-box focus:outline-none"
             />
             <div className="text-[11px] text-neutral-500">
               {t("shareExpires", { date: formatter.dateTime(new Date(share.expiresAt), { dateStyle: "medium" }) })}
@@ -348,7 +348,7 @@ export function PlannerPersistencePanel({ variantIds, activeVariantId, onVariant
       </div>
 
       {warnings.length > 0 && (
-        <ul className="rounded-lg border border-amber-800/60 bg-amber-900/20 p-2 text-[11px] text-amber-200 space-y-1">
+        <ul className="rounded-xl border border-amber-800/60 bg-amber-900/20 p-2 text-[11px] text-amber-200 space-y-1">
           {warnings.map((code) => (
             <li key={code}>{t(`warnings.${code}`)}</li>
           ))}
