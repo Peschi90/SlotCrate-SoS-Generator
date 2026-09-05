@@ -5,8 +5,7 @@ import {
   OrbitControls,
   GizmoHelper,
   GizmoViewport,
-  Grid,
-  Environment
+  Grid
 } from "@react-three/drei";
 import * as THREE from "three";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -24,7 +23,6 @@ interface Props {
   center?: [number, number, number];
   radius: number;
   showGrid?: boolean;
-  showEnvironment?: boolean;
   children: React.ReactNode;
 }
 
@@ -37,7 +35,6 @@ export function CadCanvas({
   center = [0, 0, 0],
   radius,
   showGrid = true,
-  showEnvironment = true,
   children
 }: Props) {
   const [preset, setPreset] = useState<ViewPreset>("iso");
@@ -71,7 +68,6 @@ export function CadCanvas({
           position={[radius * 1.5, -radius * 1.5, radius * 2]}
           intensity={0.9}
         />
-        {showEnvironment && <Environment preset="city" background={false} />}
         {showGrid && (
           <Grid
             args={[radius * 6, radius * 6]}
