@@ -48,6 +48,12 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
   - Layout-Planer mit SVG-Drag, 3D-Ansicht, Undo/Redo, ZIP-Export (`/planner`).
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
+  - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,
+    Anfasser zum Größenanpassen, Duplizieren, 90°-Drehung, Pfeiltasten,
+    Mehrfachauswahl per Ctrl/Shift-Klick.
+  - Automatisches Auffüllen freier Flächen mit fester oder größtmöglicher
+    Kastengröße, Hervorhebung freier Zellen und Warnung vor kleinen
+    Restflächen.
   - Admin-Panel mit versionierten Einstellungen und Analytics (`/admin`).
   - Zweisprachige Oberfläche (Deutsch/Englisch) via `next-intl`.
 - **Entwicklungsstand:** Milestones M0–M10 abgeschlossen (siehe unten).

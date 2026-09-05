@@ -5,6 +5,7 @@ function resetStore() {
   useLayoutStore.setState({
     boxes: [],
     selectedId: null,
+    selectedIds: [],
     past: [],
     future: [],
     selectedHeightMm: 35.8
@@ -95,5 +96,94 @@ describe("layout store", () => {
     expect(useLayoutStore.getState().selectedHeightMm).toBe(42);
     useLayoutStore.getState().undo();
     expect(useLayoutStore.getState().boxes).toHaveLength(1);
+  });
+
+  it("toggleSelect builds a multi-selection", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 1, 1)!;
+    const b = useLayoutStore.getState().addBox(2, 2, 1, 1)!;
+    // addBox selektiert automatisch; b ist Primärauswahl.
+    expect(useLayoutStore.getState().selectedIds).toEqual([b.id]);
+    useLayoutStore.getState().toggleSelect(a.id);
+    expect(useLayoutStore.getState().selectedIds).toEqual([b.id, a.id]);
+    expect(useLayoutStore.getState().selectedId).toBe(a.id);
+    useLayoutStore.getState().toggleSelect(b.id);
+    expect(useLayoutStore.getState().selectedIds).toEqual([a.id]);
+    expect(useLayoutStore.getState().selectedId).toBe(a.id);
+  });
+
+  it("removeSelected deletes all selected boxes at once", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 1, 1)!;
+    const b = useLayoutStore.getState().addBox(2, 2, 1, 1)!;
+    useLayoutStore.getState().addBox(5, 5, 1, 1);
+    useLayoutStore.getState().selectMany([a.id, b.id]);
+    const removed = useLayoutStore.getState().removeSelected();
+    expect(removed).toBe(2);
+    expect(useLayoutStore.getState().boxes).toHaveLength(1);
+    expect(useLayoutStore.getState().selectedIds).toEqual([]);
+  });
+
+  it("moveSelected is atomic and refuses when any box collides", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 1, 1)!;
+    const b = useLayoutStore.getState().addBox(2, 0, 1, 1)!;
+    useLayoutStore.getState().addBox(3, 0, 1, 1);
+    useLayoutStore.getState().selectMany([a.id, b.id]);
+    expect(useLayoutStore.getState().moveSelected(1, 0)).toBe(false);
+    expect(useLayoutStore.getState().boxes.find((x) => x.id === a.id)?.x).toBe(0);
+    expect(useLayoutStore.getState().moveSelected(0, 1)).toBe(true);
+    expect(useLayoutStore.getState().boxes.find((x) => x.id === a.id)?.y).toBe(1);
+    expect(useLayoutStore.getState().boxes.find((x) => x.id === b.id)?.y).toBe(1);
+  });
+
+  it("resizeBox validates collisions", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 1, 1)!;
+    useLayoutStore.getState().addBox(2, 0, 1, 1);
+    expect(useLayoutStore.getState().resizeBox(a.id, 3, 1)).toBe(false);
+    expect(useLayoutStore.getState().resizeBox(a.id, 2, 1)).toBe(true);
+    const updated = useLayoutStore.getState().boxes.find((x) => x.id === a.id)!;
+    expect(updated.widthCells).toBe(2);
+  });
+
+  it("rotateBox swaps width and depth or refuses on collision", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 2, 1)!;
+    expect(useLayoutStore.getState().rotateBox(a.id)).toBe(true);
+    const rotated = useLayoutStore.getState().boxes.find((x) => x.id === a.id)!;
+    expect(rotated.widthCells).toBe(1);
+    expect(rotated.depthCells).toBe(2);
+    // Blockiere Rotation zurück.
+    useLayoutStore.getState().addBox(1, 0, 1, 1);
+    expect(useLayoutStore.getState().rotateBox(a.id)).toBe(false);
+  });
+
+  it("duplicateBox places the copy at the first free adjacent slot", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 2, 2)!;
+    const copy = useLayoutStore.getState().duplicateBox(a.id);
+    expect(copy).not.toBeNull();
+    expect(useLayoutStore.getState().boxes).toHaveLength(2);
+    expect(copy!.id).not.toBe(a.id);
+    // Bevorzugt rechts vom Original.
+    expect(copy!.x).toBe(2);
+    expect(copy!.y).toBe(0);
+  });
+
+  it("setBoxHeight updates a single box height and is undoable", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 1, 1)!;
+    useLayoutStore.getState().setBoxHeight(a.id, 90);
+    expect(useLayoutStore.getState().boxes.find((x) => x.id === a.id)?.heightMm).toBe(90);
+    useLayoutStore.getState().undo();
+    expect(useLayoutStore.getState().boxes.find((x) => x.id === a.id)?.heightMm).not.toBe(90);
+  });
+
+  it("applyFillPlan places multiple boxes and skips collisions", () => {
+    useLayoutStore.getState().addBox(0, 0, 1, 1);
+    const created = useLayoutStore.getState().applyFillPlan(
+      [
+        { x: 0, y: 0, widthCells: 1, depthCells: 1 },
+        { x: 1, y: 0, widthCells: 1, depthCells: 1 },
+        { x: 2, y: 0, widthCells: 1, depthCells: 1 }
+      ],
+      35.8
+    );
+    expect(created).toBe(2);
+    expect(useLayoutStore.getState().boxes).toHaveLength(3);
   });
 });

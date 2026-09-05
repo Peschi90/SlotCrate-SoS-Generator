@@ -7,6 +7,7 @@ import { LayoutGrid } from "@/components/LayoutGrid";
 import { Layout3DView } from "@/components/Layout3DView";
 import { PlannerPersistencePanel } from "@/components/PlannerPersistencePanel";
 import { useLayoutStore } from "@/lib/layout-store";
+import { analyzeFreeCells, planFillLargest, planFillWithSize } from "@/lib/layout-fill";
 import { SYSTEM } from "@/lib/system";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 
@@ -24,7 +25,15 @@ export function PlannerClient({
   const t = useTranslations();
   const boxes = useLayoutStore((s) => s.boxes);
   const selectedId = useLayoutStore((s) => s.selectedId);
+  const selectedIds = useLayoutStore((s) => s.selectedIds);
   const removeBox = useLayoutStore((s) => s.removeBox);
+  const removeSelected = useLayoutStore((s) => s.removeSelected);
+  const duplicateSelected = useLayoutStore((s) => s.duplicateSelected);
+  const rotateSelected = useLayoutStore((s) => s.rotateSelected);
+  const resizeBox = useLayoutStore((s) => s.resizeBox);
+  const setBoxHeight = useLayoutStore((s) => s.setBoxHeight);
+  const clearSelection = useLayoutStore((s) => s.clearSelection);
+  const applyFillPlan = useLayoutStore((s) => s.applyFillPlan);
   const undo = useLayoutStore((s) => s.undo);
   const redo = useLayoutStore((s) => s.redo);
   const reset = useLayoutStore((s) => s.reset);
@@ -37,12 +46,41 @@ export function PlannerClient({
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ac, setAc] = useState<AbortController | null>(null);
+  const [highlightFree, setHighlightFree] = useState(false);
+  const [preferredFillSize, setPreferredFillSize] = useState<string>("2x2");
 
   const activeVariant = variants.find((variant) => variant.id === variantId) ?? variants[0]!;
   const pitchMm = activeVariant.gridPitchMm;
   const selected = boxes.find((b) => b.id === selectedId) ?? null;
+  const selectedBoxes = useMemo(
+    () => boxes.filter((b) => selectedIds.includes(b.id)),
+    [boxes, selectedIds]
+  );
   const usedCells = boxes.reduce((s, b) => s + b.widthCells * b.depthCells, 0);
   const totalCells = SYSTEM.gridColumns * SYSTEM.gridRows;
+  const freeReport = useMemo(() => analyzeFreeCells(boxes, 2), [boxes]);
+  const fillSizeOptions = useMemo(() => {
+    const opts: Array<{ value: string; label: string; w: number; d: number }> = [];
+    const maxW = activeVariant.maxWidthCells;
+    const maxD = activeVariant.maxDepthCells;
+    for (const [w, d] of [
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [2, 1],
+      [3, 2],
+      [4, 2],
+      [4, 4],
+      [5, 5]
+    ] as const) {
+      if (w <= maxW && d <= maxD) opts.push({ value: `${w}x${d}`, label: `${w}×${d}`, w, d });
+    }
+    return opts;
+  }, [activeVariant.maxWidthCells, activeVariant.maxDepthCells]);
+  const preferredFill = useMemo(() => {
+    const found = fillSizeOptions.find((o) => o.value === preferredFillSize);
+    return found ?? fillSizeOptions[0]!;
+  }, [fillSizeOptions, preferredFillSize]);
 
   async function trackEvent(eventType: string, details?: Record<string, string | number | boolean | null>) {
     try {
@@ -140,6 +178,7 @@ export function PlannerClient({
             minCells={activeVariant.minCells}
             maxWidthCells={activeVariant.maxWidthCells}
             maxDepthCells={activeVariant.maxDepthCells}
+            highlightFree={highlightFree}
           />
         </div>
         <div className="rounded-2xl border border-neutral-800/80 overflow-hidden bg-neutral-950 min-h-[38vh] lg:min-h-0">
@@ -232,21 +271,208 @@ export function PlannerClient({
         </div>
 
         {selected && (
-          <div className="border-t border-neutral-800 pt-3 space-y-1">
-            <div>{t("planner.selection")}</div>
-            <div>{t("planner.gridSize", { width: selected.widthCells, depth: selected.depthCells })}</div>
-            <div>
-              {t("planner.outerSize", {
-                width: (selected.widthCells * pitchMm).toFixed(2),
-                depth: (selected.depthCells * pitchMm).toFixed(2)
-              })}
+          <div className="border-t border-neutral-800 pt-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-neutral-100">
+                {selectedIds.length > 1
+                  ? t("planner.multiSelection", { count: selectedIds.length })
+                  : t("planner.selection")}
+              </span>
+              <button
+                onClick={clearSelection}
+                className="text-[11px] text-neutral-400 hover:text-neutral-200"
+              >
+                {t("planner.deselect")}
+              </button>
             </div>
-            <div>{t("planner.height", { height: selected.heightMm })}</div>
-            <button onClick={() => removeBox(selected.id)} className="mt-2 px-3 py-1.5 rounded bg-red-700 hover:bg-red-600">
-              {t("planner.remove")}
-            </button>
+
+            {selectedIds.length === 1 ? (
+              <div className="space-y-2">
+                <div>{t("planner.position", { x: selected.x, y: selected.y })}</div>
+                <div>{t("planner.gridSize", { width: selected.widthCells, depth: selected.depthCells })}</div>
+                <div>
+                  {t("planner.outerSize", {
+                    width: (selected.widthCells * pitchMm).toFixed(2),
+                    depth: (selected.depthCells * pitchMm).toFixed(2)
+                  })}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <label className="text-[11px] text-neutral-400">
+                    {t("planner.editWidth")}
+                    <input
+                      type="number"
+                      min={activeVariant.minCells}
+                      max={activeVariant.maxWidthCells}
+                      step={1}
+                      value={selected.widthCells}
+                      onChange={(e) => {
+                        const w = Number.parseInt(e.target.value, 10);
+                        if (Number.isFinite(w)) resizeBox(selected.id, w, selected.depthCells);
+                      }}
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-sm text-neutral-100"
+                    />
+                  </label>
+                  <label className="text-[11px] text-neutral-400">
+                    {t("planner.editDepth")}
+                    <input
+                      type="number"
+                      min={activeVariant.minCells}
+                      max={activeVariant.maxDepthCells}
+                      step={1}
+                      value={selected.depthCells}
+                      onChange={(e) => {
+                        const d = Number.parseInt(e.target.value, 10);
+                        if (Number.isFinite(d)) resizeBox(selected.id, selected.widthCells, d);
+                      }}
+                      className="mt-1 w-full rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-sm text-neutral-100"
+                    />
+                  </label>
+                </div>
+
+                <label className="block text-[11px] text-neutral-400">
+                  {t("planner.height", { height: selected.heightMm.toFixed(1) })}
+                  <input
+                    type="range"
+                    min={SYSTEM.minHeightMm}
+                    max={SYSTEM.maxHeightMm}
+                    step={0.1}
+                    value={selected.heightMm}
+                    onChange={(e) => setBoxHeight(selected.id, Number.parseFloat(e.target.value))}
+                    className="mt-1 w-full"
+                  />
+                </label>
+
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => rotateSelected()}
+                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
+                  >
+                    {t("planner.rotate")}
+                  </button>
+                  <button
+                    onClick={() => duplicateSelected()}
+                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
+                  >
+                    {t("planner.duplicate")}
+                  </button>
+                  <button
+                    onClick={() => removeBox(selected.id)}
+                    className="px-3 py-1.5 rounded bg-red-700 hover:bg-red-600 text-xs"
+                  >
+                    {t("planner.remove")}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="text-xs text-neutral-400">
+                  {t("planner.multiHint")}
+                </div>
+                <ul className="max-h-24 overflow-auto text-[11px] text-neutral-300 space-y-0.5">
+                  {selectedBoxes.map((b) => (
+                    <li key={b.id}>
+                      {t("planner.multiItem", { x: b.x, y: b.y, w: b.widthCells, d: b.depthCells })}
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-2 flex-wrap">
+                  <button
+                    onClick={() => rotateSelected()}
+                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
+                  >
+                    {t("planner.rotate")}
+                  </button>
+                  <button
+                    onClick={() => duplicateSelected()}
+                    className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 text-xs"
+                  >
+                    {t("planner.duplicate")}
+                  </button>
+                  <button
+                    onClick={() => removeSelected()}
+                    className="px-3 py-1.5 rounded bg-red-700 hover:bg-red-600 text-xs"
+                  >
+                    {t("planner.removeSelected", { count: selectedIds.length })}
+                  </button>
+                </div>
+              </div>
+            )}
+            <div className="text-[11px] text-neutral-500">{t("planner.keyboardHint")}</div>
           </div>
         )}
+
+        <section className="border-t border-neutral-800 pt-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium text-neutral-100">{t("planner.autofill.title")}</h2>
+            <label className="flex items-center gap-1 text-[11px] text-neutral-400">
+              <input
+                type="checkbox"
+                checked={highlightFree}
+                onChange={(e) => setHighlightFree(e.target.checked)}
+              />
+              {t("planner.autofill.highlight")}
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="planner-fill-size" className="text-[11px] text-neutral-400">
+              {t("planner.autofill.preferredSize")}
+            </label>
+            <select
+              id="planner-fill-size"
+              value={preferredFill.value}
+              onChange={(e) => setPreferredFillSize(e.target.value)}
+              className="rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-xs"
+            >
+              {fillSizeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => {
+                const plan = planFillWithSize(boxes, preferredFill.w, preferredFill.d, {
+                  maxWidthCells: activeVariant.maxWidthCells,
+                  maxDepthCells: activeVariant.maxDepthCells
+                });
+                applyFillPlan(plan);
+              }}
+              disabled={freeReport.freeCells === 0}
+              className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-xs"
+            >
+              {t("planner.autofill.fillPreferred", { size: preferredFill.label })}
+            </button>
+            <button
+              onClick={() => {
+                const plan = planFillLargest(
+                  boxes,
+                  {
+                    maxWidthCells: activeVariant.maxWidthCells,
+                    maxDepthCells: activeVariant.maxDepthCells
+                  },
+                  { widthCells: preferredFill.w, depthCells: preferredFill.d }
+                );
+                applyFillPlan(plan);
+              }}
+              disabled={freeReport.freeCells === 0}
+              className="px-3 py-1.5 rounded bg-neutral-800 hover:bg-neutral-700 disabled:opacity-50 text-xs"
+            >
+              {t("planner.autofill.fillLargest")}
+            </button>
+          </div>
+          <div className="text-[11px] text-neutral-500">
+            {t("planner.autofill.freeCells", { count: freeReport.freeCells })}
+          </div>
+          {freeReport.smallRegions > 0 && (
+            <div className="rounded-lg border border-amber-800/60 bg-amber-900/20 p-2 text-[11px] text-amber-200">
+              {t("planner.autofill.smallRemainderWarning", {
+                regions: freeReport.smallRegions,
+                cells: freeReport.smallRegionCells
+              })}
+            </div>
+          )}
+        </section>
 
         <div className="border-t border-neutral-800 pt-3 flex gap-2">
           <button
