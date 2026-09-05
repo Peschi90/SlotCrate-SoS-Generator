@@ -15,6 +15,7 @@ interface Props {
   outerClearanceMm?: number;
   color?: string;
   opacity?: number;
+  cornerRadiusMm?: number;
 }
 
 /**
@@ -32,7 +33,8 @@ export function BoxMesh({
   innerFloorRadiusMm = 2.5,
   outerClearanceMm = 0,
   color = "#7fb0ff",
-  opacity = 1
+  opacity = 1,
+  cornerRadiusMm = 1.5
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = Math.max(1, widthCells * pitchMm - 2 * outerClearanceMm);
@@ -41,15 +43,13 @@ export function BoxMesh({
   const wall = wallThicknessMm;
   const floorT = SYSTEM.floorThicknessMm;
   const bodyH = Math.max(0.1, heightMm - pickupTop - floorT);
-  // Außenschale ist im STEP scharfkantig (nur planare Flächen); der Innenraum ist
-  // an den vertikalen Kanten mit `innerFloorRadiusMm` gefillet.
-  const innerRadius = Math.max(0, innerFloorRadiusMm);
+  const cornerRadiusScaled = Math.max(cornerRadiusMm, innerFloorRadiusMm);
   // small overlap eliminates z-fighting at coplanar seams between pickup/floor/wall
   const zEps = 0.02;
 
   const wallGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    drawRoundedRect(shape, 0, 0, outerW, outerD, 0);
+    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusScaled);
     const hole = new THREE.Path();
     drawRoundedRect(
       hole,
@@ -57,7 +57,7 @@ export function BoxMesh({
       wall,
       outerW - 2 * wall,
       outerD - 2 * wall,
-      innerRadius
+      Math.max(0, cornerRadiusScaled - wall)
     );
     shape.holes.push(hole);
     const geom = new THREE.ExtrudeGeometry(shape, {
@@ -67,11 +67,11 @@ export function BoxMesh({
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, wall, bodyH, innerRadius, zEps]);
+  }, [outerW, outerD, wall, bodyH, cornerRadiusScaled, zEps]);
 
   const floorGeometry = useMemo(() => {
     const shape = new THREE.Shape();
-    drawRoundedRect(shape, 0, 0, outerW, outerD, 0);
+    drawRoundedRect(shape, 0, 0, outerW, outerD, cornerRadiusScaled);
     const geom = new THREE.ExtrudeGeometry(shape, {
       depth: floorT + 2 * zEps,
       bevelEnabled: false,
@@ -79,7 +79,7 @@ export function BoxMesh({
     });
     geom.computeVertexNormals();
     return geom;
-  }, [outerW, outerD, floorT, zEps]);
+  }, [outerW, outerD, floorT, cornerRadiusScaled, zEps]);
 
   const pickupPositions = useMemo(() => {
     const positions: [number, number][] = [];
@@ -111,50 +111,18 @@ export function BoxMesh({
           opacity={opacity}
         />
       </mesh>
-      {pickupPositions.map(([x, y], idx) => {
-        const s = pitchMm / SYSTEM.gridPitchMm;
-        // Kopfhöhe aus PICKUP_VOLUME_MM3 (1053,03), Kopf-Grundfläche
-        // (18,49² − 4·(2,5²−π·2,5²/4)) und Sockel-Grundfläche π·6,327²
-        // rückgerechnet; Gesamthöhe = PICKUP_TOP_Z_MM (4 mm).
-        const headH = 2.61 * s;
-        const socketH = pickupTop - headH;
-        const headZ = pickupTop - headH / 2;
-        const socketZ = socketH / 2;
-        return (
-          <group key={idx} position={[x, y, 0]}>
-            <mesh
-              position={[0, 0, socketZ]}
-              rotation={[Math.PI / 2, 0, 0]}
-            >
-              <cylinderGeometry
-                args={[6.327 * s, 6.327 * s, socketH + zEps, 32]}
-              />
-              <meshStandardMaterial
-                color={color}
-                metalness={0.15}
-                roughness={0.6}
-                transparent={opacity < 1}
-                opacity={opacity}
-              />
-            </mesh>
-            <RoundedBox
-              args={[18.49 * s, 18.49 * s, headH + zEps]}
-              radius={2.5 * s}
-              smoothness={4}
-              creaseAngle={0.4}
-              position={[0, 0, headZ]}
-            >
-              <meshStandardMaterial
-                color={color}
-                metalness={0.15}
-                roughness={0.6}
-                transparent={opacity < 1}
-                opacity={opacity}
-              />
-            </RoundedBox>
-          </group>
-        );
-      })}
+      {pickupPositions.map(([x, y], idx) => (
+        <RoundedBox
+          key={idx}
+          args={[18.49 * (pitchMm / SYSTEM.gridPitchMm), 18.49 * (pitchMm / SYSTEM.gridPitchMm), pickupTop + zEps]}
+          radius={0.6 * (pitchMm / SYSTEM.gridPitchMm)}
+          smoothness={4}
+          creaseAngle={0.4}
+          position={[x, y, (pickupTop + zEps) / 2]}
+        >
+          <meshStandardMaterial color={color} metalness={0.2} roughness={0.55} />
+        </RoundedBox>
+      ))}
     </group>
   );
 }
