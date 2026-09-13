@@ -137,7 +137,8 @@
         "remove": "Remove",
         "offsetLabel": "Position (mm from inner wall)",
         "heightLabel": "Height (mm from inner floor)",
-        "hint": "Thickness {thickness} mm (= wall thickness). Positions are measured from the inner cavity origin."
+        "hint": "Thickness {thickness} mm (= wall thickness). Positions are measured from the inner cavity origin.",
+        "dragHint": "Tip: hold Alt + left-click on a divider in the 3D view and drag to move it directly."
     },
     "pockets": {
         "title": "Round pockets",
@@ -154,7 +155,8 @@
         "hint": "Wall thickness {thickness} mm (= box wall thickness). The cup sits on the cavity floor; height = cup wall height.",
         "fillOuter": "Fill outer area with solid material",
         "fillOuterHintOff": "Frame mode (default): each pocket is a standalone cup.",
-        "fillOuterHintOn": "Fill mode: the cavity is filled up to the tallest pocket height and pockets are drilled into that slab as wells."
+        "fillOuterHintOn": "Fill mode: the cavity is filled up to the tallest pocket height and pockets are drilled into that slab as wells.",
+        "dragHint": "Tip: hold Alt + left-click on a pocket in the 3D view and drag to move it directly."
     },
     "admin": {
         "title": "Admin panel",

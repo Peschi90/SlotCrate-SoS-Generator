@@ -32,6 +32,7 @@ interface LayoutState {
   past: HistoryEntry[];
   future: HistoryEntry[];
   selectedHeightMm: number;
+  liveEditSnapshot: HistoryEntry | null;
 
   addBox(x: number, y: number, widthCells: number, depthCells: number, heightMm?: number): PlacedBox | null;
   removeBox(id: string): void;
@@ -47,6 +48,10 @@ interface LayoutState {
   setBoxDividers(id: string, dividers: Divider[]): void;
   setBoxPockets(id: string, pockets: Pocket[]): void;
   setBoxPocketsFillOuter(id: string, value: boolean): void;
+  beginLiveEdit(): void;
+  updateBoxDividerLive(id: string, index: number, patch: Partial<Divider>): void;
+  updateBoxPocketLive(id: string, index: number, patch: Partial<Pocket>): void;
+  commitLiveEdit(): void;
   select(id: string | null): void;
   toggleSelect(id: string): void;
   selectMany(ids: string[]): void;
@@ -236,6 +241,7 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
   past: [],
   future: [],
   selectedHeightMm: SYSTEM.defaultBoxHeightMm,
+  liveEditSnapshot: null,
 
   canPlace(x, y, w, d, ignoreId) {
     return fits(x, y, w, d, occupiedMap(get().boxes, ignoreId ? [ignoreId] : undefined));
@@ -562,6 +568,42 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       boxes: s.boxes.map((b) => (b.id === id ? { ...b, pocketsFillOuter: value } : b)),
       past: [...s.past, snapshot(s)],
       future: []
+    });
+  },
+
+  beginLiveEdit() {
+    const s = get();
+    if (s.liveEditSnapshot) return;
+    set({ liveEditSnapshot: snapshot(s) });
+  },
+
+  updateBoxDividerLive(id, index, patch) {
+    const s = get();
+    const box = s.boxes.find((b) => b.id === id);
+    if (!box) return;
+    const nextDividers = box.dividers.map((d, i) => (i === index ? { ...d, ...patch } : d));
+    set({
+      boxes: s.boxes.map((b) => (b.id === id ? { ...b, dividers: nextDividers } : b))
+    });
+  },
+
+  updateBoxPocketLive(id, index, patch) {
+    const s = get();
+    const box = s.boxes.find((b) => b.id === id);
+    if (!box) return;
+    const nextPockets = box.pockets.map((p, i) => (i === index ? { ...p, ...patch } : p));
+    set({
+      boxes: s.boxes.map((b) => (b.id === id ? { ...b, pockets: nextPockets } : b))
+    });
+  },
+
+  commitLiveEdit() {
+    const s = get();
+    if (!s.liveEditSnapshot) return;
+    set({
+      past: [...s.past, s.liveEditSnapshot],
+      future: [],
+      liveEditSnapshot: null
     });
   },
 

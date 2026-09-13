@@ -26,6 +26,10 @@ export function Layout3DView({
   const boxes = useLayoutStore((s) => s.boxes);
   const selectedId = useLayoutStore((s) => s.selectedId);
   const select = useLayoutStore((s) => s.select);
+  const beginLiveEdit = useLayoutStore((s) => s.beginLiveEdit);
+  const commitLiveEdit = useLayoutStore((s) => s.commitLiveEdit);
+  const updateBoxDividerLive = useLayoutStore((s) => s.updateBoxDividerLive);
+  const updateBoxPocketLive = useLayoutStore((s) => s.updateBoxPocketLive);
 
   const pitchMm = gridPitchMm;
   const plateW = SYSTEM.gridColumns * pitchMm;
@@ -110,6 +114,13 @@ export function Layout3DView({
               dividers={b.dividers}
               pockets={b.pockets}
               pocketsFillOuter={b.pocketsFillOuter}
+              onDividerChange={(idx, patch) => updateBoxDividerLive(b.id, idx, patch)}
+              onPocketChange={(idx, patch) => updateBoxPocketLive(b.id, idx, patch)}
+              onDragStart={() => {
+                select(b.id);
+                beginLiveEdit();
+              }}
+              onDragEnd={commitLiveEdit}
             />
             {isSel && (
               <lineSegments

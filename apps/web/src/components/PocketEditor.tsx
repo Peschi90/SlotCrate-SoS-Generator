@@ -233,8 +233,8 @@ export function PocketEditor({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <NumberRow
+                <div className="space-y-2">
+                  <SliderRow
                     label={t("pockets.diameter")}
                     value={p.diameterMm}
                     min={SYSTEM.minPocketDiameterMm}
@@ -243,7 +243,7 @@ export function PocketEditor({
                     unit="mm"
                     onChange={(v) => update(idx, { diameterMm: round(v, 2) })}
                   />
-                  <NumberRow
+                  <SliderRow
                     label={t("pockets.height")}
                     value={p.heightMm}
                     min={SYSTEM.minPocketHeightMm}
@@ -252,7 +252,7 @@ export function PocketEditor({
                     unit="mm"
                     onChange={(v) => update(idx, { heightMm: round(v, 2) })}
                   />
-                  <NumberRow
+                  <SliderRow
                     label="X"
                     value={p.centerXMm}
                     min={minX}
@@ -261,7 +261,7 @@ export function PocketEditor({
                     unit="mm"
                     onChange={(v) => update(idx, { centerXMm: round(v, 2) })}
                   />
-                  <NumberRow
+                  <SliderRow
                     label="Y"
                     value={p.centerYMm}
                     min={minY}
@@ -280,11 +280,12 @@ export function PocketEditor({
       <p className="text-[10px] text-neutral-500">
         {t("pockets.hint", { thickness: wallThicknessMm.toFixed(2) })}
       </p>
+      <p className="text-[10px] text-neutral-500">{t("pockets.dragHint")}</p>
     </section>
   );
 }
 
-interface NumberRowProps {
+interface SliderRowProps {
   label: string;
   value: number;
   min: number;
@@ -294,22 +295,24 @@ interface NumberRowProps {
   onChange(v: number): void;
 }
 
-function NumberRow({ label, value, min, max, step, unit, onChange }: NumberRowProps) {
+function SliderRow({ label, value, min, max, step, unit, onChange }: SliderRowProps) {
   const clamped = clamp(value, min, max);
   return (
     <label className="block space-y-1">
       <span className="text-[10px] uppercase tracking-wide text-neutral-500">{label}</span>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <input
-          type="number"
+          type="range"
           min={min}
           max={max}
           step={step}
           value={clamped}
-          onChange={(e) => onChange(clamp(Number(e.target.value), min, max))}
-          className="w-full rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-xs font-mono text-neutral-100"
+          onChange={(e) => onChange(Number(e.target.value))}
+          className="slotcrate-range flex-1"
         />
-        {unit && <span className="text-[10px] text-neutral-500">{unit}</span>}
+        <span className="w-16 text-right text-xs font-mono text-neutral-200">
+          {clamped.toFixed(1)}{unit ? ` ${unit}` : ""}
+        </span>
       </div>
     </label>
   );

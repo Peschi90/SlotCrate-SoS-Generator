@@ -432,6 +432,12 @@ export function GeneratorClient({
           dividers={sanitizedDividers}
           pockets={sanitizedPockets}
           pocketsFillOuter={pocketsFillOuter}
+          onDividerChange={(idx, patch) =>
+            setDividers((prev) => prev.map((d, i) => (i === idx ? { ...d, ...patch } : d)))
+          }
+          onPocketChange={(idx, patch) =>
+            setPockets((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)))
+          }
         />
       </div>
     </div>

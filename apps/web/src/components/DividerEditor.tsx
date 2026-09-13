@@ -182,6 +182,7 @@ export function DividerEditor({
       <p className="text-[10px] text-neutral-500">
         {t("dividers.hint", { thickness: wallThicknessMm.toFixed(2) })}
       </p>
+      <p className="text-[10px] text-neutral-500">{t("dividers.dragHint")}</p>
     </section>
   );
 }

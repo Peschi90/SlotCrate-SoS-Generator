@@ -1,7 +1,8 @@
 "use client";
 
 import * as THREE from "three";
-import { useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
+import { useThree, type ThreeEvent } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import { SYSTEM } from "@/lib/system";
 import type { Divider, Pocket } from "@/lib/schema";
@@ -20,6 +21,10 @@ interface Props {
   dividers?: Divider[];
   pockets?: Pocket[];
   pocketsFillOuter?: boolean;
+  onDividerChange?: (index: number, patch: Partial<Divider>) => void;
+  onPocketChange?: (index: number, patch: Partial<Pocket>) => void;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
 }
 
 /**
@@ -41,7 +46,11 @@ export function BoxMesh({
   cornerRadiusMm = 1.5,
   dividers = [],
   pockets = [],
-  pocketsFillOuter = false
+  pocketsFillOuter = false,
+  onDividerChange,
+  onPocketChange,
+  onDragStart,
+  onDragEnd
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = Math.max(1, widthCells * pitchMm - 2 * outerClearanceMm);
@@ -56,6 +65,92 @@ export function BoxMesh({
   const innerW = Math.max(0, outerW - 2 * wall);
   const innerD = Math.max(0, outerD - 2 * wall);
   const cavityH = Math.max(0, heightMm - pickupTop - floorT);
+
+  const groupRef = useRef<THREE.Group>(null);
+  const controls = useThree((s) => s.controls) as { enabled: boolean } | null;
+  const dragPlaneRef = useRef(new THREE.Plane());
+  const dragPointRef = useRef(new THREE.Vector3());
+  const dragStateRef = useRef<
+    { kind: "divider" | "pocket"; index: number } | null
+  >(null);
+
+  const beginDragPlane = useCallback(() => {
+    const group = groupRef.current;
+    if (!group) return;
+    const origin = new THREE.Vector3(0, 0, pickupTop + floorT);
+    group.localToWorld(origin);
+    const normal = new THREE.Vector3(0, 0, 1).transformDirection(group.matrixWorld);
+    dragPlaneRef.current.setFromNormalAndCoplanarPoint(normal, origin);
+  }, [pickupTop, floorT]);
+
+  const computeLocalXY = useCallback(
+    (event: ThreeEvent<PointerEvent>): { x: number; y: number } | null => {
+      const group = groupRef.current;
+      if (!group) return null;
+      const hit = event.ray.intersectPlane(dragPlaneRef.current, dragPointRef.current);
+      if (!hit) return null;
+      const local = group.worldToLocal(hit.clone());
+      return { x: local.x, y: local.y };
+    },
+    []
+  );
+
+  const startDrag = useCallback(
+    (kind: "divider" | "pocket", index: number, event: ThreeEvent<PointerEvent>) => {
+      if (!event.altKey || event.button !== 0) return;
+      event.stopPropagation();
+      (event.target as { setPointerCapture?: (id: number) => void }).setPointerCapture?.(
+        event.pointerId
+      );
+      beginDragPlane();
+      dragStateRef.current = { kind, index };
+      if (controls) controls.enabled = false;
+      onDragStart?.();
+    },
+    [beginDragPlane, controls, onDragStart]
+  );
+
+  const moveDrag = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      const drag = dragStateRef.current;
+      if (!drag) return;
+      const xy = computeLocalXY(event);
+      if (!xy) return;
+      const halfT = wall / 2;
+      if (drag.kind === "divider") {
+        const d = dividers[drag.index];
+        if (!d) return;
+        if (d.axis === "x") {
+          const clamped = clampNum(xy.x, halfT, Math.max(halfT, innerW - halfT));
+          onDividerChange?.(drag.index, { offsetMm: round2(clamped) });
+        } else {
+          const clamped = clampNum(xy.y, halfT, Math.max(halfT, innerD - halfT));
+          onDividerChange?.(drag.index, { offsetMm: round2(clamped) });
+        }
+      } else {
+        const p = pockets[drag.index];
+        if (!p) return;
+        const r = p.diameterMm / 2;
+        const cx = clampNum(xy.x, r, Math.max(r, innerW - r));
+        const cy = clampNum(xy.y, r, Math.max(r, innerD - r));
+        onPocketChange?.(drag.index, { centerXMm: round2(cx), centerYMm: round2(cy) });
+      }
+    },
+    [computeLocalXY, dividers, pockets, wall, innerW, innerD, onDividerChange, onPocketChange]
+  );
+
+  const endDrag = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      if (!dragStateRef.current) return;
+      (event.target as { releasePointerCapture?: (id: number) => void }).releasePointerCapture?.(
+        event.pointerId
+      );
+      dragStateRef.current = null;
+      if (controls) controls.enabled = true;
+      onDragEnd?.();
+    },
+    [controls, onDragEnd]
+  );
 
   const wallGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -102,7 +197,7 @@ export function BoxMesh({
   }, [widthCells, depthCells, pitchMm]);
 
   return (
-    <group>
+    <group ref={groupRef}>
       <mesh position={[0, 0, pickupTop - zEps]} geometry={floorGeometry}>
         <meshStandardMaterial
           color={color}
@@ -143,7 +238,13 @@ export function BoxMesh({
         const cy = isX ? wall + innerD / 2 : wall + d.offsetMm;
         const cz = pickupTop + floorT + eff / 2;
         return (
-          <mesh key={`div-${idx}`} position={[cx, cy, cz]}>
+          <mesh
+            key={`div-${idx}`}
+            position={[cx, cy, cz]}
+            onPointerDown={(e) => startDrag("divider", idx, e)}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+          >
             <boxGeometry args={[dimX, dimY, eff]} />
             <meshStandardMaterial
               color={color}
@@ -176,6 +277,9 @@ export function BoxMesh({
             baseZ={pickupTop + floorT}
             color={color}
             opacity={opacity}
+            onPointerDown={(e) => startDrag("pocket", idx, e)}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
           />
         ))
       )}
@@ -190,9 +294,22 @@ interface PocketMeshProps {
   baseZ: number;
   color: string;
   opacity: number;
+  onPointerDown?: (event: ThreeEvent<PointerEvent>) => void;
+  onPointerMove?: (event: ThreeEvent<PointerEvent>) => void;
+  onPointerUp?: (event: ThreeEvent<PointerEvent>) => void;
 }
 
-function PocketMesh({ pocket, wall, cavityH, baseZ, color, opacity }: PocketMeshProps) {
+function PocketMesh({
+  pocket,
+  wall,
+  cavityH,
+  baseZ,
+  color,
+  opacity,
+  onPointerDown,
+  onPointerMove,
+  onPointerUp
+}: PocketMeshProps) {
   const eff = Math.min(Math.max(0, pocket.heightMm), cavityH);
   const geometry = useMemo(() => {
     const outerR = pocket.diameterMm / 2;
@@ -212,7 +329,13 @@ function PocketMesh({ pocket, wall, cavityH, baseZ, color, opacity }: PocketMesh
   }, [pocket.diameterMm, wall, eff]);
   if (eff <= 0) return null;
   return (
-    <mesh position={[wall + pocket.centerXMm, wall + pocket.centerYMm, baseZ]} geometry={geometry}>
+    <mesh
+      position={[wall + pocket.centerXMm, wall + pocket.centerYMm, baseZ]}
+      geometry={geometry}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+    >
       <meshStandardMaterial
         color={color}
         metalness={0.15}
@@ -310,4 +433,13 @@ function drawRoundedRect(
   path.absarc(x + rr, y + d - rr, rr, Math.PI / 2, Math.PI, false);
   path.lineTo(x, y + rr);
   path.absarc(x + rr, y + rr, rr, Math.PI, (3 * Math.PI) / 2, false);
+}
+
+function clampNum(v: number, lo: number, hi: number): number {
+  if (!Number.isFinite(v)) return lo;
+  return Math.min(hi, Math.max(lo, v));
+}
+
+function round2(v: number): number {
+  return Math.round(v * 100) / 100;
 }

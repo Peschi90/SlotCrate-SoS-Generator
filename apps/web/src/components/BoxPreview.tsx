@@ -16,6 +16,8 @@ interface Props {
   dividers?: Divider[];
   pockets?: Pocket[];
   pocketsFillOuter?: boolean;
+  onDividerChange?: (index: number, patch: Partial<Divider>) => void;
+  onPocketChange?: (index: number, patch: Partial<Pocket>) => void;
 }
 
 export function BoxPreview({
@@ -28,7 +30,9 @@ export function BoxPreview({
   outerClearanceMm = 0,
   dividers = [],
   pockets = [],
-  pocketsFillOuter = false
+  pocketsFillOuter = false,
+  onDividerChange,
+  onPocketChange
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = widthCells * pitchMm;
@@ -50,6 +54,8 @@ export function BoxPreview({
         dividers={dividers}
         pockets={pockets}
         pocketsFillOuter={pocketsFillOuter}
+        onDividerChange={onDividerChange}
+        onPocketChange={onPocketChange}
       />
     </CadCanvas>
   );

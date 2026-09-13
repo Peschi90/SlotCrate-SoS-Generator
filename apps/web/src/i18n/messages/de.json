@@ -137,7 +137,8 @@
         "remove": "Entfernen",
         "offsetLabel": "Position (mm ab Innenwand)",
         "heightLabel": "Höhe (mm ab Innenboden)",
-        "hint": "Dicke {thickness} mm (= Wandstärke). Positionen werden vom Innenraum-Ursprung gemessen."
+        "hint": "Dicke {thickness} mm (= Wandstärke). Positionen werden vom Innenraum-Ursprung gemessen.",
+        "dragHint": "Tipp: Alt + Linksklick auf einen Steg in der 3D-Ansicht gedrückt halten und ziehen, um ihn direkt zu verschieben."
     },
     "pockets": {
         "title": "Runde Taschen",
@@ -154,7 +155,8 @@
         "hint": "Wandstärke {thickness} mm (= Kasten-Wandstärke). Der Becher steht auf dem Innenboden; Höhe = Wandhöhe des Bechers.",
         "fillOuter": "Außenbereich massiv füllen",
         "fillOuterHintOff": "Rahmen-Modus (Default): jede Tasche ist ein einzelner Becher.",
-        "fillOuterHintOn": "Fill-Modus: Innenraum wird bis zur höchsten Taschenhöhe zu einer massiven Platte, in die die Taschen als Wells eingebohrt werden."
+        "fillOuterHintOn": "Fill-Modus: Innenraum wird bis zur höchsten Taschenhöhe zu einer massiven Platte, in die die Taschen als Wells eingebohrt werden.",
+        "dragHint": "Tipp: Alt + Linksklick auf eine Tasche in der 3D-Ansicht gedrückt halten und ziehen, um sie direkt zu verschieben."
     },
     "admin": {
         "title": "Admin-Panel",

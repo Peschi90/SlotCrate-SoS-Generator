@@ -8,7 +8,8 @@ function resetStore() {
     selectedIds: [],
     past: [],
     future: [],
-    selectedHeightMm: 35.8
+    selectedHeightMm: 35.8,
+    liveEditSnapshot: null
   });
 }
 
@@ -251,5 +252,35 @@ describe("layout store", () => {
     expect(useLayoutStore.getState().boxes.find((b) => b.id === a.id)!.pocketsFillOuter).toBe(true);
     useLayoutStore.getState().undo();
     expect(useLayoutStore.getState().boxes.find((b) => b.id === a.id)!.pocketsFillOuter).toBe(false);
+  });
+
+  it("live divider/pocket updates skip history until commitLiveEdit", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    useLayoutStore.getState().setBoxDividers(a.id, [
+      { axis: "x", offsetMm: 10, heightMm: 20 }
+    ]);
+    useLayoutStore.getState().setBoxPockets(a.id, [
+      { centerXMm: 10, centerYMm: 10, diameterMm: 8, heightMm: 15 }
+    ]);
+    const pastBefore = useLayoutStore.getState().past.length;
+
+    useLayoutStore.getState().beginLiveEdit();
+    useLayoutStore.getState().updateBoxDividerLive(a.id, 0, { offsetMm: 25 });
+    useLayoutStore.getState().updateBoxPocketLive(a.id, 0, { centerXMm: 30, centerYMm: 30 });
+    useLayoutStore.getState().updateBoxDividerLive(a.id, 0, { offsetMm: 27 });
+
+    // Multiple live updates during one drag must not grow the undo stack.
+    expect(useLayoutStore.getState().past.length).toBe(pastBefore);
+    const midDrag = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(midDrag.dividers[0]!.offsetMm).toBe(27);
+    expect(midDrag.pockets[0]!.centerXMm).toBe(30);
+
+    useLayoutStore.getState().commitLiveEdit();
+    expect(useLayoutStore.getState().past.length).toBe(pastBefore + 1);
+
+    useLayoutStore.getState().undo();
+    const restored = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(restored.dividers[0]!.offsetMm).toBe(10);
+    expect(restored.pockets[0]!.centerXMm).toBe(10);
   });
 });
