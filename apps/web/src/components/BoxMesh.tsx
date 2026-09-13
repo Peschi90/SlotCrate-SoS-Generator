@@ -19,6 +19,7 @@ interface Props {
   cornerRadiusMm?: number;
   dividers?: Divider[];
   pockets?: Pocket[];
+  pocketsFillOuter?: boolean;
 }
 
 /**
@@ -39,7 +40,8 @@ export function BoxMesh({
   opacity = 1,
   cornerRadiusMm = 1.5,
   dividers = [],
-  pockets = []
+  pockets = [],
+  pocketsFillOuter = false
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = Math.max(1, widthCells * pitchMm - 2 * outerClearanceMm);
@@ -153,17 +155,30 @@ export function BoxMesh({
           </mesh>
         );
       })}
-      {pockets.map((p, idx) => (
-        <PocketMesh
-          key={`pocket-${idx}`}
-          pocket={p}
+      {pocketsFillOuter && pockets.length > 0 ? (
+        <PocketSlabMesh
+          pockets={pockets}
+          innerW={innerW}
+          innerD={innerD}
           wall={wall}
           cavityH={cavityH}
           baseZ={pickupTop + floorT}
           color={color}
           opacity={opacity}
         />
-      ))}
+      ) : (
+        pockets.map((p, idx) => (
+          <PocketMesh
+            key={`pocket-${idx}`}
+            pocket={p}
+            wall={wall}
+            cavityH={cavityH}
+            baseZ={pickupTop + floorT}
+            color={color}
+            opacity={opacity}
+          />
+        ))
+      )}
     </group>
   );
 }
@@ -198,6 +213,66 @@ function PocketMesh({ pocket, wall, cavityH, baseZ, color, opacity }: PocketMesh
   if (eff <= 0) return null;
   return (
     <mesh position={[wall + pocket.centerXMm, wall + pocket.centerYMm, baseZ]} geometry={geometry}>
+      <meshStandardMaterial
+        color={color}
+        metalness={0.15}
+        roughness={0.6}
+        transparent={opacity < 1}
+        opacity={opacity}
+      />
+    </mesh>
+  );
+}
+
+interface PocketSlabMeshProps {
+  pockets: Pocket[];
+  innerW: number;
+  innerD: number;
+  wall: number;
+  cavityH: number;
+  baseZ: number;
+  color: string;
+  opacity: number;
+}
+
+function PocketSlabMesh({
+  pockets,
+  innerW,
+  innerD,
+  wall,
+  cavityH,
+  baseZ,
+  color,
+  opacity
+}: PocketSlabMeshProps) {
+  const maxH = Math.min(
+    cavityH,
+    pockets.reduce((m, p) => Math.max(m, p.heightMm), 0)
+  );
+  const geometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(innerW, 0);
+    shape.lineTo(innerW, innerD);
+    shape.lineTo(0, innerD);
+    shape.lineTo(0, 0);
+    for (const p of pockets) {
+      const innerR = Math.max(0.1, p.diameterMm / 2 - wall);
+      const hole = new THREE.Path();
+      hole.absarc(p.centerXMm, p.centerYMm, innerR, 0, Math.PI * 2, true);
+      shape.holes.push(hole);
+    }
+    const geom = new THREE.ExtrudeGeometry(shape, {
+      depth: Math.max(0.001, maxH),
+      bevelEnabled: false,
+      curveSegments: 24
+    });
+    geom.computeVertexNormals();
+    return geom;
+  }, [pockets, innerW, innerD, wall, maxH]);
+  if (maxH <= 0) return null;
+  return (
+    <mesh position={[wall, wall, baseZ]} geometry={geometry}>
       <meshStandardMaterial
         color={color}
         metalness={0.15}

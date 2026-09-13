@@ -151,7 +151,10 @@
         "remove": "Entfernen",
         "itemHeading": "Tasche {index}",
         "tooManyWarning": "Quadratraster ergäbe {count} Taschen — mehr als das Limit ({max}). Wähle einen größeren Durchmesser.",
-        "hint": "Wandstärke {thickness} mm (= Kasten-Wandstärke). Der Becher steht auf dem Innenboden; Höhe = Wandhöhe des Bechers."
+        "hint": "Wandstärke {thickness} mm (= Kasten-Wandstärke). Der Becher steht auf dem Innenboden; Höhe = Wandhöhe des Bechers.",
+        "fillOuter": "Außenbereich massiv füllen",
+        "fillOuterHintOff": "Rahmen-Modus (Default): jede Tasche ist ein einzelner Becher.",
+        "fillOuterHintOn": "Fill-Modus: Innenraum wird bis zur höchsten Taschenhöhe zu einer massiven Platte, in die die Taschen als Wells eingebohrt werden."
     },
     "admin": {
         "title": "Admin-Panel",

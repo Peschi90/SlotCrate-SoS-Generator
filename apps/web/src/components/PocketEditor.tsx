@@ -13,6 +13,8 @@ interface Props {
   wallThicknessMm?: number;
   pockets: Pocket[];
   onChange(next: Pocket[]): void;
+  fillOuter: boolean;
+  onFillOuterChange(value: boolean): void;
 }
 
 /**
@@ -26,7 +28,9 @@ export function PocketEditor({
   gridPitchMm = SYSTEM.gridPitchMm,
   wallThicknessMm = SYSTEM.wallThicknessMm,
   pockets,
-  onChange
+  onChange,
+  fillOuter,
+  onFillOuterChange
 }: Props) {
   const t = useTranslations();
   const innerW = Math.max(0, widthCells * gridPitchMm - 2 * wallThicknessMm);
@@ -186,6 +190,18 @@ export function PocketEditor({
             })}
           </p>
         )}
+        <label className="flex items-center gap-2 text-[11px] text-neutral-300 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={fillOuter}
+            onChange={(e) => onFillOuterChange(e.target.checked)}
+            className="accent-crate-box"
+          />
+          <span>{t("pockets.fillOuter")}</span>
+        </label>
+        <p className="text-[10px] text-neutral-500">
+          {fillOuter ? t("pockets.fillOuterHintOn") : t("pockets.fillOuterHintOff")}
+        </p>
       </div>
 
       {pockets.length === 0 ? (

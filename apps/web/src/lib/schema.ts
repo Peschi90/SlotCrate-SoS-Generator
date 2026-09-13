@@ -46,7 +46,8 @@ export const boxRequestSchema = z.object({
   stlTessellationLinearMm,
   stlTessellationAngularRad,
   dividers,
-  pockets
+  pockets,
+  pocketsFillOuter: z.boolean().default(false)
 });
 
 export type BoxRequest = z.infer<typeof boxRequestSchema>;
@@ -74,7 +75,8 @@ export const layoutBoxSchema = z.object({
   depthCells: cells,
   heightMm: heightMm.default(SYSTEM.defaultBoxHeightMm),
   dividers,
-  pockets
+  pockets,
+  pocketsFillOuter: z.boolean().default(false)
 });
 
 export type LayoutBox = z.infer<typeof layoutBoxSchema>;

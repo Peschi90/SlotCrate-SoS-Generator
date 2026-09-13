@@ -15,6 +15,7 @@ interface Props {
   outerClearanceMm?: number;
   dividers?: Divider[];
   pockets?: Pocket[];
+  pocketsFillOuter?: boolean;
 }
 
 export function BoxPreview({
@@ -26,7 +27,8 @@ export function BoxPreview({
   innerFloorRadiusMm = 2.5,
   outerClearanceMm = 0,
   dividers = [],
-  pockets = []
+  pockets = [],
+  pocketsFillOuter = false
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = widthCells * pitchMm;
@@ -47,6 +49,7 @@ export function BoxPreview({
         outerClearanceMm={outerClearanceMm}
         dividers={dividers}
         pockets={pockets}
+        pocketsFillOuter={pocketsFillOuter}
       />
     </CadCanvas>
   );

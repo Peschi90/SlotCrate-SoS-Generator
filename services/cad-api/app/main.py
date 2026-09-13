@@ -105,6 +105,7 @@ def create_app() -> FastAPI:
             payload.stlTessellationAngularRad,
             dividers=divider_tuples,
             pockets=pocket_tuples,
+            pockets_fill_outer=payload.pocketsFillOuter,
         )
         cached = cache.get(key)
         if cached is None:
@@ -120,6 +121,7 @@ def create_app() -> FastAPI:
                 stl_tessellation_angular_rad=payload.stlTessellationAngularRad,
                 dividers=divider_tuples,
                 pockets=pocket_tuples,
+                pockets_fill_outer=payload.pocketsFillOuter,
             )
             cache.store_bytes(key, data)
         else:

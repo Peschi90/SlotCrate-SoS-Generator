@@ -20,7 +20,8 @@ export const layoutDraftBoxSchema = z.object({
   depthCells: cells,
   heightMm,
   dividers: z.array(dividerSchema).max(SYSTEM.maxDividersPerBox).default([]),
-  pockets: z.array(pocketSchema).max(SYSTEM.maxPocketsPerBox).default([])
+  pockets: z.array(pocketSchema).max(SYSTEM.maxPocketsPerBox).default([]),
+  pocketsFillOuter: z.boolean().default(false)
 });
 
 export type LayoutDraftBox = z.infer<typeof layoutDraftBoxSchema>;
@@ -136,6 +137,7 @@ export function createDraft(input: {
       diameterMm: number;
       heightMm: number;
     }>;
+    pocketsFillOuter?: boolean;
   }>;
 }): LayoutDraft {
   return {
@@ -160,7 +162,8 @@ export function createDraft(input: {
         centerYMm: p.centerYMm,
         diameterMm: p.diameterMm,
         heightMm: p.heightMm
-      }))
+      })),
+      pocketsFillOuter: Boolean(b.pocketsFillOuter)
     }))
   };
 }

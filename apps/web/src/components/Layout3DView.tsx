@@ -109,6 +109,7 @@ export function Layout3DView({
               opacity={isSel ? 1 : 0.92}
               dividers={b.dividers}
               pockets={b.pockets}
+              pocketsFillOuter={b.pocketsFillOuter}
             />
             {isSel && (
               <lineSegments

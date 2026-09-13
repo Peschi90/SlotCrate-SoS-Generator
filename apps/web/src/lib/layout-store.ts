@@ -11,6 +11,7 @@ export interface PlacedBox {
   heightMm: number;
   dividers: Divider[];
   pockets: Pocket[];
+  pocketsFillOuter: boolean;
 }
 
 interface HistoryEntry {
@@ -45,6 +46,7 @@ interface LayoutState {
   setBoxHeight(id: string, mm: number): void;
   setBoxDividers(id: string, dividers: Divider[]): void;
   setBoxPockets(id: string, pockets: Pocket[]): void;
+  setBoxPocketsFillOuter(id: string, value: boolean): void;
   select(id: string | null): void;
   toggleSelect(id: string): void;
   selectMany(ids: string[]): void;
@@ -63,6 +65,7 @@ interface LayoutState {
       heightMm: number;
       dividers?: Divider[];
       pockets?: Pocket[];
+      pocketsFillOuter?: boolean;
     }>,
     selectedHeightMm?: number
   ): { placed: number; skipped: number };
@@ -249,7 +252,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       depthCells,
       heightMm: heightMm ?? s.selectedHeightMm,
       dividers: [],
-      pockets: []
+      pockets: [],
+      pocketsFillOuter: false
     };
     set({
       boxes: [...s.boxes, box],
@@ -549,6 +553,18 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     });
   },
 
+  setBoxPocketsFillOuter(id, value) {
+    const s = get();
+    const box = s.boxes.find((b) => b.id === id);
+    if (!box) return;
+    if (box.pocketsFillOuter === value) return;
+    set({
+      boxes: s.boxes.map((b) => (b.id === id ? { ...b, pocketsFillOuter: value } : b)),
+      past: [...s.past, snapshot(s)],
+      future: []
+    });
+  },
+
   select(id) {
     const next = id ? [id] : [];
     set({ selectedIds: next, selectedId: primaryId(next) });
@@ -639,7 +655,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
           depthCells: b.depthCells,
           heightMm: b.heightMm,
           dividers: cleanDividers,
-          pockets: cleanPockets
+          pockets: cleanPockets,
+          pocketsFillOuter: Boolean(b.pocketsFillOuter)
         });
         markOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
       } else {
@@ -680,7 +697,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
         depthCells: entry.depthCells,
         heightMm: h,
         dividers: [],
-        pockets: []
+        pockets: [],
+        pocketsFillOuter: false
       });
       markOccupancy(occ, entry.x, entry.y, entry.widthCells, entry.depthCells);
     }

@@ -151,7 +151,10 @@
         "remove": "Remove",
         "itemHeading": "Pocket {index}",
         "tooManyWarning": "Square grid would produce {count} pockets — exceeds limit ({max}). Choose a larger diameter.",
-        "hint": "Wall thickness {thickness} mm (= box wall thickness). The cup sits on the cavity floor; height = cup wall height."
+        "hint": "Wall thickness {thickness} mm (= box wall thickness). The cup sits on the cavity floor; height = cup wall height.",
+        "fillOuter": "Fill outer area with solid material",
+        "fillOuterHintOff": "Frame mode (default): each pocket is a standalone cup.",
+        "fillOuterHintOn": "Fill mode: the cavity is filled up to the tallest pocket height and pockets are drilled into that slab as wells."
     },
     "admin": {
         "title": "Admin panel",

@@ -56,13 +56,14 @@ class UniqueBox:
     height_mm: float
     dividers: Tuple[DividerKey, ...] = ()
     pockets: Tuple[PocketKey, ...] = ()
+    pockets_fill_outer: bool = False
 
     def filename(self, prefix: str) -> str:
         h = f"{self.height_mm:g}"
         base = f"{prefix}_{self.width_cells}x{self.depth_cells}_H{h}"
         if self.dividers or self.pockets:
             digest = hashlib.sha1(
-                f"{self.dividers}|{self.pockets}".encode("utf-8")
+                f"{self.dividers}|{self.pockets}|{int(self.pockets_fill_outer)}".encode("utf-8")
             ).hexdigest()[:6]
             base += f"_F{digest}"
         return f"{base}.stl"
@@ -80,6 +81,7 @@ def stl_bytes_for_box(
     stl_tessellation_angular_rad: float,
     dividers: Sequence[DividerKey] = (),
     pockets: Sequence[PocketKey] = (),
+    pockets_fill_outer: bool = False,
 ) -> bytes:
     shape = build_box(
         width_cells,
@@ -91,6 +93,7 @@ def stl_bytes_for_box(
         outer_clearance_mm=outer_clearance_mm,
         dividers=dividers,
         pockets=pockets,
+        pockets_fill_outer=pockets_fill_outer,
     )
     return stl_bytes_for_shape(
         shape,
@@ -128,6 +131,7 @@ def _unique_boxes(layout: LayoutRequest) -> Counter[UniqueBox]:
                 round(b.heightMm, 4),
                 _dividers_to_key(b.dividers),
                 _pockets_to_key(b.pockets),
+                bool(b.pocketsFillOuter),
             )
         ] += 1
     return counter
@@ -150,6 +154,7 @@ def build_layout_zip(layout: LayoutRequest, filename_prefix: str) -> bytes:
                 stl_tessellation_angular_rad=layout.stlTessellationAngularRad,
                 dividers=unique.dividers,
                 pockets=unique.pockets,
+                pockets_fill_outer=unique.pockets_fill_outer,
             )
             zf.writestr(f"models/{unique.filename(filename_prefix)}", stl)
 

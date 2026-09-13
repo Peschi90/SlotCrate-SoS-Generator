@@ -65,6 +65,7 @@ export function GeneratorClient({
   );
   const [dividers, setDividers] = useState<Divider[]>([]);
   const [pockets, setPockets] = useState<Pocket[]>([]);
+  const [pocketsFillOuter, setPocketsFillOuter] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
@@ -153,7 +154,8 @@ export function GeneratorClient({
           stlTessellationLinearMm: activeVariant.stlTessellationLinearMm,
           stlTessellationAngularRad: activeVariant.stlTessellationAngularRad,
           dividers: sanitizedDividers,
-          pockets: sanitizedPockets
+          pockets: sanitizedPockets,
+          pocketsFillOuter
         }),
         signal: ac.signal
       });
@@ -378,6 +380,8 @@ export function GeneratorClient({
             wallThicknessMm={activeVariant.wallThicknessMm}
             pockets={sanitizedPockets}
             onChange={setPockets}
+            fillOuter={pocketsFillOuter}
+            onFillOuterChange={setPocketsFillOuter}
           />
         </div>
 
@@ -427,6 +431,7 @@ export function GeneratorClient({
           outerClearanceMm={activeVariant.outerClearanceMm}
           dividers={sanitizedDividers}
           pockets={sanitizedPockets}
+          pocketsFillOuter={pocketsFillOuter}
         />
       </div>
     </div>

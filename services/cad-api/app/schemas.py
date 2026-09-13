@@ -101,6 +101,7 @@ class BoxRequest(BaseModel):
     stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
     dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
     pockets: Annotated[List[PocketSpec], Field(max_length=MAX_POCKETS_PER_BOX)] = Field(default_factory=list)
+    pocketsFillOuter: bool = False
 
 
 class PlateRequest(BaseModel):
@@ -132,6 +133,7 @@ class LayoutBox(BaseModel):
     heightMm: Annotated[float, Field(ge=MIN_HEIGHT_MM, le=MAX_HEIGHT_MM)] = DEFAULT_BOX_HEIGHT_MM
     dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
     pockets: Annotated[List[PocketSpec], Field(max_length=MAX_POCKETS_PER_BOX)] = Field(default_factory=list)
+    pocketsFillOuter: bool = False
 
 
 class LayoutGrid(BaseModel):

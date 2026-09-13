@@ -99,3 +99,27 @@ def test_pocket_combined_with_divider() -> None:
     )
     assert count_solids(box) == 1
     assert is_valid_solid(box)
+
+
+def test_pocket_fill_outer_mode_yields_valid_solid() -> None:
+    inner = _inner_span(3)
+    diameter = 15.0
+    r = diameter / 2.0
+    positions = []
+    for iy in range(3):
+        for ix in range(3):
+            cx = (inner - 3 * diameter) / 2 + r + ix * diameter
+            cy = (inner - 3 * diameter) / 2 + r + iy * diameter
+            positions.append((cx, cy, diameter, 12.0))
+    filled = build_box_parametric(3, 3, pockets=positions, pockets_fill_outer=True)
+    framed = build_box_parametric(3, 3, pockets=positions, pockets_fill_outer=False)
+    assert count_solids(filled) == 1
+    assert is_valid_solid(filled)
+    # Fill-Modus füllt die Zwischenräume massiv → deutlich mehr Volumen.
+    assert volume_mm3(filled) > volume_mm3(framed) + 500.0
+
+
+def test_pocket_fill_outer_ignored_when_no_pockets() -> None:
+    plain = build_box(2, 2)
+    with_flag = build_box(2, 2, pockets=[], pockets_fill_outer=True)
+    assert abs(volume_mm3(plain) - volume_mm3(with_flag)) < 1e-6

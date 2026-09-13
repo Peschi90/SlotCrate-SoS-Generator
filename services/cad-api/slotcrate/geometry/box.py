@@ -68,6 +68,7 @@ def build_box(
     outer_clearance_mm: float = 0.0,
     dividers: Sequence[Divider] = (),
     pockets: Sequence[Pocket] = (),
+    pockets_fill_outer: bool = False,
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if grid_pitch_mm <= 0:
@@ -84,6 +85,7 @@ def build_box(
 
     normalized_dividers = _normalize_dividers(dividers)
     normalized_pockets = _normalize_pockets(pockets)
+    effective_fill = bool(pockets_fill_outer) and bool(normalized_pockets)
 
     if _is_default_height(height_mm) and not normalized_dividers and not normalized_pockets:
         default_geometry = (
@@ -109,6 +111,7 @@ def build_box(
         round(floor_thickness_mm, 4),
         normalized_dividers,
         normalized_pockets,
+        effective_fill,
     )
     return shape
 
@@ -125,6 +128,7 @@ def _build_parametric_cached(
     floor_thickness_mm: float,
     dividers: Tuple[Divider, ...],
     pockets: Tuple[Pocket, ...],
+    pockets_fill_outer: bool,
 ) -> cq.Shape:
     return build_box_parametric(
         width_cells,
@@ -137,6 +141,7 @@ def _build_parametric_cached(
         floor_thickness_mm=floor_thickness_mm,
         dividers=dividers,
         pockets=pockets,
+        pockets_fill_outer=pockets_fill_outer,
     )
 
 
@@ -151,6 +156,7 @@ def build_box_parametric(
     floor_thickness_mm: float = DEFAULT_FLOOR_THICKNESS_MM,
     dividers: Sequence[Divider] = (),
     pockets: Sequence[Pocket] = (),
+    pockets_fill_outer: bool = False,
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if height_mm <= PICKUP_TOP_Z_MM + floor_thickness_mm + 1.0:
@@ -196,18 +202,30 @@ def build_box_parametric(
     if divider_solids:
         hollow_body = hollow_body.fuse(*divider_solids)
 
-    outer_cyls, inner_cyls = _build_pocket_solids(
-        _normalize_pockets(pockets),
-        inner_w=inner_w,
-        inner_d=inner_d,
-        wall_thickness_mm=wall_thickness_mm,
-        cavity_z0=cavity_z0,
-        cavity_h=cavity_h,
-    )
-    if outer_cyls:
-        hollow_body = hollow_body.fuse(*outer_cyls)
-    if inner_cyls:
-        hollow_body = hollow_body.cut(cq.Compound.makeCompound(inner_cyls))
+    normalized_pockets_tuple = _normalize_pockets(pockets)
+    if pockets_fill_outer and normalized_pockets_tuple:
+        hollow_body = _apply_pockets_fill_mode(
+            hollow_body,
+            normalized_pockets_tuple,
+            inner_w=inner_w,
+            inner_d=inner_d,
+            wall_thickness_mm=wall_thickness_mm,
+            cavity_z0=cavity_z0,
+            cavity_h=cavity_h,
+        )
+    else:
+        outer_cyls, inner_cyls = _build_pocket_solids(
+            normalized_pockets_tuple,
+            inner_w=inner_w,
+            inner_d=inner_d,
+            wall_thickness_mm=wall_thickness_mm,
+            cavity_z0=cavity_z0,
+            cavity_h=cavity_h,
+        )
+        if outer_cyls:
+            hollow_body = hollow_body.fuse(*outer_cyls)
+        if inner_cyls:
+            hollow_body = hollow_body.cut(cq.Compound.makeCompound(inner_cyls))
 
     pickup = features.pickup_template()
     if abs(grid_pitch_mm - GRID_PITCH_MM) > 1e-9:
@@ -354,6 +372,52 @@ def _build_pocket_solids(
             cq.Solid.makeCylinder(inner_radius, eff_h + 0.01, origin)
         )
     return outer_solids, inner_solids
+
+
+def _apply_pockets_fill_mode(
+    hollow_body: cq.Shape,
+    pockets: Tuple[Pocket, ...],
+    *,
+    inner_w: float,
+    inner_d: float,
+    wall_thickness_mm: float,
+    cavity_z0: float,
+    cavity_h: float,
+) -> cq.Shape:
+    """Fill-Modus: massive Innenplatte auf max. Taschenhöhe, danach uniforme Wells."""
+    max_h = min(max(p[3] for p in pockets), cavity_h)
+    inner_solids: list[cq.Solid] = []
+    for cx, cy, diameter, _height in pockets:
+        radius = diameter / 2.0
+        inner_radius = radius - wall_thickness_mm
+        if inner_radius < 0.3:
+            raise ValueError(
+                f"pocket.diameterMm={diameter} zu klein für Wandstärke {wall_thickness_mm}"
+            )
+        if cx < radius or cx > inner_w - radius:
+            raise ValueError(
+                f"pocket.centerXMm={cx} außerhalb Innenbreite [{radius}, {inner_w - radius}]"
+            )
+        if cy < radius or cy > inner_d - radius:
+            raise ValueError(
+                f"pocket.centerYMm={cy} außerhalb Innentiefe [{radius}, {inner_d - radius}]"
+            )
+        origin = cq.Vector(
+            wall_thickness_mm + cx,
+            wall_thickness_mm + cy,
+            cavity_z0,
+        )
+        inner_solids.append(
+            cq.Solid.makeCylinder(inner_radius, max_h + 0.01, origin)
+        )
+    slab = cq.Solid.makeBox(
+        inner_w, inner_d, max_h,
+        cq.Vector(wall_thickness_mm, wall_thickness_mm, cavity_z0),
+    )
+    hollow_body = hollow_body.fuse(slab)
+    if inner_solids:
+        hollow_body = hollow_body.cut(cq.Compound.makeCompound(inner_solids))
+    return hollow_body
 
 
 def expected_outer_dimensions_mm(

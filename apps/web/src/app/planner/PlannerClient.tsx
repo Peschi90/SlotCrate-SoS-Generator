@@ -42,6 +42,7 @@ export function PlannerClient({
   const setBoxHeight = useLayoutStore((s) => s.setBoxHeight);
   const setBoxDividers = useLayoutStore((s) => s.setBoxDividers);
   const setBoxPockets = useLayoutStore((s) => s.setBoxPockets);
+  const setBoxPocketsFillOuter = useLayoutStore((s) => s.setBoxPocketsFillOuter);
   const clearSelection = useLayoutStore((s) => s.clearSelection);
   const applyFillPlan = useLayoutStore((s) => s.applyFillPlan);
   const undo = useLayoutStore((s) => s.undo);
@@ -398,6 +399,8 @@ export function PlannerClient({
                   wallThicknessMm={activeVariant.wallThicknessMm}
                   pockets={selected.pockets}
                   onChange={(next) => setBoxPockets(selected.id, next)}
+                  fillOuter={selected.pocketsFillOuter}
+                  onFillOuterChange={(v) => setBoxPocketsFillOuter(selected.id, v)}
                 />
               </div>
             )}

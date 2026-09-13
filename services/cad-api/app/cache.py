@@ -48,6 +48,7 @@ def cache_key(
     stl_tessellation_angular_rad: float,
     dividers: Sequence[Tuple[str, float, float]] | None = None,
     pockets: Sequence[Tuple[float, float, float, float]] | None = None,
+    pockets_fill_outer: bool = False,
     geometry_version: str = GEOMETRY_VERSION,
 ) -> str:
     payload = (
@@ -55,7 +56,8 @@ def cache_key(
         f"{settings_version}|{round(grid_pitch_mm, 4)}|{round(wall_thickness_mm, 4)}|"
         f"{round(inner_floor_radius_mm, 4)}|{round(outer_clearance_mm, 4)}|"
         f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
-        f"{_dividers_key_part(dividers)}|{_pockets_key_part(pockets)}|{geometry_version}"
+        f"{_dividers_key_part(dividers)}|{_pockets_key_part(pockets)}|"
+        f"{'1' if pockets_fill_outer else '0'}|{geometry_version}"
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

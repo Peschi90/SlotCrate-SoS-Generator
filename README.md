@@ -55,9 +55,12 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
   - Optional pro Kasten: **Runde Taschen** als Becher/Rundwand
     (Wanddicke = Wandstärke, Innenboden = Kastenboden, Höhe = Wandhöhe des
     Bechers). Freie Positionierung in mm oder Auto-Fill mit Quadratraster für
-    den gesamten Innenraum. Limit `SYSTEM.maxPocketsPerBox`. Ebenfalls im
-    Generator und pro ausgewähltem Planer-Kasten; ZIP-Export dedupliziert
-    baugleiche Kästen inkl. Taschen.
+    den gesamten Innenraum. Limit `SYSTEM.maxPocketsPerBox`. Optional pro
+    Kasten der Toggle **„Außenbereich massiv füllen"**: statt einzelner Becher
+    wird der Innenraum bis zur höchsten Taschenhöhe zu einer massiven Platte,
+    in die die Taschen als Wells eingebohrt werden (Rahmen-Modus bleibt
+    Default). Ebenfalls im Generator und pro ausgewähltem Planer-Kasten;
+    ZIP-Export dedupliziert baugleiche Kästen inkl. Taschen und Modus.
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,

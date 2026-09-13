@@ -243,4 +243,13 @@ describe("layout store", () => {
     const resized = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
     expect(resized.pockets).toHaveLength(0);
   });
+
+  it("setBoxPocketsFillOuter toggles the flag and is undoable", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    expect(a.pocketsFillOuter).toBe(false);
+    useLayoutStore.getState().setBoxPocketsFillOuter(a.id, true);
+    expect(useLayoutStore.getState().boxes.find((b) => b.id === a.id)!.pocketsFillOuter).toBe(true);
+    useLayoutStore.getState().undo();
+    expect(useLayoutStore.getState().boxes.find((b) => b.id === a.id)!.pocketsFillOuter).toBe(false);
+  });
 });

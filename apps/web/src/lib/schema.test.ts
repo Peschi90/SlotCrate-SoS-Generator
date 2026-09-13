@@ -60,6 +60,18 @@ describe("boxRequestSchema", () => {
       })
     ).toThrow();
   });
+  it("accepts pocketsFillOuter flag", () => {
+    const r = boxRequestSchema.parse({
+      widthCells: 3,
+      depthCells: 3,
+      pocketsFillOuter: true
+    });
+    expect(r.pocketsFillOuter).toBe(true);
+  });
+  it("defaults pocketsFillOuter to false", () => {
+    const r = boxRequestSchema.parse({ widthCells: 2, depthCells: 2 });
+    expect(r.pocketsFillOuter).toBe(false);
+  });
 });
 
 describe("layoutRequestSchema", () => {
