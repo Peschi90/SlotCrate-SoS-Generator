@@ -7,6 +7,7 @@ import { LayoutGrid } from "@/components/LayoutGrid";
 import { Layout3DView } from "@/components/Layout3DView";
 import { PlannerPersistencePanel } from "@/components/PlannerPersistencePanel";
 import { DividerEditor } from "@/components/DividerEditor";
+import { PocketEditor } from "@/components/PocketEditor";
 import { useLayoutStore } from "@/lib/layout-store";
 import { analyzeFreeCells, planFillLargest, planFillWithSize } from "@/lib/layout-fill";
 import { SYSTEM } from "@/lib/system";
@@ -40,6 +41,7 @@ export function PlannerClient({
   const rotateSelected = useLayoutStore((s) => s.rotateSelected);
   const setBoxHeight = useLayoutStore((s) => s.setBoxHeight);
   const setBoxDividers = useLayoutStore((s) => s.setBoxDividers);
+  const setBoxPockets = useLayoutStore((s) => s.setBoxPockets);
   const clearSelection = useLayoutStore((s) => s.clearSelection);
   const applyFillPlan = useLayoutStore((s) => s.applyFillPlan);
   const undo = useLayoutStore((s) => s.undo);
@@ -382,6 +384,20 @@ export function PlannerClient({
                   wallThicknessMm={activeVariant.wallThicknessMm}
                   dividers={selected.dividers}
                   onChange={(next) => setBoxDividers(selected.id, next)}
+                />
+              </div>
+            )}
+
+            {selectedIds.length === 1 && (
+              <div className="border-t border-neutral-800 pt-3">
+                <PocketEditor
+                  widthCells={selected.widthCells}
+                  depthCells={selected.depthCells}
+                  heightMm={selected.heightMm}
+                  gridPitchMm={activeVariant.gridPitchMm}
+                  wallThicknessMm={activeVariant.wallThicknessMm}
+                  pockets={selected.pockets}
+                  onChange={(next) => setBoxPockets(selected.id, next)}
                 />
               </div>
             )}

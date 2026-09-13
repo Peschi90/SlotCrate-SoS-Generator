@@ -83,6 +83,15 @@ def create_app() -> FastAPI:
             (d.axis, round(float(d.offsetMm), 4), round(float(d.heightMm), 4))
             for d in payload.dividers
         )
+        pocket_tuples = tuple(
+            (
+                round(float(p.centerXMm), 4),
+                round(float(p.centerYMm), 4),
+                round(float(p.diameterMm), 4),
+                round(float(p.heightMm), 4),
+            )
+            for p in payload.pockets
+        )
         key = cache_key(
             payload.widthCells,
             payload.depthCells,
@@ -95,6 +104,7 @@ def create_app() -> FastAPI:
             payload.stlTessellationLinearMm,
             payload.stlTessellationAngularRad,
             dividers=divider_tuples,
+            pockets=pocket_tuples,
         )
         cached = cache.get(key)
         if cached is None:
@@ -109,6 +119,7 @@ def create_app() -> FastAPI:
                 stl_tessellation_linear_mm=payload.stlTessellationLinearMm,
                 stl_tessellation_angular_rad=payload.stlTessellationAngularRad,
                 dividers=divider_tuples,
+                pockets=pocket_tuples,
             )
             cache.store_bytes(key, data)
         else:

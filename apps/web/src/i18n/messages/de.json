@@ -139,6 +139,20 @@
         "heightLabel": "Höhe (mm ab Innenboden)",
         "hint": "Dicke {thickness} mm (= Wandstärke). Positionen werden vom Innenraum-Ursprung gemessen."
     },
+    "pockets": {
+        "title": "Runde Taschen",
+        "empty": "Keine Taschen — Innenraum ist offen.",
+        "count": "{count} Taschen",
+        "diameter": "Durchmesser",
+        "height": "Höhe",
+        "addOne": "Tasche mittig",
+        "autoFill": "Alles füllen ({count})",
+        "clear": "Alle entfernen",
+        "remove": "Entfernen",
+        "itemHeading": "Tasche {index}",
+        "tooManyWarning": "Quadratraster ergäbe {count} Taschen — mehr als das Limit ({max}). Wähle einen größeren Durchmesser.",
+        "hint": "Wandstärke {thickness} mm (= Kasten-Wandstärke). Der Becher steht auf dem Innenboden; Höhe = Wandhöhe des Bechers."
+    },
     "admin": {
         "title": "Admin-Panel",
         "activeVersion": "Aktive Version: {version}, erstellt {createdAt}",

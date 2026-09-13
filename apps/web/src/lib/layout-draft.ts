@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SYSTEM } from "./system";
-import { dividerSchema } from "./schema";
+import { dividerSchema, pocketSchema } from "./schema";
 
 /**
  * Portables JSON-Format für gespeicherte / geteilte Layouts.
@@ -19,7 +19,8 @@ export const layoutDraftBoxSchema = z.object({
   widthCells: cells,
   depthCells: cells,
   heightMm,
-  dividers: z.array(dividerSchema).max(SYSTEM.maxDividersPerBox).default([])
+  dividers: z.array(dividerSchema).max(SYSTEM.maxDividersPerBox).default([]),
+  pockets: z.array(pocketSchema).max(SYSTEM.maxPocketsPerBox).default([])
 });
 
 export type LayoutDraftBox = z.infer<typeof layoutDraftBoxSchema>;
@@ -129,6 +130,12 @@ export function createDraft(input: {
     depthCells: number;
     heightMm: number;
     dividers?: Array<{ axis: "x" | "y"; offsetMm: number; heightMm: number }>;
+    pockets?: Array<{
+      centerXMm: number;
+      centerYMm: number;
+      diameterMm: number;
+      heightMm: number;
+    }>;
   }>;
 }): LayoutDraft {
   return {
@@ -147,6 +154,12 @@ export function createDraft(input: {
         axis: d.axis,
         offsetMm: d.offsetMm,
         heightMm: d.heightMm
+      })),
+      pockets: (b.pockets ?? []).map((p) => ({
+        centerXMm: p.centerXMm,
+        centerYMm: p.centerYMm,
+        diameterMm: p.diameterMm,
+        heightMm: p.heightMm
       }))
     }))
   };

@@ -23,6 +23,17 @@ export type Divider = z.infer<typeof dividerSchema>;
 
 const dividers = z.array(dividerSchema).max(SYSTEM.maxDividersPerBox).default([]);
 
+export const pocketSchema = z.object({
+  centerXMm: z.number().min(0).max(SYSTEM.maxCells * 30),
+  centerYMm: z.number().min(0).max(SYSTEM.maxCells * 30),
+  diameterMm: z.number().min(SYSTEM.minPocketDiameterMm).max(SYSTEM.maxPocketDiameterMm),
+  heightMm: z.number().min(SYSTEM.minPocketHeightMm).max(SYSTEM.maxHeightMm)
+});
+
+export type Pocket = z.infer<typeof pocketSchema>;
+
+const pockets = z.array(pocketSchema).max(SYSTEM.maxPocketsPerBox).default([]);
+
 export const boxRequestSchema = z.object({
   widthCells: cells,
   depthCells: cells,
@@ -34,7 +45,8 @@ export const boxRequestSchema = z.object({
   outerClearanceMm,
   stlTessellationLinearMm,
   stlTessellationAngularRad,
-  dividers
+  dividers,
+  pockets
 });
 
 export type BoxRequest = z.infer<typeof boxRequestSchema>;
@@ -61,7 +73,8 @@ export const layoutBoxSchema = z.object({
   widthCells: cells,
   depthCells: cells,
   heightMm: heightMm.default(SYSTEM.defaultBoxHeightMm),
-  dividers
+  dividers,
+  pockets
 });
 
 export type LayoutBox = z.infer<typeof layoutBoxSchema>;

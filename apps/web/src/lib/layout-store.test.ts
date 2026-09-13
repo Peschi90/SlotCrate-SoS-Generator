@@ -220,4 +220,27 @@ describe("layout store", () => {
     const resized = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
     expect(resized.dividers).toHaveLength(0);
   });
+
+  it("setBoxPockets stores pockets on the selected box and is undoable", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    useLayoutStore.getState().setBoxPockets(a.id, [
+      { centerXMm: 15, centerYMm: 15, diameterMm: 12, heightMm: 20 }
+    ]);
+    const withPockets = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(withPockets.pockets).toHaveLength(1);
+    useLayoutStore.getState().undo();
+    const restored = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(restored.pockets).toHaveLength(0);
+  });
+
+  it("resizeBox drops pockets whose radius no longer fits", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    useLayoutStore.getState().setBoxPockets(a.id, [
+      { centerXMm: 20, centerYMm: 20, diameterMm: 12, heightMm: 20 }
+    ]);
+    // Inner extent of a 1×1 box is ~19 mm, so a pocket at (20,20) can't fit.
+    expect(useLayoutStore.getState().resizeBox(a.id, 1, 1)).toBe(true);
+    const resized = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(resized.pockets).toHaveLength(0);
+  });
 });

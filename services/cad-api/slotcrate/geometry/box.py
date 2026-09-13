@@ -29,12 +29,18 @@ from .constants import (
     GRID_PITCH_MM,
     MIN_DIVIDER_HEIGHT_MM,
     MIN_DIVIDER_OFFSET_MM,
+    MIN_POCKET_DIAMETER_MM,
+    MIN_POCKET_HEIGHT_MM,
     PICKUP_TOP_Z_MM,
 )
 
 # (axis, offset_mm, height_mm): axis ∈ {"x","y"}. Offset gemessen vom
 # Innenraum-Ursprung (x=wall_thickness, y=wall_thickness).
 Divider = Tuple[str, float, float]
+
+# (center_x_mm, center_y_mm, diameter_mm, height_mm): Position vom
+# Innenraum-Ursprung, Becherwand = wall_thickness.
+Pocket = Tuple[float, float, float, float]
 
 
 class UnsupportedBoxSize(NotImplementedError):
@@ -61,6 +67,7 @@ def build_box(
     inner_floor_radius_mm: float = DEFAULT_INNER_FLOOR_RADIUS_MM,
     outer_clearance_mm: float = 0.0,
     dividers: Sequence[Divider] = (),
+    pockets: Sequence[Pocket] = (),
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if grid_pitch_mm <= 0:
@@ -76,8 +83,9 @@ def build_box(
     floor_thickness_mm = DEFAULT_FLOOR_THICKNESS_MM * pitch_scale
 
     normalized_dividers = _normalize_dividers(dividers)
+    normalized_pockets = _normalize_pockets(pockets)
 
-    if _is_default_height(height_mm) and not normalized_dividers:
+    if _is_default_height(height_mm) and not normalized_dividers and not normalized_pockets:
         default_geometry = (
             abs(grid_pitch_mm - GRID_PITCH_MM) < 1e-9
             and abs(wall_thickness_mm - DEFAULT_WALL_THICKNESS_MM) < 1e-9
@@ -100,6 +108,7 @@ def build_box(
         round(outer_clearance_mm, 4),
         round(floor_thickness_mm, 4),
         normalized_dividers,
+        normalized_pockets,
     )
     return shape
 
@@ -115,6 +124,7 @@ def _build_parametric_cached(
     outer_clearance_mm: float,
     floor_thickness_mm: float,
     dividers: Tuple[Divider, ...],
+    pockets: Tuple[Pocket, ...],
 ) -> cq.Shape:
     return build_box_parametric(
         width_cells,
@@ -126,6 +136,7 @@ def _build_parametric_cached(
         outer_clearance_mm=outer_clearance_mm,
         floor_thickness_mm=floor_thickness_mm,
         dividers=dividers,
+        pockets=pockets,
     )
 
 
@@ -139,6 +150,7 @@ def build_box_parametric(
     outer_clearance_mm: float = 0.0,
     floor_thickness_mm: float = DEFAULT_FLOOR_THICKNESS_MM,
     dividers: Sequence[Divider] = (),
+    pockets: Sequence[Pocket] = (),
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if height_mm <= PICKUP_TOP_Z_MM + floor_thickness_mm + 1.0:
@@ -183,6 +195,19 @@ def build_box_parametric(
     )
     if divider_solids:
         hollow_body = hollow_body.fuse(*divider_solids)
+
+    outer_cyls, inner_cyls = _build_pocket_solids(
+        _normalize_pockets(pockets),
+        inner_w=inner_w,
+        inner_d=inner_d,
+        wall_thickness_mm=wall_thickness_mm,
+        cavity_z0=cavity_z0,
+        cavity_h=cavity_h,
+    )
+    if outer_cyls:
+        hollow_body = hollow_body.fuse(*outer_cyls)
+    if inner_cyls:
+        hollow_body = hollow_body.cut(cq.Compound.makeCompound(inner_cyls))
 
     pickup = features.pickup_template()
     if abs(grid_pitch_mm - GRID_PITCH_MM) > 1e-9:
@@ -262,6 +287,73 @@ def _build_divider_solids(
                 )
             )
     return solids
+
+
+def _normalize_pockets(pockets: Sequence[Pocket]) -> Tuple[Pocket, ...]:
+    if not pockets:
+        return ()
+    normalized: list[Pocket] = []
+    for entry in pockets:
+        cx, cy, diameter, height_mm = entry
+        normalized.append(
+            (
+                round(float(cx), 4),
+                round(float(cy), 4),
+                round(float(diameter), 4),
+                round(float(height_mm), 4),
+            )
+        )
+    return tuple(sorted(normalized))
+
+
+def _build_pocket_solids(
+    pockets: Tuple[Pocket, ...],
+    *,
+    inner_w: float,
+    inner_d: float,
+    wall_thickness_mm: float,
+    cavity_z0: float,
+    cavity_h: float,
+) -> tuple[list[cq.Solid], list[cq.Solid]]:
+    if not pockets:
+        return [], []
+    outer_solids: list[cq.Solid] = []
+    inner_solids: list[cq.Solid] = []
+    for cx, cy, diameter, height_mm in pockets:
+        if diameter < MIN_POCKET_DIAMETER_MM:
+            raise ValueError(
+                f"pocket.diameterMm={diameter} unter Minimum {MIN_POCKET_DIAMETER_MM}"
+            )
+        if height_mm < MIN_POCKET_HEIGHT_MM:
+            raise ValueError(
+                f"pocket.heightMm={height_mm} unter Minimum {MIN_POCKET_HEIGHT_MM}"
+            )
+        radius = diameter / 2.0
+        inner_radius = radius - wall_thickness_mm
+        if inner_radius < 0.3:
+            raise ValueError(
+                f"pocket.diameterMm={diameter} zu klein für Wandstärke {wall_thickness_mm}"
+            )
+        if cx < radius or cx > inner_w - radius:
+            raise ValueError(
+                f"pocket.centerXMm={cx} außerhalb Innenbreite [{radius}, {inner_w - radius}]"
+            )
+        if cy < radius or cy > inner_d - radius:
+            raise ValueError(
+                f"pocket.centerYMm={cy} außerhalb Innentiefe [{radius}, {inner_d - radius}]"
+            )
+        eff_h = min(height_mm, cavity_h)
+        origin = cq.Vector(
+            wall_thickness_mm + cx,
+            wall_thickness_mm + cy,
+            cavity_z0,
+        )
+        outer_solids.append(cq.Solid.makeCylinder(radius, eff_h, origin))
+        # Innenzylinder schließt oben mit 0,01 mm Überlauf, damit der Cut die Bechermündung sauber öffnet.
+        inner_solids.append(
+            cq.Solid.makeCylinder(inner_radius, eff_h + 0.01, origin)
+        )
+    return outer_solids, inner_solids
 
 
 def expected_outer_dimensions_mm(

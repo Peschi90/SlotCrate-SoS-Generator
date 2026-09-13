@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { useMemo } from "react";
 import { RoundedBox } from "@react-three/drei";
 import { SYSTEM } from "@/lib/system";
-import type { Divider } from "@/lib/schema";
+import type { Divider, Pocket } from "@/lib/schema";
 
 interface Props {
   widthCells: number;
@@ -18,6 +18,7 @@ interface Props {
   opacity?: number;
   cornerRadiusMm?: number;
   dividers?: Divider[];
+  pockets?: Pocket[];
 }
 
 /**
@@ -37,7 +38,8 @@ export function BoxMesh({
   color = "#7fb0ff",
   opacity = 1,
   cornerRadiusMm = 1.5,
-  dividers = []
+  dividers = [],
+  pockets = []
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = Math.max(1, widthCells * pitchMm - 2 * outerClearanceMm);
@@ -151,7 +153,59 @@ export function BoxMesh({
           </mesh>
         );
       })}
+      {pockets.map((p, idx) => (
+        <PocketMesh
+          key={`pocket-${idx}`}
+          pocket={p}
+          wall={wall}
+          cavityH={cavityH}
+          baseZ={pickupTop + floorT}
+          color={color}
+          opacity={opacity}
+        />
+      ))}
     </group>
+  );
+}
+
+interface PocketMeshProps {
+  pocket: Pocket;
+  wall: number;
+  cavityH: number;
+  baseZ: number;
+  color: string;
+  opacity: number;
+}
+
+function PocketMesh({ pocket, wall, cavityH, baseZ, color, opacity }: PocketMeshProps) {
+  const eff = Math.min(Math.max(0, pocket.heightMm), cavityH);
+  const geometry = useMemo(() => {
+    const outerR = pocket.diameterMm / 2;
+    const innerR = Math.max(0.1, outerR - wall);
+    const shape = new THREE.Shape();
+    shape.absarc(0, 0, outerR, 0, Math.PI * 2, false);
+    const hole = new THREE.Path();
+    hole.absarc(0, 0, innerR, 0, Math.PI * 2, true);
+    shape.holes.push(hole);
+    const geom = new THREE.ExtrudeGeometry(shape, {
+      depth: Math.max(0.001, eff),
+      bevelEnabled: false,
+      curveSegments: 24
+    });
+    geom.computeVertexNormals();
+    return geom;
+  }, [pocket.diameterMm, wall, eff]);
+  if (eff <= 0) return null;
+  return (
+    <mesh position={[wall + pocket.centerXMm, wall + pocket.centerYMm, baseZ]} geometry={geometry}>
+      <meshStandardMaterial
+        color={color}
+        metalness={0.15}
+        roughness={0.6}
+        transparent={opacity < 1}
+        opacity={opacity}
+      />
+    </mesh>
   );
 }
 

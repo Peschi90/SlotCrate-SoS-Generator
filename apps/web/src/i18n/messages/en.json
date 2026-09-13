@@ -139,6 +139,20 @@
         "heightLabel": "Height (mm from inner floor)",
         "hint": "Thickness {thickness} mm (= wall thickness). Positions are measured from the inner cavity origin."
     },
+    "pockets": {
+        "title": "Round pockets",
+        "empty": "No pockets — cavity is open.",
+        "count": "{count} pockets",
+        "diameter": "Diameter",
+        "height": "Height",
+        "addOne": "Pocket centered",
+        "autoFill": "Fill all ({count})",
+        "clear": "Remove all",
+        "remove": "Remove",
+        "itemHeading": "Pocket {index}",
+        "tooManyWarning": "Square grid would produce {count} pockets — exceeds limit ({max}). Choose a larger diameter.",
+        "hint": "Wall thickness {thickness} mm (= box wall thickness). The cup sits on the cavity floor; height = cup wall height."
+    },
     "admin": {
         "title": "Admin panel",
         "activeVersion": "Active version: {version}, created {createdAt}",

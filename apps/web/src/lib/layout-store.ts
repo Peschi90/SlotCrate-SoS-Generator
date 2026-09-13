@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { SYSTEM } from "./system";
-import type { Divider } from "./schema";
+import type { Divider, Pocket } from "./schema";
 
 export interface PlacedBox {
   id: string;
@@ -10,6 +10,7 @@ export interface PlacedBox {
   depthCells: number;
   heightMm: number;
   dividers: Divider[];
+  pockets: Pocket[];
 }
 
 interface HistoryEntry {
@@ -43,6 +44,7 @@ interface LayoutState {
   duplicateSelected(): number;
   setBoxHeight(id: string, mm: number): void;
   setBoxDividers(id: string, dividers: Divider[]): void;
+  setBoxPockets(id: string, pockets: Pocket[]): void;
   select(id: string | null): void;
   toggleSelect(id: string): void;
   selectMany(ids: string[]): void;
@@ -53,7 +55,15 @@ interface LayoutState {
   reset(): void;
   canPlace(x: number, y: number, widthCells: number, depthCells: number, ignoreId?: string): boolean;
   loadBoxes(
-    incoming: Array<{ x: number; y: number; widthCells: number; depthCells: number; heightMm: number; dividers?: Divider[] }>,
+    incoming: Array<{
+      x: number;
+      y: number;
+      widthCells: number;
+      depthCells: number;
+      heightMm: number;
+      dividers?: Divider[];
+      pockets?: Pocket[];
+    }>,
     selectedHeightMm?: number
   ): { placed: number; skipped: number };
   applyFillPlan(plan: FillPlanEntry[], heightMm?: number): number;
@@ -97,7 +107,13 @@ function fits(
 }
 
 function snapshot(state: Pick<LayoutState, "boxes">): HistoryEntry {
-  return { boxes: state.boxes.map((b) => ({ ...b, dividers: b.dividers.map((d) => ({ ...d })) })) };
+  return {
+    boxes: state.boxes.map((b) => ({
+      ...b,
+      dividers: b.dividers.map((d) => ({ ...d })),
+      pockets: b.pockets.map((p) => ({ ...p }))
+    }))
+  };
 }
 
 function makeId(): string {
@@ -151,6 +167,41 @@ export function clampDividers(
   return out;
 }
 
+/**
+ * Verwirft Taschen, die nicht mehr in den (nach Resize/Höhenänderung neuen)
+ * Innenraum passen, und deckelt Höhe/Innendurchmesser gegen Wandkollision.
+ */
+export function clampPockets(
+  pockets: Pocket[] | undefined,
+  widthCells: number,
+  depthCells: number,
+  heightMm: number,
+  gridPitchMm: number = SYSTEM.gridPitchMm,
+  wallThicknessMm: number = SYSTEM.wallThicknessMm
+): Pocket[] {
+  if (!pockets || pockets.length === 0) return [];
+  const innerW = widthCells * gridPitchMm - 2 * wallThicknessMm;
+  const innerD = depthCells * gridPitchMm - 2 * wallThicknessMm;
+  const cavityH = Math.max(0, heightMm - SYSTEM.pickupTopZMm - SYSTEM.floorThicknessMm);
+  const out: Pocket[] = [];
+  for (const p of pockets) {
+    const r = p.diameterMm / 2;
+    if (r < SYSTEM.minPocketDiameterMm / 2) continue;
+    if (p.diameterMm - 2 * wallThicknessMm < 0.6) continue; // Innenradius zu klein
+    if (p.centerXMm < r || p.centerXMm > innerW - r) continue;
+    if (p.centerYMm < r || p.centerYMm > innerD - r) continue;
+    const clampedH = Math.min(Math.max(SYSTEM.minPocketHeightMm, p.heightMm), cavityH);
+    if (clampedH < SYSTEM.minPocketHeightMm) continue;
+    out.push({
+      centerXMm: p.centerXMm,
+      centerYMm: p.centerYMm,
+      diameterMm: p.diameterMm,
+      heightMm: clampedH
+    });
+  }
+  return out;
+}
+
 /** Row-major Suche nach der ersten freien Position für ein w×d-Rechteck. */
 function findFreeSlot(
   occ: Set<number>,
@@ -197,7 +248,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       widthCells,
       depthCells,
       heightMm: heightMm ?? s.selectedHeightMm,
-      dividers: []
+      dividers: [],
+      pockets: []
     };
     set({
       boxes: [...s.boxes, box],
@@ -287,8 +339,13 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     if (w === box.widthCells && d === box.depthCells) return true;
     if (!fits(box.x, box.y, w, d, occupiedMap(s.boxes, [id]))) return false;
     const nextDividers = clampDividers(box.dividers, w, d, box.heightMm);
+    const nextPockets = clampPockets(box.pockets, w, d, box.heightMm);
     set({
-      boxes: s.boxes.map((b) => (b.id === id ? { ...b, widthCells: w, depthCells: d, dividers: nextDividers } : b)),
+      boxes: s.boxes.map((b) =>
+        b.id === id
+          ? { ...b, widthCells: w, depthCells: d, dividers: nextDividers, pockets: nextPockets }
+          : b
+      ),
       past: [...s.past, snapshot(s)],
       future: []
     });
@@ -299,7 +356,11 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     const s = get();
     const box = s.boxes.find((b) => b.id === id);
     if (!box) return false;
-    if (box.widthCells === box.depthCells && box.dividers.length === 0) return true;
+    if (
+      box.widthCells === box.depthCells &&
+      box.dividers.length === 0 &&
+      box.pockets.length === 0
+    ) return true;
     if (!fits(box.x, box.y, box.depthCells, box.widthCells, occupiedMap(s.boxes, [id]))) {
       return false;
     }
@@ -308,10 +369,24 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       offsetMm: d.offsetMm,
       heightMm: d.heightMm
     }));
+    const gridPitchMm = SYSTEM.gridPitchMm;
+    const oldInnerW = box.widthCells * gridPitchMm - 2 * SYSTEM.wallThicknessMm;
+    const rotatedPockets = box.pockets.map<Pocket>((p) => ({
+      centerXMm: p.centerYMm,
+      centerYMm: oldInnerW - p.centerXMm,
+      diameterMm: p.diameterMm,
+      heightMm: p.heightMm
+    }));
     set({
       boxes: s.boxes.map((b) =>
         b.id === id
-          ? { ...b, widthCells: box.depthCells, depthCells: box.widthCells, dividers: swappedDividers }
+          ? {
+              ...b,
+              widthCells: box.depthCells,
+              depthCells: box.widthCells,
+              dividers: swappedDividers,
+              pockets: rotatedPockets
+            }
           : b
       ),
       past: [...s.past, snapshot(s)],
@@ -328,7 +403,11 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     const updates = new Map<string, PlacedBox>();
     for (const b of s.boxes) {
       if (!ids.has(b.id)) continue;
-      if (b.widthCells === b.depthCells && b.dividers.length === 0) {
+      if (
+        b.widthCells === b.depthCells &&
+        b.dividers.length === 0 &&
+        b.pockets.length === 0
+      ) {
         markOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
         continue;
       }
@@ -336,6 +415,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
         markOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
         continue;
       }
+      const gridPitchMm = SYSTEM.gridPitchMm;
+      const oldInnerW = b.widthCells * gridPitchMm - 2 * SYSTEM.wallThicknessMm;
       const rotated: PlacedBox = {
         ...b,
         widthCells: b.depthCells,
@@ -344,6 +425,12 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
           axis: d.axis === "x" ? "y" : "x",
           offsetMm: d.offsetMm,
           heightMm: d.heightMm
+        })),
+        pockets: b.pockets.map<Pocket>((p) => ({
+          centerXMm: p.centerYMm,
+          centerYMm: oldInnerW - p.centerXMm,
+          diameterMm: p.diameterMm,
+          heightMm: p.heightMm
         }))
       };
       updates.set(b.id, rotated);
@@ -370,7 +457,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       id: makeId(),
       x: slot.x,
       y: slot.y,
-      dividers: box.dividers.map((d) => ({ ...d }))
+      dividers: box.dividers.map((d) => ({ ...d })),
+      pockets: box.pockets.map((p) => ({ ...p }))
     };
     set({
       boxes: [...s.boxes, copy],
@@ -398,7 +486,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
         id: makeId(),
         x: slot.x,
         y: slot.y,
-        dividers: box.dividers.map((d) => ({ ...d }))
+        dividers: box.dividers.map((d) => ({ ...d })),
+        pockets: box.pockets.map((p) => ({ ...p }))
       };
       newBoxes.push(copy);
       newIds.push(copy.id);
@@ -422,8 +511,13 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     const clamped = Math.min(SYSTEM.maxHeightMm, Math.max(SYSTEM.minHeightMm, mm));
     if (Math.abs(clamped - box.heightMm) < 1e-6) return;
     const nextDividers = clampDividers(box.dividers, box.widthCells, box.depthCells, clamped);
+    const nextPockets = clampPockets(box.pockets, box.widthCells, box.depthCells, clamped);
     set({
-      boxes: s.boxes.map((b) => (b.id === id ? { ...b, heightMm: clamped, dividers: nextDividers } : b)),
+      boxes: s.boxes.map((b) =>
+        b.id === id
+          ? { ...b, heightMm: clamped, dividers: nextDividers, pockets: nextPockets }
+          : b
+      ),
       past: [...s.past, snapshot(s)],
       future: []
     });
@@ -437,6 +531,19 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       .slice(0, SYSTEM.maxDividersPerBox);
     set({
       boxes: s.boxes.map((b) => (b.id === id ? { ...b, dividers: clean } : b)),
+      past: [...s.past, snapshot(s)],
+      future: []
+    });
+  },
+
+  setBoxPockets(id, pockets) {
+    const s = get();
+    const box = s.boxes.find((b) => b.id === id);
+    if (!box) return;
+    const clean = clampPockets(pockets, box.widthCells, box.depthCells, box.heightMm)
+      .slice(0, SYSTEM.maxPocketsPerBox);
+    set({
+      boxes: s.boxes.map((b) => (b.id === id ? { ...b, pockets: clean } : b)),
       past: [...s.past, snapshot(s)],
       future: []
     });
@@ -523,6 +630,7 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     for (const b of incoming) {
       if (fits(b.x, b.y, b.widthCells, b.depthCells, occ)) {
         const cleanDividers = clampDividers(b.dividers, b.widthCells, b.depthCells, b.heightMm);
+        const cleanPockets = clampPockets(b.pockets, b.widthCells, b.depthCells, b.heightMm);
         placed.push({
           id: makeId(),
           x: b.x,
@@ -530,7 +638,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
           widthCells: b.widthCells,
           depthCells: b.depthCells,
           heightMm: b.heightMm,
-          dividers: cleanDividers
+          dividers: cleanDividers,
+          pockets: cleanPockets
         });
         markOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
       } else {
@@ -570,7 +679,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
         widthCells: entry.widthCells,
         depthCells: entry.depthCells,
         heightMm: h,
-        dividers: []
+        dividers: [],
+        pockets: []
       });
       markOccupancy(occ, entry.x, entry.y, entry.widthCells, entry.depthCells);
     }

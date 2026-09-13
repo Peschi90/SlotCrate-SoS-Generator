@@ -5,9 +5,10 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BoxPreview } from "@/components/BoxPreview";
 import { DividerEditor } from "@/components/DividerEditor";
+import { PocketEditor } from "@/components/PocketEditor";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
-import { clampDividers } from "@/lib/layout-store";
-import type { Divider } from "@/lib/schema";
+import { clampDividers, clampPockets } from "@/lib/layout-store";
+import type { Divider, Pocket } from "@/lib/schema";
 import { SYSTEM } from "@/lib/system";
 
 const DRAWER_HEIGHT_PRESETS = [
@@ -63,6 +64,7 @@ export function GeneratorClient({
     Math.min(maxHeightMm, Math.max(minHeightMm, initialPreset.actualMm))
   );
   const [dividers, setDividers] = useState<Divider[]>([]);
+  const [pockets, setPockets] = useState<Pocket[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
@@ -87,6 +89,24 @@ export function GeneratorClient({
       setDividers(sanitizedDividers);
     }
   }, [sanitizedDividers, dividers.length]);
+
+  const sanitizedPockets = useMemo(
+    () =>
+      clampPockets(
+        pockets,
+        widthCells,
+        depthCells,
+        heightMm,
+        activeVariant.gridPitchMm,
+        activeVariant.wallThicknessMm
+      ),
+    [pockets, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm]
+  );
+  useEffect(() => {
+    if (sanitizedPockets.length !== pockets.length) {
+      setPockets(sanitizedPockets);
+    }
+  }, [sanitizedPockets, pockets.length]);
 
   async function trackEvent(eventType: string, details?: Record<string, string | number | boolean | null>) {
     try {
@@ -132,7 +152,8 @@ export function GeneratorClient({
           outerClearanceMm: activeVariant.outerClearanceMm,
           stlTessellationLinearMm: activeVariant.stlTessellationLinearMm,
           stlTessellationAngularRad: activeVariant.stlTessellationAngularRad,
-          dividers: sanitizedDividers
+          dividers: sanitizedDividers,
+          pockets: sanitizedPockets
         }),
         signal: ac.signal
       });
@@ -348,6 +369,18 @@ export function GeneratorClient({
           />
         </div>
 
+        <div className="border-t border-neutral-800 pt-4">
+          <PocketEditor
+            widthCells={widthCells}
+            depthCells={depthCells}
+            heightMm={heightMm}
+            gridPitchMm={activeVariant.gridPitchMm}
+            wallThicknessMm={activeVariant.wallThicknessMm}
+            pockets={sanitizedPockets}
+            onChange={setPockets}
+          />
+        </div>
+
         <div className="flex gap-2 flex-wrap">
           <button
             type="submit"
@@ -393,6 +426,7 @@ export function GeneratorClient({
           innerFloorRadiusMm={activeVariant.innerFloorRadiusMm}
           outerClearanceMm={activeVariant.outerClearanceMm}
           dividers={sanitizedDividers}
+          pockets={sanitizedPockets}
         />
       </div>
     </div>

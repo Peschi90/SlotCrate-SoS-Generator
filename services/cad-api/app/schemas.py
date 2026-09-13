@@ -23,8 +23,12 @@ from slotcrate.geometry.constants import (
     GRID_PITCH_MM,
     GRID_ROWS,
     MAX_DIVIDERS_PER_BOX,
+    MAX_POCKET_DIAMETER_MM,
+    MAX_POCKETS_PER_BOX,
     MIN_DIVIDER_HEIGHT_MM,
     MIN_DIVIDER_OFFSET_MM,
+    MIN_POCKET_DIAMETER_MM,
+    MIN_POCKET_HEIGHT_MM,
     PICKUP_TOP_Z_MM,
 )
 
@@ -45,6 +49,7 @@ MAX_STL_LINEAR_MM: float = 0.5
 MIN_STL_ANGULAR_RAD: float = 0.05
 MAX_STL_ANGULAR_RAD: float = 1.0
 MAX_DIVIDER_OFFSET_MM: float = MAX_CELLS * MAX_GRID_PITCH_MM  # harte Payload-Obergrenze
+MAX_POCKET_CENTER_MM: float = MAX_CELLS * MAX_GRID_PITCH_MM
 SAFE_STEP_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.(step|stp)$", re.IGNORECASE)
 
 
@@ -65,6 +70,22 @@ class DividerSpec(BaseModel):
     heightMm: Annotated[float, Field(ge=MIN_DIVIDER_HEIGHT_MM, le=MAX_HEIGHT_MM)]
 
 
+class PocketSpec(BaseModel):
+    """Runde Tasche im Innenraum (Becher/Rundwand).
+
+    Der Becher steht auf dem Innenboden. Wandstärke = ``wallThicknessMm``,
+    Innenboden = Kastenboden. ``heightMm`` = Wandhöhe des Bechers.
+    ``centerXMm`` und ``centerYMm`` werden vom Innenraum-Ursprung gemessen.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    centerXMm: Annotated[float, Field(ge=0.0, le=MAX_POCKET_CENTER_MM)]
+    centerYMm: Annotated[float, Field(ge=0.0, le=MAX_POCKET_CENTER_MM)]
+    diameterMm: Annotated[float, Field(ge=MIN_POCKET_DIAMETER_MM, le=MAX_POCKET_DIAMETER_MM)]
+    heightMm: Annotated[float, Field(ge=MIN_POCKET_HEIGHT_MM, le=MAX_HEIGHT_MM)]
+
+
 class BoxRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -79,6 +100,7 @@ class BoxRequest(BaseModel):
     stlTessellationLinearMm: Annotated[float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)] = 0.05
     stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
     dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
+    pockets: Annotated[List[PocketSpec], Field(max_length=MAX_POCKETS_PER_BOX)] = Field(default_factory=list)
 
 
 class PlateRequest(BaseModel):
@@ -109,6 +131,7 @@ class LayoutBox(BaseModel):
     depthCells: Annotated[int, Field(ge=MIN_CELLS, le=MAX_CELLS)]
     heightMm: Annotated[float, Field(ge=MIN_HEIGHT_MM, le=MAX_HEIGHT_MM)] = DEFAULT_BOX_HEIGHT_MM
     dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
+    pockets: Annotated[List[PocketSpec], Field(max_length=MAX_POCKETS_PER_BOX)] = Field(default_factory=list)
 
 
 class LayoutGrid(BaseModel):

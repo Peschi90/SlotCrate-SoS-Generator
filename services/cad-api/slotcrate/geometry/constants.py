@@ -47,6 +47,13 @@ MIN_DIVIDER_OFFSET_MM: float = 0.1
 MIN_DIVIDER_HEIGHT_MM: float = 1.0
 MAX_DIVIDERS_PER_BOX: int = 32
 
+# Runde Taschen (Becher/Rundwand, Wanddicke = wallThicknessMm).
+# Innenboden = Kavitätsboden; Höhe = Wandhöhe des Bechers.
+MIN_POCKET_DIAMETER_MM: float = 3.0
+MAX_POCKET_DIAMETER_MM: float = 200.0
+MIN_POCKET_HEIGHT_MM: float = 1.0
+MAX_POCKETS_PER_BOX: int = 1000
+
 # Toleranzen für Geometrietests
 BBOX_TOLERANCE_MM: float = 0.02
 VOLUME_TOLERANCE_PCT: float = 0.5

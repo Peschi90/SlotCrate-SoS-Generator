@@ -18,6 +18,10 @@ export const SYSTEM = {
   minDividerOffsetMm: 0.1,
   minDividerHeightMm: 1.0,
   maxDividersPerBox: 32,
+  minPocketDiameterMm: 3.0,
+  maxPocketDiameterMm: 200.0,
+  minPocketHeightMm: 1.0,
+  maxPocketsPerBox: 1000,
   geometryVersion: "slotcrate-v1"
 } as const;
 

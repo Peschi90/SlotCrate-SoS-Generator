@@ -42,6 +42,24 @@ describe("boxRequestSchema", () => {
       })
     ).toThrow();
   });
+  it("accepts a valid pocket", () => {
+    const r = boxRequestSchema.parse({
+      widthCells: 3,
+      depthCells: 3,
+      pockets: [{ centerXMm: 15, centerYMm: 15, diameterMm: 12, heightMm: 20 }]
+    });
+    expect(r.pockets).toHaveLength(1);
+    expect(r.pockets[0]!.diameterMm).toBe(12);
+  });
+  it("rejects pocket diameter below minimum", () => {
+    expect(() =>
+      boxRequestSchema.parse({
+        widthCells: 3,
+        depthCells: 3,
+        pockets: [{ centerXMm: 15, centerYMm: 15, diameterMm: 1, heightMm: 10 }]
+      })
+    ).toThrow();
+  });
 });
 
 describe("layoutRequestSchema", () => {

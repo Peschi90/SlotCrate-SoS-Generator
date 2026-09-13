@@ -52,6 +52,12 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
     und Höhe. Dicke = Wandstärke, Anzahl bis `SYSTEM.maxDividersPerBox`.
     Verfügbar im Einzelkasten-Generator und pro ausgewähltem Kasten im Planer;
     ZIP-Export dedupliziert baugleiche Kästen inkl. Stegen.
+  - Optional pro Kasten: **Runde Taschen** als Becher/Rundwand
+    (Wanddicke = Wandstärke, Innenboden = Kastenboden, Höhe = Wandhöhe des
+    Bechers). Freie Positionierung in mm oder Auto-Fill mit Quadratraster für
+    den gesamten Innenraum. Limit `SYSTEM.maxPocketsPerBox`. Ebenfalls im
+    Generator und pro ausgewähltem Planer-Kasten; ZIP-Export dedupliziert
+    baugleiche Kästen inkl. Taschen.
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,

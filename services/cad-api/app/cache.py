@@ -26,6 +26,15 @@ def _dividers_key_part(dividers: Sequence[Tuple[str, float, float]] | None) -> s
     )
 
 
+def _pockets_key_part(pockets: Sequence[Tuple[float, float, float, float]] | None) -> str:
+    if not pockets:
+        return "-"
+    return ";".join(
+        f"{round(cx, 4)}:{round(cy, 4)}:{round(dia, 4)}:{round(h, 4)}"
+        for cx, cy, dia, h in sorted(pockets)
+    )
+
+
 def cache_key(
     width_cells: int,
     depth_cells: int,
@@ -38,6 +47,7 @@ def cache_key(
     stl_tessellation_linear_mm: float,
     stl_tessellation_angular_rad: float,
     dividers: Sequence[Tuple[str, float, float]] | None = None,
+    pockets: Sequence[Tuple[float, float, float, float]] | None = None,
     geometry_version: str = GEOMETRY_VERSION,
 ) -> str:
     payload = (
@@ -45,7 +55,7 @@ def cache_key(
         f"{settings_version}|{round(grid_pitch_mm, 4)}|{round(wall_thickness_mm, 4)}|"
         f"{round(inner_floor_radius_mm, 4)}|{round(outer_clearance_mm, 4)}|"
         f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
-        f"{_dividers_key_part(dividers)}|{geometry_version}"
+        f"{_dividers_key_part(dividers)}|{_pockets_key_part(pockets)}|{geometry_version}"
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
