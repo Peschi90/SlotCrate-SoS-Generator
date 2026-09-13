@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import math
 from functools import lru_cache
+from typing import Sequence, Tuple
 
 import cadquery as cq
 
@@ -26,8 +27,14 @@ from .constants import (
     DEFAULT_INNER_FLOOR_RADIUS_MM,
     DEFAULT_WALL_THICKNESS_MM,
     GRID_PITCH_MM,
+    MIN_DIVIDER_HEIGHT_MM,
+    MIN_DIVIDER_OFFSET_MM,
     PICKUP_TOP_Z_MM,
 )
+
+# (axis, offset_mm, height_mm): axis ∈ {"x","y"}. Offset gemessen vom
+# Innenraum-Ursprung (x=wall_thickness, y=wall_thickness).
+Divider = Tuple[str, float, float]
 
 
 class UnsupportedBoxSize(NotImplementedError):
@@ -53,6 +60,7 @@ def build_box(
     wall_thickness_mm: float = DEFAULT_WALL_THICKNESS_MM,
     inner_floor_radius_mm: float = DEFAULT_INNER_FLOOR_RADIUS_MM,
     outer_clearance_mm: float = 0.0,
+    dividers: Sequence[Divider] = (),
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if grid_pitch_mm <= 0:
@@ -67,7 +75,9 @@ def build_box(
     pitch_scale = grid_pitch_mm / GRID_PITCH_MM
     floor_thickness_mm = DEFAULT_FLOOR_THICKNESS_MM * pitch_scale
 
-    if _is_default_height(height_mm):
+    normalized_dividers = _normalize_dividers(dividers)
+
+    if _is_default_height(height_mm) and not normalized_dividers:
         default_geometry = (
             abs(grid_pitch_mm - GRID_PITCH_MM) < 1e-9
             and abs(wall_thickness_mm - DEFAULT_WALL_THICKNESS_MM) < 1e-9
@@ -89,6 +99,7 @@ def build_box(
         round(inner_floor_radius_mm, 4),
         round(outer_clearance_mm, 4),
         round(floor_thickness_mm, 4),
+        normalized_dividers,
     )
     return shape
 
@@ -103,6 +114,7 @@ def _build_parametric_cached(
     inner_floor_radius_mm: float,
     outer_clearance_mm: float,
     floor_thickness_mm: float,
+    dividers: Tuple[Divider, ...],
 ) -> cq.Shape:
     return build_box_parametric(
         width_cells,
@@ -113,6 +125,7 @@ def _build_parametric_cached(
         inner_floor_radius_mm=inner_floor_radius_mm,
         outer_clearance_mm=outer_clearance_mm,
         floor_thickness_mm=floor_thickness_mm,
+        dividers=dividers,
     )
 
 
@@ -125,6 +138,7 @@ def build_box_parametric(
     inner_floor_radius_mm: float = DEFAULT_INNER_FLOOR_RADIUS_MM,
     outer_clearance_mm: float = 0.0,
     floor_thickness_mm: float = DEFAULT_FLOOR_THICKNESS_MM,
+    dividers: Sequence[Divider] = (),
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if height_mm <= PICKUP_TOP_Z_MM + floor_thickness_mm + 1.0:
@@ -159,6 +173,17 @@ def build_box_parametric(
         cavity = cq.Workplane(obj=cavity).edges("|Z").fillet(fillet_radius).val()
     hollow_body = outer.cut(cavity)
 
+    divider_solids = _build_divider_solids(
+        _normalize_dividers(dividers),
+        inner_w=inner_w,
+        inner_d=inner_d,
+        wall_thickness_mm=wall_thickness_mm,
+        cavity_z0=cavity_z0,
+        cavity_h=cavity_h,
+    )
+    if divider_solids:
+        hollow_body = hollow_body.fuse(*divider_solids)
+
     pickup = features.pickup_template()
     if abs(grid_pitch_mm - GRID_PITCH_MM) > 1e-9:
         pickup = cq.Workplane(obj=pickup).scale(grid_pitch_mm / GRID_PITCH_MM).val()
@@ -173,6 +198,70 @@ def build_box_parametric(
     if not pickups:
         return hollow_body.clean()
     return hollow_body.fuse(*pickups).clean()
+
+
+def _normalize_dividers(dividers: Sequence[Divider]) -> Tuple[Divider, ...]:
+    if not dividers:
+        return ()
+    normalized: list[Divider] = []
+    for entry in dividers:
+        axis, offset_mm, height_mm = entry
+        if axis not in ("x", "y"):
+            raise ValueError(f"divider.axis muss 'x' oder 'y' sein, war {axis!r}")
+        normalized.append((axis, round(float(offset_mm), 4), round(float(height_mm), 4)))
+    return tuple(sorted(normalized))
+
+
+def _build_divider_solids(
+    dividers: Tuple[Divider, ...],
+    *,
+    inner_w: float,
+    inner_d: float,
+    wall_thickness_mm: float,
+    cavity_z0: float,
+    cavity_h: float,
+) -> list[cq.Solid]:
+    if not dividers:
+        return []
+    half_t = wall_thickness_mm / 2.0
+    solids: list[cq.Solid] = []
+    for axis, offset_mm, height_mm in dividers:
+        if height_mm < MIN_DIVIDER_HEIGHT_MM:
+            raise ValueError(
+                f"divider.heightMm={height_mm} unter Minimum {MIN_DIVIDER_HEIGHT_MM}"
+            )
+        if offset_mm < MIN_DIVIDER_OFFSET_MM:
+            raise ValueError(
+                f"divider.offsetMm={offset_mm} unter Minimum {MIN_DIVIDER_OFFSET_MM}"
+            )
+        eff_h = min(height_mm, cavity_h)
+        if axis == "x":
+            max_offset = inner_w - half_t
+            if offset_mm < half_t or offset_mm > max_offset:
+                raise ValueError(
+                    f"divider.offsetMm={offset_mm} außerhalb Innenbreite [{half_t}, {max_offset}]"
+                )
+            x0 = wall_thickness_mm + offset_mm - half_t
+            solids.append(
+                cq.Solid.makeBox(
+                    wall_thickness_mm, inner_d, eff_h,
+                    cq.Vector(x0, wall_thickness_mm, cavity_z0),
+                )
+            )
+        else:  # axis == "y"
+            max_offset = inner_d - half_t
+            if offset_mm < half_t or offset_mm > max_offset:
+                raise ValueError(
+                    f"divider.offsetMm={offset_mm} außerhalb Innentiefe [{half_t}, {max_offset}]"
+                )
+            y0 = wall_thickness_mm + offset_mm - half_t
+            solids.append(
+                cq.Solid.makeBox(
+                    inner_w, wall_thickness_mm, eff_h,
+                    cq.Vector(wall_thickness_mm, y0, cavity_z0),
+                )
+            )
+    return solids
 
 
 def expected_outer_dimensions_mm(

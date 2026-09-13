@@ -186,4 +186,38 @@ describe("layout store", () => {
     expect(created).toBe(2);
     expect(useLayoutStore.getState().boxes).toHaveLength(3);
   });
+
+  it("setBoxDividers stores dividers on the selected box and is undoable", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    useLayoutStore.getState().setBoxDividers(a.id, [
+      { axis: "x", offsetMm: 15, heightMm: 20 }
+    ]);
+    const withDividers = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(withDividers.dividers).toHaveLength(1);
+    expect(withDividers.dividers[0]!.axis).toBe("x");
+    useLayoutStore.getState().undo();
+    const restored = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(restored.dividers).toHaveLength(0);
+  });
+
+  it("rotateBox swaps divider axis (x <-> y)", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 2, 3)!;
+    useLayoutStore.getState().setBoxDividers(a.id, [
+      { axis: "x", offsetMm: 10, heightMm: 20 }
+    ]);
+    expect(useLayoutStore.getState().rotateBox(a.id)).toBe(true);
+    const rotated = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(rotated.dividers[0]!.axis).toBe("y");
+  });
+
+  it("resizeBox drops dividers that no longer fit", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    useLayoutStore.getState().setBoxDividers(a.id, [
+      { axis: "x", offsetMm: 40, heightMm: 20 }
+    ]);
+    // Inner width of 1×1 (~19 mm) can't hold a divider at 40 mm.
+    expect(useLayoutStore.getState().resizeBox(a.id, 1, 1)).toBe(true);
+    const resized = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(resized.dividers).toHaveLength(0);
+  });
 });

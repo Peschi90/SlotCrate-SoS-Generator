@@ -6,6 +6,7 @@ describe("boxRequestSchema", () => {
     const r = boxRequestSchema.parse({ widthCells: 2, depthCells: 3 });
     expect(r.heightMm).toBe(35.8);
     expect(r.settingsVersion).toBe(1);
+    expect(r.dividers).toEqual([]);
   });
   it("rejects out-of-range cells", () => {
     expect(() => boxRequestSchema.parse({ widthCells: 0, depthCells: 1 })).toThrow();
@@ -13,6 +14,33 @@ describe("boxRequestSchema", () => {
   });
   it("rejects too small height", () => {
     expect(() => boxRequestSchema.parse({ widthCells: 1, depthCells: 1, heightMm: 3 })).toThrow();
+  });
+  it("accepts a valid divider", () => {
+    const r = boxRequestSchema.parse({
+      widthCells: 2,
+      depthCells: 2,
+      dividers: [{ axis: "x", offsetMm: 10, heightMm: 20 }]
+    });
+    expect(r.dividers).toHaveLength(1);
+    expect(r.dividers[0]!.axis).toBe("x");
+  });
+  it("rejects unknown divider axis", () => {
+    expect(() =>
+      boxRequestSchema.parse({
+        widthCells: 2,
+        depthCells: 2,
+        dividers: [{ axis: "z", offsetMm: 10, heightMm: 20 }]
+      })
+    ).toThrow();
+  });
+  it("rejects divider height below minimum", () => {
+    expect(() =>
+      boxRequestSchema.parse({
+        widthCells: 2,
+        depthCells: 2,
+        dividers: [{ axis: "x", offsetMm: 10, heightMm: 0.1 }]
+      })
+    ).toThrow();
   });
 });
 

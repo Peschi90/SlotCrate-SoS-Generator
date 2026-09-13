@@ -15,6 +15,9 @@ export const SYSTEM = {
   maxCells: 10,
   minHeightMm: 6.0,
   maxHeightMm: 200.0,
+  minDividerOffsetMm: 0.1,
+  minDividerHeightMm: 1.0,
+  maxDividersPerBox: 32,
   geometryVersion: "slotcrate-v1"
 } as const;
 

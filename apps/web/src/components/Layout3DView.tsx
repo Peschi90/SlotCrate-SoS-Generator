@@ -107,6 +107,7 @@ export function Layout3DView({
               outerClearanceMm={outerClearanceMm}
               color={isSel ? "#4c8cff" : "#7fb0ff"}
               opacity={isSel ? 1 : 0.92}
+              dividers={b.dividers}
             />
             {isSel && (
               <lineSegments

@@ -10,6 +10,19 @@ const outerClearanceMm = z.number().min(0).max(0.5).default(0);
 const stlTessellationLinearMm = z.number().min(0.005).max(0.5).default(0.05);
 const stlTessellationAngularRad = z.number().min(0.05).max(1.0).default(0.5);
 
+export const dividerSchema = z.object({
+  axis: z.enum(["x", "y"]),
+  offsetMm: z
+    .number()
+    .min(SYSTEM.minDividerOffsetMm)
+    .max(SYSTEM.maxCells * 30),
+  heightMm: z.number().min(SYSTEM.minDividerHeightMm).max(SYSTEM.maxHeightMm)
+});
+
+export type Divider = z.infer<typeof dividerSchema>;
+
+const dividers = z.array(dividerSchema).max(SYSTEM.maxDividersPerBox).default([]);
+
 export const boxRequestSchema = z.object({
   widthCells: cells,
   depthCells: cells,
@@ -20,7 +33,8 @@ export const boxRequestSchema = z.object({
   innerFloorRadiusMm,
   outerClearanceMm,
   stlTessellationLinearMm,
-  stlTessellationAngularRad
+  stlTessellationAngularRad,
+  dividers
 });
 
 export type BoxRequest = z.infer<typeof boxRequestSchema>;
@@ -46,7 +60,8 @@ export const layoutBoxSchema = z.object({
   y: z.number().int().min(0).max(SYSTEM.gridRows - 1),
   widthCells: cells,
   depthCells: cells,
-  heightMm: heightMm.default(SYSTEM.defaultBoxHeightMm)
+  heightMm: heightMm.default(SYSTEM.defaultBoxHeightMm),
+  dividers
 });
 
 export type LayoutBox = z.infer<typeof layoutBoxSchema>;

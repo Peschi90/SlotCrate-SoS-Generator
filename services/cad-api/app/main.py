@@ -79,6 +79,10 @@ def create_app() -> FastAPI:
         rate_limiter.check(
             "box_stl", client_key(request), settings.rate_limit_box_stl_per_minute
         )
+        divider_tuples = tuple(
+            (d.axis, round(float(d.offsetMm), 4), round(float(d.heightMm), 4))
+            for d in payload.dividers
+        )
         key = cache_key(
             payload.widthCells,
             payload.depthCells,
@@ -90,6 +94,7 @@ def create_app() -> FastAPI:
             payload.outerClearanceMm,
             payload.stlTessellationLinearMm,
             payload.stlTessellationAngularRad,
+            dividers=divider_tuples,
         )
         cached = cache.get(key)
         if cached is None:
@@ -103,6 +108,7 @@ def create_app() -> FastAPI:
                 outer_clearance_mm=payload.outerClearanceMm,
                 stl_tessellation_linear_mm=payload.stlTessellationLinearMm,
                 stl_tessellation_angular_rad=payload.stlTessellationAngularRad,
+                dividers=divider_tuples,
             )
             cache.store_bytes(key, data)
         else:

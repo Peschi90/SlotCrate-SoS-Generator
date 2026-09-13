@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { LayoutGrid } from "@/components/LayoutGrid";
 import { Layout3DView } from "@/components/Layout3DView";
 import { PlannerPersistencePanel } from "@/components/PlannerPersistencePanel";
+import { DividerEditor } from "@/components/DividerEditor";
 import { useLayoutStore } from "@/lib/layout-store";
 import { analyzeFreeCells, planFillLargest, planFillWithSize } from "@/lib/layout-fill";
 import { SYSTEM } from "@/lib/system";
@@ -38,6 +39,7 @@ export function PlannerClient({
   const duplicateSelected = useLayoutStore((s) => s.duplicateSelected);
   const rotateSelected = useLayoutStore((s) => s.rotateSelected);
   const setBoxHeight = useLayoutStore((s) => s.setBoxHeight);
+  const setBoxDividers = useLayoutStore((s) => s.setBoxDividers);
   const clearSelection = useLayoutStore((s) => s.clearSelection);
   const applyFillPlan = useLayoutStore((s) => s.applyFillPlan);
   const undo = useLayoutStore((s) => s.undo);
@@ -369,6 +371,20 @@ export function PlannerClient({
               )}
             </div>
             <div className="text-[11px] text-neutral-500">{t("planner.keyboardHint")}</div>
+
+            {selectedIds.length === 1 && (
+              <div className="border-t border-neutral-800 pt-3">
+                <DividerEditor
+                  widthCells={selected.widthCells}
+                  depthCells={selected.depthCells}
+                  heightMm={selected.heightMm}
+                  gridPitchMm={activeVariant.gridPitchMm}
+                  wallThicknessMm={activeVariant.wallThicknessMm}
+                  dividers={selected.dividers}
+                  onChange={(next) => setBoxDividers(selected.id, next)}
+                />
+              </div>
+            )}
           </div>
         )}
 

@@ -22,6 +22,9 @@ from slotcrate.geometry.constants import (
     GRID_COLUMNS,
     GRID_PITCH_MM,
     GRID_ROWS,
+    MAX_DIVIDERS_PER_BOX,
+    MIN_DIVIDER_HEIGHT_MM,
+    MIN_DIVIDER_OFFSET_MM,
     PICKUP_TOP_Z_MM,
 )
 
@@ -41,7 +44,25 @@ MIN_STL_LINEAR_MM: float = 0.005
 MAX_STL_LINEAR_MM: float = 0.5
 MIN_STL_ANGULAR_RAD: float = 0.05
 MAX_STL_ANGULAR_RAD: float = 1.0
+MAX_DIVIDER_OFFSET_MM: float = MAX_CELLS * MAX_GRID_PITCH_MM  # harte Payload-Obergrenze
 SAFE_STEP_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.(step|stp)$", re.IGNORECASE)
+
+
+class DividerSpec(BaseModel):
+    """Freistehender Trennsteg im Innenraum. Dicke = wallThicknessMm.
+
+    ``axis`` beschreibt die Achse, an der ``offsetMm`` gemessen wird:
+    ``"x"`` → Wand senkrecht zur X-Achse, spannt volle Innentiefe;
+    ``"y"`` → Wand senkrecht zur Y-Achse, spannt volle Innenbreite.
+    ``offsetMm`` wird vom Innenraum-Ursprung (Innenwand vorne links) gemessen.
+    ``heightMm`` steigt vom Innenboden auf.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    axis: Literal["x", "y"]
+    offsetMm: Annotated[float, Field(ge=MIN_DIVIDER_OFFSET_MM, le=MAX_DIVIDER_OFFSET_MM)]
+    heightMm: Annotated[float, Field(ge=MIN_DIVIDER_HEIGHT_MM, le=MAX_HEIGHT_MM)]
 
 
 class BoxRequest(BaseModel):
@@ -57,6 +78,7 @@ class BoxRequest(BaseModel):
     outerClearanceMm: Annotated[float, Field(ge=MIN_OUTER_CLEARANCE_MM, le=MAX_OUTER_CLEARANCE_MM)] = 0.0
     stlTessellationLinearMm: Annotated[float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)] = 0.05
     stlTessellationAngularRad: Annotated[float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)] = 0.5
+    dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
 
 
 class PlateRequest(BaseModel):
@@ -86,6 +108,7 @@ class LayoutBox(BaseModel):
     widthCells: Annotated[int, Field(ge=MIN_CELLS, le=MAX_CELLS)]
     depthCells: Annotated[int, Field(ge=MIN_CELLS, le=MAX_CELLS)]
     heightMm: Annotated[float, Field(ge=MIN_HEIGHT_MM, le=MAX_HEIGHT_MM)] = DEFAULT_BOX_HEIGHT_MM
+    dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
 
 
 class LayoutGrid(BaseModel):

@@ -41,6 +41,12 @@ PICKUP_VOLUME_MM3: float = 1053.03
 # Bodendicke des Kastens (Referenz-2×2: Z=4,00 → Z=5,00).
 DEFAULT_FLOOR_THICKNESS_MM: float = 1.00
 
+# Unterteilungsstege (freie mm-Positionen, Dicke = Wandstärke).
+# Untergrenze schützt vor entarteten Wänden, Obergrenze begrenzt Payload-Größe.
+MIN_DIVIDER_OFFSET_MM: float = 0.1
+MIN_DIVIDER_HEIGHT_MM: float = 1.0
+MAX_DIVIDERS_PER_BOX: int = 32
+
 # Toleranzen für Geometrietests
 BBOX_TOLERANCE_MM: float = 0.02
 VOLUME_TOLERANCE_PCT: float = 0.5

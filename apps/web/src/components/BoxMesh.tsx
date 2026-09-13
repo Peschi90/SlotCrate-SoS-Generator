@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { useMemo } from "react";
 import { RoundedBox } from "@react-three/drei";
 import { SYSTEM } from "@/lib/system";
+import type { Divider } from "@/lib/schema";
 
 interface Props {
   widthCells: number;
@@ -16,6 +17,7 @@ interface Props {
   color?: string;
   opacity?: number;
   cornerRadiusMm?: number;
+  dividers?: Divider[];
 }
 
 /**
@@ -34,7 +36,8 @@ export function BoxMesh({
   outerClearanceMm = 0,
   color = "#7fb0ff",
   opacity = 1,
-  cornerRadiusMm = 1.5
+  cornerRadiusMm = 1.5,
+  dividers = []
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = Math.max(1, widthCells * pitchMm - 2 * outerClearanceMm);
@@ -46,6 +49,9 @@ export function BoxMesh({
   const cornerRadiusScaled = Math.max(cornerRadiusMm, innerFloorRadiusMm);
   // small overlap eliminates z-fighting at coplanar seams between pickup/floor/wall
   const zEps = 0.02;
+  const innerW = Math.max(0, outerW - 2 * wall);
+  const innerD = Math.max(0, outerD - 2 * wall);
+  const cavityH = Math.max(0, heightMm - pickupTop - floorT);
 
   const wallGeometry = useMemo(() => {
     const shape = new THREE.Shape();
@@ -123,6 +129,28 @@ export function BoxMesh({
           <meshStandardMaterial color={color} metalness={0.2} roughness={0.55} />
         </RoundedBox>
       ))}
+      {dividers.map((d, idx) => {
+        const eff = Math.min(Math.max(0, d.heightMm), cavityH);
+        if (eff <= 0) return null;
+        const isX = d.axis === "x";
+        const dimX = isX ? wall : innerW;
+        const dimY = isX ? innerD : wall;
+        const cx = isX ? wall + d.offsetMm : wall + innerW / 2;
+        const cy = isX ? wall + innerD / 2 : wall + d.offsetMm;
+        const cz = pickupTop + floorT + eff / 2;
+        return (
+          <mesh key={`div-${idx}`} position={[cx, cy, cz]}>
+            <boxGeometry args={[dimX, dimY, eff]} />
+            <meshStandardMaterial
+              color={color}
+              metalness={0.15}
+              roughness={0.6}
+              transparent={opacity < 1}
+              opacity={opacity}
+            />
+          </mesh>
+        );
+      })}
     </group>
   );
 }

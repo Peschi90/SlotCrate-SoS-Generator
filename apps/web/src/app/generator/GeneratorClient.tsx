@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BoxPreview } from "@/components/BoxPreview";
+import { DividerEditor } from "@/components/DividerEditor";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
+import { clampDividers } from "@/lib/layout-store";
+import type { Divider } from "@/lib/schema";
 import { SYSTEM } from "@/lib/system";
 
 const DRAWER_HEIGHT_PRESETS = [
@@ -59,12 +62,31 @@ export function GeneratorClient({
   const [heightMm, setHeightMm] = useState(
     Math.min(maxHeightMm, Math.max(minHeightMm, initialPreset.actualMm))
   );
+  const [dividers, setDividers] = useState<Divider[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
   const [plateBusy, setPlateBusy] = useState(false);
   const busy = pending || controller !== null;
   const clampHeight = (value: number) => Math.min(maxHeightMm, Math.max(minHeightMm, value));
+
+  const sanitizedDividers = useMemo(
+    () =>
+      clampDividers(
+        dividers,
+        widthCells,
+        depthCells,
+        heightMm,
+        activeVariant.gridPitchMm,
+        activeVariant.wallThicknessMm
+      ),
+    [dividers, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm]
+  );
+  useEffect(() => {
+    if (sanitizedDividers.length !== dividers.length) {
+      setDividers(sanitizedDividers);
+    }
+  }, [sanitizedDividers, dividers.length]);
 
   async function trackEvent(eventType: string, details?: Record<string, string | number | boolean | null>) {
     try {
@@ -109,7 +131,8 @@ export function GeneratorClient({
           innerFloorRadiusMm: activeVariant.innerFloorRadiusMm,
           outerClearanceMm: activeVariant.outerClearanceMm,
           stlTessellationLinearMm: activeVariant.stlTessellationLinearMm,
-          stlTessellationAngularRad: activeVariant.stlTessellationAngularRad
+          stlTessellationAngularRad: activeVariant.stlTessellationAngularRad,
+          dividers: sanitizedDividers
         }),
         signal: ac.signal
       });
@@ -313,6 +336,18 @@ export function GeneratorClient({
           <p className="text-xs text-neutral-400">{t("generator.hint")}</p>
         </section>
 
+        <div className="border-t border-neutral-800 pt-4">
+          <DividerEditor
+            widthCells={widthCells}
+            depthCells={depthCells}
+            heightMm={heightMm}
+            gridPitchMm={activeVariant.gridPitchMm}
+            wallThicknessMm={activeVariant.wallThicknessMm}
+            dividers={sanitizedDividers}
+            onChange={setDividers}
+          />
+        </div>
+
         <div className="flex gap-2 flex-wrap">
           <button
             type="submit"
@@ -357,6 +392,7 @@ export function GeneratorClient({
           wallThicknessMm={activeVariant.wallThicknessMm}
           innerFloorRadiusMm={activeVariant.innerFloorRadiusMm}
           outerClearanceMm={activeVariant.outerClearanceMm}
+          dividers={sanitizedDividers}
         />
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { BoxMesh } from "./BoxMesh";
 import { CadCanvas } from "./CadCanvas";
 import { SYSTEM } from "@/lib/system";
+import type { Divider } from "@/lib/schema";
 
 interface Props {
   widthCells: number;
@@ -12,6 +13,7 @@ interface Props {
   wallThicknessMm?: number;
   innerFloorRadiusMm?: number;
   outerClearanceMm?: number;
+  dividers?: Divider[];
 }
 
 export function BoxPreview({
@@ -21,7 +23,8 @@ export function BoxPreview({
   gridPitchMm = SYSTEM.gridPitchMm,
   wallThicknessMm = SYSTEM.wallThicknessMm,
   innerFloorRadiusMm = 2.5,
-  outerClearanceMm = 0
+  outerClearanceMm = 0,
+  dividers = []
 }: Props) {
   const pitchMm = gridPitchMm;
   const outerW = widthCells * pitchMm;
@@ -40,6 +43,7 @@ export function BoxPreview({
         wallThicknessMm={wallThicknessMm}
         innerFloorRadiusMm={innerFloorRadiusMm}
         outerClearanceMm={outerClearanceMm}
+        dividers={dividers}
       />
     </CadCanvas>
   );

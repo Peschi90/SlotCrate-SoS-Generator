@@ -48,6 +48,10 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
   - Zusätzlicher Download der variantabhängigen Rasterplatte als STL im
     Generator (`/api/plate/stl`).
   - Layout-Planer mit SVG-Drag, 3D-Ansicht, Undo/Redo, ZIP-Export (`/planner`).
+  - Optional pro Kasten: **Unterteilungsstege** in frei wählbarer mm-Position
+    und Höhe. Dicke = Wandstärke, Anzahl bis `SYSTEM.maxDividersPerBox`.
+    Verfügbar im Einzelkasten-Generator und pro ausgewähltem Kasten im Planer;
+    ZIP-Export dedupliziert baugleiche Kästen inkl. Stegen.
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,

@@ -126,6 +126,19 @@
             }
         }
     },
+    "dividers": {
+        "title": "Internal dividers",
+        "empty": "No dividers — cavity is open.",
+        "addX": "Add X-wall",
+        "addY": "Add Y-wall",
+        "axisXLabel": "X",
+        "axisYLabel": "Y",
+        "toggleAxis": "Swap axis",
+        "remove": "Remove",
+        "offsetLabel": "Position (mm from inner wall)",
+        "heightLabel": "Height (mm from inner floor)",
+        "hint": "Thickness {thickness} mm (= wall thickness). Positions are measured from the inner cavity origin."
+    },
     "admin": {
         "title": "Admin panel",
         "activeVersion": "Active version: {version}, created {createdAt}",

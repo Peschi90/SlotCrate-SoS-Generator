@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import json
 import tempfile
@@ -9,6 +10,7 @@ import zipfile
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Sequence, Tuple
 
 import cadquery as cq
 
@@ -16,7 +18,18 @@ from slotcrate.geometry.box import build_box
 from slotcrate.geometry.export import export_stl
 from slotcrate.geometry.reference import load_normalized_plate_from_step_file
 
-from .schemas import LayoutRequest
+from .schemas import DividerSpec, LayoutRequest
+
+
+DividerKey = Tuple[str, float, float]
+
+
+def _dividers_to_key(dividers: Sequence[DividerSpec] | None) -> Tuple[DividerKey, ...]:
+    if not dividers:
+        return ()
+    return tuple(
+        sorted((d.axis, round(float(d.offsetMm), 4), round(float(d.heightMm), 4)) for d in dividers)
+    )
 
 
 @dataclass(frozen=True)
@@ -24,10 +37,15 @@ class UniqueBox:
     width_cells: int
     depth_cells: int
     height_mm: float
+    dividers: Tuple[DividerKey, ...] = ()
 
     def filename(self, prefix: str) -> str:
         h = f"{self.height_mm:g}"
-        return f"{prefix}_{self.width_cells}x{self.depth_cells}_H{h}.stl"
+        base = f"{prefix}_{self.width_cells}x{self.depth_cells}_H{h}"
+        if self.dividers:
+            digest = hashlib.sha1(str(self.dividers).encode("utf-8")).hexdigest()[:6]
+            base += f"_D{digest}"
+        return f"{base}.stl"
 
 
 def stl_bytes_for_box(
@@ -40,6 +58,7 @@ def stl_bytes_for_box(
     outer_clearance_mm: float,
     stl_tessellation_linear_mm: float,
     stl_tessellation_angular_rad: float,
+    dividers: Sequence[DividerKey] = (),
 ) -> bytes:
     shape = build_box(
         width_cells,
@@ -49,6 +68,7 @@ def stl_bytes_for_box(
         wall_thickness_mm=wall_thickness_mm,
         inner_floor_radius_mm=inner_floor_radius_mm,
         outer_clearance_mm=outer_clearance_mm,
+        dividers=dividers,
     )
     return stl_bytes_for_shape(
         shape,
@@ -79,7 +99,14 @@ def stl_bytes_for_shape(
 def _unique_boxes(layout: LayoutRequest) -> Counter[UniqueBox]:
     counter: Counter[UniqueBox] = Counter()
     for b in layout.boxes:
-        counter[UniqueBox(b.widthCells, b.depthCells, round(b.heightMm, 4))] += 1
+        counter[
+            UniqueBox(
+                b.widthCells,
+                b.depthCells,
+                round(b.heightMm, 4),
+                _dividers_to_key(b.dividers),
+            )
+        ] += 1
     return counter
 
 
@@ -98,6 +125,7 @@ def build_layout_zip(layout: LayoutRequest, filename_prefix: str) -> bytes:
                 outer_clearance_mm=layout.outerClearanceMm,
                 stl_tessellation_linear_mm=layout.stlTessellationLinearMm,
                 stl_tessellation_angular_rad=layout.stlTessellationAngularRad,
+                dividers=unique.dividers,
             )
             zf.writestr(f"models/{unique.filename(filename_prefix)}", stl)
 

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { SYSTEM } from "./system";
+import { dividerSchema } from "./schema";
 
 /**
  * Portables JSON-Format für gespeicherte / geteilte Layouts.
@@ -17,7 +18,8 @@ export const layoutDraftBoxSchema = z.object({
   y: z.number().int().min(0).max(SYSTEM.gridRows - 1),
   widthCells: cells,
   depthCells: cells,
-  heightMm
+  heightMm,
+  dividers: z.array(dividerSchema).max(SYSTEM.maxDividersPerBox).default([])
 });
 
 export type LayoutDraftBox = z.infer<typeof layoutDraftBoxSchema>;
@@ -120,7 +122,14 @@ export function parseLayoutDraftBestEffort(input: unknown): ParseLayoutDraftResu
 export function createDraft(input: {
   variantId: string;
   selectedHeightMm: number;
-  boxes: Array<{ x: number; y: number; widthCells: number; depthCells: number; heightMm: number }>;
+  boxes: Array<{
+    x: number;
+    y: number;
+    widthCells: number;
+    depthCells: number;
+    heightMm: number;
+    dividers?: Array<{ axis: "x" | "y"; offsetMm: number; heightMm: number }>;
+  }>;
 }): LayoutDraft {
   return {
     kind: LAYOUT_DRAFT_KIND,
@@ -133,7 +142,12 @@ export function createDraft(input: {
       y: b.y,
       widthCells: b.widthCells,
       depthCells: b.depthCells,
-      heightMm: b.heightMm
+      heightMm: b.heightMm,
+      dividers: (b.dividers ?? []).map((d) => ({
+        axis: d.axis,
+        offsetMm: d.offsetMm,
+        heightMm: d.heightMm
+      }))
     }))
   };
 }

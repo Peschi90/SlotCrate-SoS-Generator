@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { SYSTEM } from "./system";
+import type { Divider } from "./schema";
 
 export interface PlacedBox {
   id: string;
@@ -8,6 +9,7 @@ export interface PlacedBox {
   widthCells: number;
   depthCells: number;
   heightMm: number;
+  dividers: Divider[];
 }
 
 interface HistoryEntry {
@@ -40,6 +42,7 @@ interface LayoutState {
   duplicateBox(id: string): PlacedBox | null;
   duplicateSelected(): number;
   setBoxHeight(id: string, mm: number): void;
+  setBoxDividers(id: string, dividers: Divider[]): void;
   select(id: string | null): void;
   toggleSelect(id: string): void;
   selectMany(ids: string[]): void;
@@ -50,7 +53,7 @@ interface LayoutState {
   reset(): void;
   canPlace(x: number, y: number, widthCells: number, depthCells: number, ignoreId?: string): boolean;
   loadBoxes(
-    incoming: Array<{ x: number; y: number; widthCells: number; depthCells: number; heightMm: number }>,
+    incoming: Array<{ x: number; y: number; widthCells: number; depthCells: number; heightMm: number; dividers?: Divider[] }>,
     selectedHeightMm?: number
   ): { placed: number; skipped: number };
   applyFillPlan(plan: FillPlanEntry[], heightMm?: number): number;
@@ -94,7 +97,7 @@ function fits(
 }
 
 function snapshot(state: Pick<LayoutState, "boxes">): HistoryEntry {
-  return { boxes: state.boxes.map((b) => ({ ...b })) };
+  return { boxes: state.boxes.map((b) => ({ ...b, dividers: b.dividers.map((d) => ({ ...d })) })) };
 }
 
 function makeId(): string {
@@ -116,6 +119,36 @@ function normalizeSelection(prev: string[], boxes: PlacedBox[]): string[] {
 
 function primaryId(selectedIds: string[]): string | null {
   return selectedIds.length > 0 ? selectedIds[selectedIds.length - 1]! : null;
+}
+
+/**
+ * Verwirft Stege, die nach einer Änderung von Zellzahl/Höhe nicht mehr
+ * ins Innere passen, und deckelt zu hohe Stege auf die verbleibende
+ * Innenhöhe. Client-seitige Vorabfilterung – die Server-Validierung
+ * bleibt autoritativ.
+ */
+export function clampDividers(
+  dividers: Divider[] | undefined,
+  widthCells: number,
+  depthCells: number,
+  heightMm: number,
+  gridPitchMm: number = SYSTEM.gridPitchMm,
+  wallThicknessMm: number = SYSTEM.wallThicknessMm
+): Divider[] {
+  if (!dividers || dividers.length === 0) return [];
+  const innerW = widthCells * gridPitchMm - 2 * wallThicknessMm;
+  const innerD = depthCells * gridPitchMm - 2 * wallThicknessMm;
+  const cavityH = Math.max(0, heightMm - SYSTEM.pickupTopZMm - SYSTEM.floorThicknessMm);
+  const halfT = wallThicknessMm / 2;
+  const out: Divider[] = [];
+  for (const d of dividers) {
+    const maxOffset = (d.axis === "x" ? innerW : innerD) - halfT;
+    if (d.offsetMm < halfT || d.offsetMm > maxOffset) continue;
+    const clampedH = Math.min(Math.max(SYSTEM.minDividerHeightMm, d.heightMm), cavityH);
+    if (clampedH < SYSTEM.minDividerHeightMm) continue;
+    out.push({ axis: d.axis, offsetMm: d.offsetMm, heightMm: clampedH });
+  }
+  return out;
 }
 
 /** Row-major Suche nach der ersten freien Position für ein w×d-Rechteck. */
@@ -163,7 +196,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       y,
       widthCells,
       depthCells,
-      heightMm: heightMm ?? s.selectedHeightMm
+      heightMm: heightMm ?? s.selectedHeightMm,
+      dividers: []
     };
     set({
       boxes: [...s.boxes, box],
@@ -252,8 +286,9 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     const d = Math.max(SYSTEM.minCells, Math.min(SYSTEM.maxCells, Math.round(depthCells)));
     if (w === box.widthCells && d === box.depthCells) return true;
     if (!fits(box.x, box.y, w, d, occupiedMap(s.boxes, [id]))) return false;
+    const nextDividers = clampDividers(box.dividers, w, d, box.heightMm);
     set({
-      boxes: s.boxes.map((b) => (b.id === id ? { ...b, widthCells: w, depthCells: d } : b)),
+      boxes: s.boxes.map((b) => (b.id === id ? { ...b, widthCells: w, depthCells: d, dividers: nextDividers } : b)),
       past: [...s.past, snapshot(s)],
       future: []
     });
@@ -264,13 +299,20 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     const s = get();
     const box = s.boxes.find((b) => b.id === id);
     if (!box) return false;
-    if (box.widthCells === box.depthCells) return true;
+    if (box.widthCells === box.depthCells && box.dividers.length === 0) return true;
     if (!fits(box.x, box.y, box.depthCells, box.widthCells, occupiedMap(s.boxes, [id]))) {
       return false;
     }
+    const swappedDividers = box.dividers.map<Divider>((d) => ({
+      axis: d.axis === "x" ? "y" : "x",
+      offsetMm: d.offsetMm,
+      heightMm: d.heightMm
+    }));
     set({
       boxes: s.boxes.map((b) =>
-        b.id === id ? { ...b, widthCells: box.depthCells, depthCells: box.widthCells } : b
+        b.id === id
+          ? { ...b, widthCells: box.depthCells, depthCells: box.widthCells, dividers: swappedDividers }
+          : b
       ),
       past: [...s.past, snapshot(s)],
       future: []
@@ -286,7 +328,7 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     const updates = new Map<string, PlacedBox>();
     for (const b of s.boxes) {
       if (!ids.has(b.id)) continue;
-      if (b.widthCells === b.depthCells) {
+      if (b.widthCells === b.depthCells && b.dividers.length === 0) {
         markOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
         continue;
       }
@@ -294,7 +336,16 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
         markOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
         continue;
       }
-      const rotated: PlacedBox = { ...b, widthCells: b.depthCells, depthCells: b.widthCells };
+      const rotated: PlacedBox = {
+        ...b,
+        widthCells: b.depthCells,
+        depthCells: b.widthCells,
+        dividers: b.dividers.map<Divider>((d) => ({
+          axis: d.axis === "x" ? "y" : "x",
+          offsetMm: d.offsetMm,
+          heightMm: d.heightMm
+        }))
+      };
       updates.set(b.id, rotated);
       markOccupancy(occ, b.x, b.y, rotated.widthCells, rotated.depthCells);
     }
@@ -314,7 +365,13 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     const occ = occupiedMap(s.boxes);
     const slot = findFreeSlot(occ, box.widthCells, box.depthCells, { x: box.x, y: box.y });
     if (!slot) return null;
-    const copy: PlacedBox = { ...box, id: makeId(), x: slot.x, y: slot.y };
+    const copy: PlacedBox = {
+      ...box,
+      id: makeId(),
+      x: slot.x,
+      y: slot.y,
+      dividers: box.dividers.map((d) => ({ ...d }))
+    };
     set({
       boxes: [...s.boxes, copy],
       past: [...s.past, snapshot(s)],
@@ -336,7 +393,13 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
       if (!box) continue;
       const slot = findFreeSlot(occ, box.widthCells, box.depthCells, { x: box.x, y: box.y });
       if (!slot) continue;
-      const copy: PlacedBox = { ...box, id: makeId(), x: slot.x, y: slot.y };
+      const copy: PlacedBox = {
+        ...box,
+        id: makeId(),
+        x: slot.x,
+        y: slot.y,
+        dividers: box.dividers.map((d) => ({ ...d }))
+      };
       newBoxes.push(copy);
       newIds.push(copy.id);
       markOccupancy(occ, copy.x, copy.y, copy.widthCells, copy.depthCells);
@@ -358,8 +421,22 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     if (!box) return;
     const clamped = Math.min(SYSTEM.maxHeightMm, Math.max(SYSTEM.minHeightMm, mm));
     if (Math.abs(clamped - box.heightMm) < 1e-6) return;
+    const nextDividers = clampDividers(box.dividers, box.widthCells, box.depthCells, clamped);
     set({
-      boxes: s.boxes.map((b) => (b.id === id ? { ...b, heightMm: clamped } : b)),
+      boxes: s.boxes.map((b) => (b.id === id ? { ...b, heightMm: clamped, dividers: nextDividers } : b)),
+      past: [...s.past, snapshot(s)],
+      future: []
+    });
+  },
+
+  setBoxDividers(id, dividers) {
+    const s = get();
+    const box = s.boxes.find((b) => b.id === id);
+    if (!box) return;
+    const clean = clampDividers(dividers, box.widthCells, box.depthCells, box.heightMm)
+      .slice(0, SYSTEM.maxDividersPerBox);
+    set({
+      boxes: s.boxes.map((b) => (b.id === id ? { ...b, dividers: clean } : b)),
       past: [...s.past, snapshot(s)],
       future: []
     });
@@ -445,7 +522,16 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
     let skipped = 0;
     for (const b of incoming) {
       if (fits(b.x, b.y, b.widthCells, b.depthCells, occ)) {
-        placed.push({ id: makeId(), ...b });
+        const cleanDividers = clampDividers(b.dividers, b.widthCells, b.depthCells, b.heightMm);
+        placed.push({
+          id: makeId(),
+          x: b.x,
+          y: b.y,
+          widthCells: b.widthCells,
+          depthCells: b.depthCells,
+          heightMm: b.heightMm,
+          dividers: cleanDividers
+        });
         markOccupancy(occ, b.x, b.y, b.widthCells, b.depthCells);
       } else {
         skipped++;
@@ -483,7 +569,8 @@ export const useLayoutStore = create<LayoutState>((set, get) => ({
         y: entry.y,
         widthCells: entry.widthCells,
         depthCells: entry.depthCells,
-        heightMm: h
+        heightMm: h,
+        dividers: []
       });
       markOccupancy(occ, entry.x, entry.y, entry.widthCells, entry.depthCells);
     }

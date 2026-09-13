@@ -12,8 +12,18 @@ import hashlib
 import os
 import tempfile
 from pathlib import Path
+from typing import Sequence, Tuple
 
 from slotcrate.geometry.constants import GEOMETRY_VERSION
+
+
+def _dividers_key_part(dividers: Sequence[Tuple[str, float, float]] | None) -> str:
+    if not dividers:
+        return "-"
+    return ";".join(
+        f"{axis}:{round(offset, 4)}:{round(height, 4)}"
+        for axis, offset, height in sorted(dividers)
+    )
 
 
 def cache_key(
@@ -27,6 +37,7 @@ def cache_key(
     outer_clearance_mm: float,
     stl_tessellation_linear_mm: float,
     stl_tessellation_angular_rad: float,
+    dividers: Sequence[Tuple[str, float, float]] | None = None,
     geometry_version: str = GEOMETRY_VERSION,
 ) -> str:
     payload = (
@@ -34,7 +45,7 @@ def cache_key(
         f"{settings_version}|{round(grid_pitch_mm, 4)}|{round(wall_thickness_mm, 4)}|"
         f"{round(inner_floor_radius_mm, 4)}|{round(outer_clearance_mm, 4)}|"
         f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
-        f"{geometry_version}"
+        f"{_dividers_key_part(dividers)}|{geometry_version}"
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

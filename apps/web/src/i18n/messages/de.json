@@ -126,6 +126,19 @@
             }
         }
     },
+    "dividers": {
+        "title": "Unterteilungsstege",
+        "empty": "Keine Trennstege — Kasten ist innen offen.",
+        "addX": "Steg quer (X)",
+        "addY": "Steg längs (Y)",
+        "axisXLabel": "X",
+        "axisYLabel": "Y",
+        "toggleAxis": "Achse wechseln",
+        "remove": "Entfernen",
+        "offsetLabel": "Position (mm ab Innenwand)",
+        "heightLabel": "Höhe (mm ab Innenboden)",
+        "hint": "Dicke {thickness} mm (= Wandstärke). Positionen werden vom Innenraum-Ursprung gemessen."
+    },
     "admin": {
         "title": "Admin-Panel",
         "activeVersion": "Aktive Version: {version}, erstellt {createdAt}",
