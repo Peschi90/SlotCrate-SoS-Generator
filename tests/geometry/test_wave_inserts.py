@@ -1,14 +1,17 @@
 """Tests für Wannen-Einsätze (wellenförmige Rinnen für runde Werkzeuge)."""
 from __future__ import annotations
 
+import cadquery as cq
 import pytest
 
 from slotcrate.geometry.box import build_box, build_box_parametric
 from slotcrate.geometry.constants import (
     BBOX_TOLERANCE_MM,
     DEFAULT_BOX_HEIGHT_MM,
+    DEFAULT_FLOOR_THICKNESS_MM,
     DEFAULT_WALL_THICKNESS_MM,
     GRID_PITCH_MM,
+    PICKUP_TOP_Z_MM,
 )
 from slotcrate.geometry.reference import tight_dimensions
 
@@ -99,3 +102,25 @@ def test_wave_insert_axis_y() -> None:
     )
     assert count_solids(box) == 1
     assert is_valid_solid(box)
+
+
+def test_wave_insert_side_fill_reaches_wall_without_gap() -> None:
+    """Seitliche Freifläche neben einer schmalen Wanne muss bis zur Kastenwand
+    auf dieselbe Höhe aufgefüllt sein (kein Stufenspalt)."""
+    inner_w = _inner_span(3)
+    inner_d = _inner_span(3)
+    wall = DEFAULT_WALL_THICKNESS_MM
+    cavity_z0 = PICKUP_TOP_Z_MM + DEFAULT_FLOOR_THICKNESS_MM
+    # Schmale Einzel-Rinne (Block deutlich schmaler als der Innenraum), damit
+    # links/rechts viel Freifläche entstünde, wäre sie nicht aufgefüllt.
+    box = build_box_parametric(
+        3, 3, wave_inserts=[("x", inner_w / 2.0, 20.0, 10.0, 1, 3.0)]
+    )
+    slab_z = cavity_z0 + 2.0  # deutlich unterhalb der Rinnentiefe (3 mm ab Oberkante)
+    slab_thickness = 1.0
+    slab = cq.Solid.makeBox(
+        inner_w, inner_d, slab_thickness, cq.Vector(wall, wall, slab_z)
+    )
+    cross_section = box.intersect(slab)
+    expected_volume = inner_w * inner_d * slab_thickness
+    assert abs(volume_mm3(cross_section) - expected_volume) < 1.0

@@ -184,7 +184,9 @@ export function WaveInsertEditor({
         <ul className="space-y-2">
           {waveInserts.map((w, idx) => {
             const span = perpSpan(w.axis);
-            const maxDiameter = Math.min(SYSTEM.maxWaveGrooveDiameterMm, span);
+            // Durch Anzahl teilen, sonst könnte der Slider Werte zulassen, die
+            // den Einsatz beim Sanitizing unbemerkt komplett verwerfen.
+            const maxDiameter = Math.min(SYSTEM.maxWaveGrooveDiameterMm, span / w.grooveCount);
             const blockSpan = w.grooveCount * w.grooveDiameterMm;
             const halfSpan = blockSpan / 2;
             const minOffset = round(halfSpan, 3);

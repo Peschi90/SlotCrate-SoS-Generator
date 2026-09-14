@@ -558,6 +558,30 @@ def _build_wave_insert_solids(
             )
         notched = block.cut(cq.Compound.makeCompound(grooves))
         solids.append(notched)
+
+        # Seitliche Freiflächen zwischen Wanne und Kastenwand auf dieselbe
+        # Höhe auffüllen, damit kein Stufenspalt neben dem Einsatz bleibt.
+        perp_span = inner_w if axis == "x" else inner_d
+        left_edge = offset_mm - half_span
+        right_edge = offset_mm + half_span
+        eps = 1e-6
+        if left_edge > eps:
+            if axis == "x":
+                filler_origin = cq.Vector(wall_thickness_mm, wall_thickness_mm, cavity_z0)
+                filler_args = (left_edge, span_len, eff_h)
+            else:
+                filler_origin = cq.Vector(wall_thickness_mm, wall_thickness_mm, cavity_z0)
+                filler_args = (span_len, left_edge, eff_h)
+            solids.append(cq.Solid.makeBox(*filler_args, filler_origin))
+        if perp_span - right_edge > eps:
+            gap = perp_span - right_edge
+            if axis == "x":
+                filler_origin = cq.Vector(wall_thickness_mm + right_edge, wall_thickness_mm, cavity_z0)
+                filler_args = (gap, span_len, eff_h)
+            else:
+                filler_origin = cq.Vector(wall_thickness_mm, wall_thickness_mm + right_edge, cavity_z0)
+                filler_args = (span_len, gap, eff_h)
+            solids.append(cq.Solid.makeBox(*filler_args, filler_origin))
     return solids
 
 
