@@ -42,31 +42,3 @@ describe("calculateDualLevelPlacement", () => {
     expect(res.unplacedCount).toBeGreaterThan(0);
   });
 });
-
-    expect(res.cutouts.length).toBeLessThan(7);
-  });
-
-  it("places smaller vials in staggered zigzag configuration", () => {
-    const res = calculateInlayPlacement([
-      { id: "1", diameterMm: 25, count: 8 }
-    ]);
-    expect(res.fitsAll).toBe(true);
-    expect(res.cutouts).toHaveLength(8);
-    // Check alternating X positions
-    expect(res.cutouts[0]!.centerXMm).not.toBe(res.cutouts[1]!.centerXMm);
-  });
-
-  it("supports append mode with existing cutouts", () => {
-    const existing = [
-      { diameterMm: 36, centerXMm: 28.7, centerYMm: 30 }
-    ];
-    const res = calculateInlayPlacement(
-      [{ id: "1", diameterMm: 25, count: 2 }],
-      existing,
-      "append"
-    );
-    expect(res.fitsAll).toBe(true);
-    expect(res.cutouts).toHaveLength(3);
-    expect(res.cutouts[0]).toEqual(existing[0]);
-  });
-});

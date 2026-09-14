@@ -88,8 +88,8 @@ function tryPlaceOnShelf(
   const maxX = shelf.boundXMax - r;
   const canStagger = maxX - minX >= 5.0 && dia <= 26.0;
 
-  let targetX = CENTER_X;
-  let targetY = shelf.boundYMin + r;
+  let targetX: number = CENTER_X;
+  let targetY: number = shelf.boundYMin + r;
 
   if (existing.length === 0) {
     if (canStagger) {
@@ -234,12 +234,6 @@ export function calculateDualLevelPlacement(
     occupancyPercent: totalOccupancy,
     level1OccupancyPercent: l1Occupancy,
     level2OccupancyPercent: l2Occupancy,
-    unplacedCount,
-    unplacedItems
-  };
-}
-
-    occupancyPercent,
     unplacedCount,
     unplacedItems
   };
