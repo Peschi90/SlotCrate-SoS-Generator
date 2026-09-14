@@ -1,6 +1,8 @@
 "use client";
 
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { SYSTEM } from "@/lib/system";
 import type { WaveInsert } from "@/lib/schema";
 
@@ -37,6 +39,13 @@ export function WaveInsertEditor({
   const innerD = Math.max(0, depthCells * gridPitchMm - 2 * wallThicknessMm);
   const cavityH = Math.max(0, heightMm - SYSTEM.pickupTopZMm - SYSTEM.floorThicknessMm);
   const atMax = waveInserts.length >= SYSTEM.maxWaveInsertsPerBox;
+  const dragStartDiameterRef = useRef<{ index: number; value: number } | null>(null);
+  const [pendingMismatch, setPendingMismatch] = useState<{
+    index: number;
+    revertDiameterMm: number;
+    suggestedCount: number;
+    filledDiameterMm: number;
+  } | null>(null);
 
   function perpSpan(axis: "x" | "y"): number {
     return axis === "x" ? innerW : innerD;
@@ -47,11 +56,30 @@ export function WaveInsertEditor({
     return clamp(round(Math.min(15, span), 1), SYSTEM.minWaveGrooveDiameterMm, SYSTEM.maxWaveGrooveDiameterMm);
   }
 
+  /** Rundet den Rinnendurchmesser so ab, dass count·durchmesser den Innenraum
+   * nie überschreitet (verhindert Ablehnung durch clampWaveInserts). */
+  function fillingDiameter(span: number, count: number): number {
+    return Math.floor((span / count) * 100) / 100;
+  }
+
+  function fillingCount(span: number, diameter: number): number {
+    const raw = Math.round(span / Math.max(0.01, diameter));
+    return clamp(raw, SYSTEM.minWaveGrooveCount, SYSTEM.maxWaveGrooveCount);
+  }
+
   function add(axis: "x" | "y") {
     if (atMax) return;
     const span = perpSpan(axis);
-    const diameter = defaultGrooveDiameter(axis);
-    if (diameter <= 0 || diameter > span) return;
+    const desiredDiameter = defaultGrooveDiameter(axis);
+    if (desiredDiameter <= 0 || desiredDiameter > span) return;
+    // Anzahl + Durchmesser werden so gewählt, dass der komplette Innenraum
+    // ohne seitliche Lücke ausgefüllt wird.
+    const count = fillingCount(span, desiredDiameter);
+    const diameter = clamp(
+      fillingDiameter(span, count),
+      SYSTEM.minWaveGrooveDiameterMm,
+      SYSTEM.maxWaveGrooveDiameterMm
+    );
     const depth = clamp(round(diameter / 4, 2), SYSTEM.minWaveGrooveDepthMm, Math.min(diameter / 2, cavityH));
     onChange([
       ...waveInserts,
@@ -60,7 +88,7 @@ export function WaveInsertEditor({
         offsetMm: round(span / 2, 2),
         heightMm: round(cavityH, 2),
         grooveDiameterMm: round(diameter, 2),
-        grooveCount: 1,
+        grooveCount: count,
         grooveDepthMm: depth
       }
     ]);
@@ -75,6 +103,56 @@ export function WaveInsertEditor({
     onChange(waveInserts.filter((_, i) => i !== index));
     if (activeIndex === index) onActiveIndexChange?.(null);
     else if (activeIndex !== null && activeIndex > index) onActiveIndexChange?.(activeIndex - 1);
+  }
+
+  function beginDiameterDrag(index: number) {
+    const w = waveInserts[index];
+    if (!w) return;
+    dragStartDiameterRef.current = { index, value: w.grooveDiameterMm };
+  }
+
+  function finalizeDiameterDrag(index: number) {
+    const started = dragStartDiameterRef.current;
+    dragStartDiameterRef.current = null;
+    if (!started || started.index !== index) return;
+    const w = waveInserts[index];
+    if (!w) return;
+    if (Math.abs(w.grooveDiameterMm - started.value) < 0.01) return;
+    const span = perpSpan(w.axis);
+    const currentSpan = w.grooveCount * w.grooveDiameterMm;
+    if (Math.abs(currentSpan - span) <= 0.05) return;
+    const suggestedCount = fillingCount(span, w.grooveDiameterMm);
+    const filledDiameterMm = clamp(
+      fillingDiameter(span, suggestedCount),
+      SYSTEM.minWaveGrooveDiameterMm,
+      SYSTEM.maxWaveGrooveDiameterMm
+    );
+    setPendingMismatch({
+      index,
+      revertDiameterMm: started.value,
+      suggestedCount,
+      filledDiameterMm
+    });
+  }
+
+  function confirmMismatch() {
+    if (!pendingMismatch) return;
+    const { index, suggestedCount, filledDiameterMm } = pendingMismatch;
+    const w = waveInserts[index];
+    if (w) {
+      update(index, {
+        grooveDiameterMm: round(filledDiameterMm, 2),
+        grooveCount: suggestedCount,
+        grooveDepthMm: Math.min(w.grooveDepthMm, filledDiameterMm / 2)
+      });
+    }
+    setPendingMismatch(null);
+  }
+
+  function cancelMismatch() {
+    if (!pendingMismatch) return;
+    update(pendingMismatch.index, { grooveDiameterMm: pendingMismatch.revertDiameterMm });
+    setPendingMismatch(null);
   }
 
   return (
@@ -174,20 +252,34 @@ export function WaveInsertEditor({
                   unit="mm"
                   onChange={(v) => update(idx, { heightMm: round(v, 2) })}
                 />
-                <SliderRow
-                  label={t("waveInserts.grooveDiameter")}
-                  value={w.grooveDiameterMm}
-                  min={SYSTEM.minWaveGrooveDiameterMm}
-                  max={Math.max(SYSTEM.minWaveGrooveDiameterMm, maxDiameter)}
-                  step={0.5}
-                  unit="mm"
-                  onChange={(v) =>
-                    update(idx, {
-                      grooveDiameterMm: round(v, 2),
-                      grooveDepthMm: Math.min(w.grooveDepthMm, v / 2)
-                    })
-                  }
-                />
+                <label className="block space-y-1">
+                  <span className="text-[10px] uppercase tracking-wide text-neutral-500">
+                    {t("waveInserts.grooveDiameter")}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min={SYSTEM.minWaveGrooveDiameterMm}
+                      max={Math.max(SYSTEM.minWaveGrooveDiameterMm, maxDiameter)}
+                      step={0.5}
+                      value={clamp(w.grooveDiameterMm, SYSTEM.minWaveGrooveDiameterMm, maxDiameter)}
+                      onPointerDown={() => beginDiameterDrag(idx)}
+                      onChange={(e) => {
+                        const v = round(Number(e.target.value), 2);
+                        update(idx, {
+                          grooveDiameterMm: v,
+                          grooveDepthMm: Math.min(w.grooveDepthMm, v / 2)
+                        });
+                      }}
+                      onPointerUp={() => finalizeDiameterDrag(idx)}
+                      onKeyUp={() => finalizeDiameterDrag(idx)}
+                      className="slotcrate-range flex-1"
+                    />
+                    <span className="w-16 text-right text-xs font-mono text-neutral-200">
+                      {clamp(w.grooveDiameterMm, SYSTEM.minWaveGrooveDiameterMm, maxDiameter).toFixed(1)} mm
+                    </span>
+                  </div>
+                </label>
                 <label className="block space-y-1">
                   <span className="text-[10px] uppercase tracking-wide text-neutral-500">
                     {t("waveInserts.grooveCount")}
@@ -229,6 +321,16 @@ export function WaveInsertEditor({
       )}
 
       <p className="text-[10px] text-neutral-500">{t("waveInserts.hint")}</p>
+
+      <ConfirmDialog
+        open={pendingMismatch !== null}
+        title={t("waveInserts.mismatchTitle")}
+        message={t("waveInserts.mismatchMessage", { count: pendingMismatch?.suggestedCount ?? 0 })}
+        confirmLabel={t("waveInserts.mismatchConfirm")}
+        cancelLabel={t("waveInserts.mismatchCancel")}
+        onConfirm={confirmMismatch}
+        onCancel={cancelMismatch}
+      />
     </section>
   );
 }

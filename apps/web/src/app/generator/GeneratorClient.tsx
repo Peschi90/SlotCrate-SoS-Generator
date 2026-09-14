@@ -259,7 +259,7 @@ export function GeneratorClient({
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)] gap-6 p-4 sm:p-6 max-w-[1600px] mx-auto w-full">
+    <div className="grid grid-cols-1 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[420px_minmax(0,1fr)] gap-6 p-4 sm:p-6 max-w-[1600px] mx-auto w-full lg:items-start">
       <form
         className="space-y-5 rounded-2xl border border-neutral-800/80 bg-gradient-to-b from-neutral-950 to-neutral-900 p-5 shadow-2xl shadow-black/25"
         onSubmit={(e) => {
@@ -487,7 +487,7 @@ export function GeneratorClient({
           </div>
         )}
       </form>
-      <div className="min-h-[460px] h-[62vh] sm:h-[66vh] lg:h-[76vh] xl:h-[80vh] 2xl:h-[84vh] rounded-2xl border border-neutral-800/80 overflow-hidden bg-neutral-950">
+      <div className="min-h-[460px] h-[62vh] sm:h-[66vh] lg:h-[76vh] xl:h-[80vh] 2xl:h-[84vh] rounded-2xl border border-neutral-800/80 overflow-hidden bg-neutral-950 lg:sticky lg:top-24 lg:self-start">
         <BoxPreview
           widthCells={widthCells}
           depthCells={depthCells}
