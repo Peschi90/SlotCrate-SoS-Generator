@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { Inlay3DPreview } from "@/components/Inlay3DPreview";
 import { InlayShelfEditor } from "@/components/InlayShelfEditor";
+import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 import {
   DEFAULT_INLAY_LEVEL1_CUTOUTS,
   DEFAULT_INLAY_LEVEL2_CUTOUTS,
@@ -12,8 +12,37 @@ import {
 } from "@/lib/schema";
 import { SYSTEM } from "@/lib/system";
 
-export function InlayGeneratorClient() {
+type SuitcaseVariant = GeneratorSettingsPayload["suitcaseVariants"][number];
+
+interface Props {
+  suitcaseVariants?: SuitcaseVariant[];
+}
+
+export function InlayGeneratorClient({ suitcaseVariants }: Props) {
   const t = useTranslations();
+  const variants = suitcaseVariants?.length
+    ? suitcaseVariants
+    : [
+        {
+          id: "sc-124-v2",
+          label: "SC 124 V2",
+          minCells: SYSTEM.minCells,
+          maxWidthCells: SYSTEM.maxCells,
+          maxDepthCells: SYSTEM.maxCells,
+          gridPitchMm: SYSTEM.gridPitchMm,
+          boxHeightMm: SYSTEM.defaultBoxHeightMm,
+          wallThicknessMm: SYSTEM.wallThicknessMm,
+          innerFloorRadiusMm: 2.5,
+          outerClearanceMm: 0,
+          stlTessellationLinearMm: 0.05,
+          stlTessellationAngularRad: 0.5,
+          plateStepFile: "SlotCrate.step"
+        }
+      ];
+
+  const [variantId, setVariantId] = useState(variants[0]!.id);
+  const activeVariant = variants.find((variant) => variant.id === variantId) ?? variants[0]!;
+
   const [level1Cutouts, setLevel1Cutouts] = useState<InlayCutout[]>(DEFAULT_INLAY_LEVEL1_CUTOUTS);
   const [level2Cutouts, setLevel2Cutouts] = useState<InlayCutout[]>(DEFAULT_INLAY_LEVEL2_CUTOUTS);
   const [activeLevel, setActiveLevel] = useState<1 | 2>(1);
@@ -38,6 +67,7 @@ export function InlayGeneratorClient() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          suitcaseVariantId: activeVariant.id,
           level1Cutouts,
           level2Cutouts
         })
@@ -50,7 +80,7 @@ export function InlayGeneratorClient() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "SlotCrate_MM_Inlay.stl";
+      a.download = `SlotCrate_${activeVariant.id}_MM_Inlay.stl`;
       document.body.appendChild(a);
       a.click();
       a.remove();
@@ -84,7 +114,29 @@ export function InlayGeneratorClient() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Suitcase variant selector */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="inlay-variant" className="text-xs text-white/70 whitespace-nowrap">
+              {t("inlay.variant")}:
+            </label>
+            <select
+              id="inlay-variant"
+              value={activeVariant.id}
+              onChange={(e) => {
+                const next = variants.find((v) => v.id === e.target.value);
+                if (next) setVariantId(next.id);
+              }}
+              className="slotcrate-select text-xs py-1.5 px-3 rounded-xl border border-white/20 bg-black/60 text-white font-mono"
+            >
+              {variants.map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <button
             type="button"
             onClick={handleDownloadStl}

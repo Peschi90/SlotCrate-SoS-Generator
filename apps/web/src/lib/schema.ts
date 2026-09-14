@@ -135,24 +135,42 @@ export const layoutRequestSchema = z.object({
 
 export type LayoutRequest = z.infer<typeof layoutRequestSchema>;
 
-export const inlayCutoutSchema = z.object({
-  id: z.string().optional(),
-  diameterMm: z
-    .number()
-    .min(SYSTEM.inlayMinCutoutDiameterMm)
-    .max(SYSTEM.inlayMaxCutoutDiameterMm),
-  centerXMm: z.number().min(0).max(SYSTEM.inlayWidthMm),
-  centerYMm: z.number().min(0).max(SYSTEM.inlayDepthMm)
-});
+export const inlayCutoutSchema = z
+  .object({
+    id: z.string().optional(),
+    diameterMm: z
+      .number()
+      .min(SYSTEM.inlayMinCutoutDiameterMm)
+      .max(SYSTEM.inlayMaxCutoutDiameterMm),
+    centerXMm: z.number().min(0).max(SYSTEM.inlayWidthMm),
+    centerYMm: z.number().min(0).max(SYSTEM.inlayDepthMm)
+  })
+  .refine(
+    (c) => {
+      const radius = c.diameterMm / 2.0;
+      const minX = SYSTEM.inlayShelfUsableXMinMm + SYSTEM.inlayMinMarginMm;
+      const maxX = SYSTEM.inlayShelfUsableXMaxMm - SYSTEM.inlayMinMarginMm;
+      const minY = SYSTEM.inlayShelfUsableYMinMm + SYSTEM.inlayMinMarginMm;
+      const maxY = SYSTEM.inlayShelfUsableYMaxMm - SYSTEM.inlayMinMarginMm;
+      return (
+        c.centerXMm - radius >= minX - 1e-4 &&
+        c.centerXMm + radius <= maxX + 1e-4 &&
+        c.centerYMm - radius >= minY - 1e-4 &&
+        c.centerYMm + radius <= maxY + 1e-4
+      );
+    },
+    {
+      message: `Aussparung unterschreitet den Mindestabstand von ${SYSTEM.inlayMinMarginMm} mm zum Regalrand`
+    }
+  );
 
 export type InlayCutout = z.infer<typeof inlayCutoutSchema>;
 
 export const DEFAULT_INLAY_LEVEL1_CUTOUTS: InlayCutout[] = [
-  { diameterMm: 25.0, centerXMm: 28.7, centerYMm: 26.1 },
-  { diameterMm: 32.0, centerXMm: 28.7, centerYMm: 61.1 },
-  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 105.1 },
-  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 150.1 },
-  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 195.1 }
+  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 30.0 },
+  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 76.0 },
+  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 122.0 },
+  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 168.0 }
 ];
 
 export const DEFAULT_INLAY_LEVEL2_CUTOUTS: InlayCutout[] = [
@@ -165,6 +183,7 @@ export const DEFAULT_INLAY_LEVEL2_CUTOUTS: InlayCutout[] = [
 ];
 
 export const inlayRequestSchema = z.object({
+  suitcaseVariantId: z.string().min(1).max(32).regex(/^[a-z0-9-]+$/).default("sc-124-v2"),
   settingsVersion: z.number().int().min(1).default(1),
   stlTessellationLinearMm: z.number().min(0.005).max(0.5).default(0.05),
   stlTessellationAngularRad: z.number().min(0.05).max(1.0).default(0.5),

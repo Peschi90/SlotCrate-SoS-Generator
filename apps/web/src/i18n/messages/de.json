@@ -183,6 +183,7 @@
     },
     "inlay": {
         "badge": "Maintenance-Modul Einschub",
+        "variant": "Koffervariante",
         "title": "Apothekerschrank 2-Ebenen Inlay Generator",
         "description": "Platziere und konfiguriere zylindrische Aussparungen für Gefäße, Flaschen und Fläschchen auf zwei Ebenen völlig frei.",
         "level1Tab": "Ebene 1 (Unten)",
@@ -205,7 +206,7 @@
         "presets": {
             "title": "Schnellvorlagen",
             "reference": "Referenz-Standard",
-            "bottles41": "4x 41mm Flaschen",
+            "bottles36": "4x 36mm Flaschen",
             "bottles32": "5x 32mm Flaschen",
             "vialsZigzag": "8x 25mm Fläschchen (Zick-Zack)",
             "clear": "Ebene leeren"
@@ -213,6 +214,7 @@
         "editor": {
             "shelfPlan": "Draufsicht Regalboden",
             "dragHint": "Klicke auf eine Aussparung und ziehe sie direkt im Plan oder nutze die Regler rechts.",
+            "marginHint": "Mindestabstand zum Rand: 2,6 mm",
             "cutoutsList": "Aussparungen auf dieser Ebene",
             "addCutout": "Aussparung hinzufügen",
             "editCutout": "Aussparung bearbeiten",

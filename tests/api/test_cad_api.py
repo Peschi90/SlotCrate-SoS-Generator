@@ -154,6 +154,17 @@ def test_inlay_stl_rejects_invalid_diameter(client: TestClient) -> None:
     assert r.status_code == 422
 
 
+def test_inlay_stl_rejects_violating_shelf_margin(client: TestClient) -> None:
+    # A 36mm hole at X=15 leaves (15 - 18) = -3mm, violating margin of 2.6mm to shelf edge at X=8.0
+    payload = {
+        "level1Cutouts": [
+            {"diameterMm": 36.0, "centerXMm": 15.0, "centerYMm": 50.0},
+        ],
+    }
+    r = client.post("/v1/inlay/stl", json=payload)
+    assert r.status_code == 422
+
+
 def test_layout_zip_rejects_out_of_grid(client: TestClient) -> None:
     boxes = [
         {"id": str(uuid4()), "x": 9, "y": 0, "widthCells": 2, "depthCells": 1},

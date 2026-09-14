@@ -25,6 +25,11 @@ from slotcrate.geometry.constants import (
     INLAY_MAX_CUTOUT_DIAMETER_MM,
     INLAY_MAX_CUTOUTS_PER_LEVEL,
     INLAY_MIN_CUTOUT_DIAMETER_MM,
+    INLAY_MIN_MARGIN_MM,
+    INLAY_SHELF_USABLE_X_MAX_MM,
+    INLAY_SHELF_USABLE_X_MIN_MM,
+    INLAY_SHELF_USABLE_Y_MAX_MM,
+    INLAY_SHELF_USABLE_Y_MIN_MM,
     INLAY_WIDTH_MM,
     INLAY_DEPTH_MM,
     MAX_DIVIDERS_PER_BOX,
@@ -258,12 +263,33 @@ class InlayCutoutSpec(BaseModel):
     centerXMm: Annotated[float, Field(ge=0.0, le=INLAY_WIDTH_MM)]
     centerYMm: Annotated[float, Field(ge=0.0, le=INLAY_DEPTH_MM)]
 
+    @model_validator(mode="after")
+    def _validate_shelf_margin(self) -> "InlayCutoutSpec":
+        radius = self.diameterMm / 2.0
+        min_x = INLAY_SHELF_USABLE_X_MIN_MM + INLAY_MIN_MARGIN_MM
+        max_x = INLAY_SHELF_USABLE_X_MAX_MM - INLAY_MIN_MARGIN_MM
+        min_y = INLAY_SHELF_USABLE_Y_MIN_MM + INLAY_MIN_MARGIN_MM
+        max_y = INLAY_SHELF_USABLE_Y_MAX_MM - INLAY_MIN_MARGIN_MM
+
+        if self.centerXMm - radius < min_x - 1e-4 or self.centerXMm + radius > max_x + 1e-4:
+            raise ValueError(
+                f"Aussparung (ø{self.diameterMm} mm bei X={self.centerXMm}) unterschreitet "
+                f"den Mindestabstand von {INLAY_MIN_MARGIN_MM} mm zum Regalrand (X=[{min_x:.2f}, {max_x:.2f}])"
+            )
+        if self.centerYMm - radius < min_y - 1e-4 or self.centerYMm + radius > max_y + 1e-4:
+            raise ValueError(
+                f"Aussparung (ø{self.diameterMm} mm bei Y={self.centerYMm}) unterschreitet "
+                f"den Mindestabstand von {INLAY_MIN_MARGIN_MM} mm zum Regalrand (Y=[{min_y:.2f}, {max_y:.2f}])"
+            )
+        return self
+
 
 class InlayRequest(BaseModel):
     """Payload für die STL-Generierung des Maintenance-Modul Einschubs."""
 
     model_config = ConfigDict(extra="forbid")
 
+    suitcaseVariantId: Annotated[str, Field(min_length=1, max_length=32)] = "sc-124-v2"
     settingsVersion: Annotated[int, Field(ge=1)] = 1
     stlTessellationLinearMm: Annotated[
         float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)
@@ -277,4 +303,10 @@ class InlayRequest(BaseModel):
     level2Cutouts: Annotated[
         List[InlayCutoutSpec], Field(max_length=INLAY_MAX_CUTOUTS_PER_LEVEL)
     ] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_variant(self) -> "InlayRequest":
+        if not re.fullmatch(r"^[a-z0-9-]+$", self.suitcaseVariantId):
+            raise ValueError("suitcaseVariantId hat ein ungültiges Format")
+        return self
 

@@ -19,11 +19,18 @@ interface Props {
 
 const TOTAL_W = SYSTEM.inlayWidthMm; // 57.4 mm
 const TOTAL_D = SYSTEM.inlayDepthMm; // 224.6 mm
-const USABLE_X_MIN = SYSTEM.inlayShelfUsableXMinMm; // 8.0 mm
-const USABLE_X_MAX = SYSTEM.inlayShelfUsableXMaxMm; // 49.4 mm
-const USABLE_Y_MIN = SYSTEM.inlayShelfUsableYMinMm; // 10.0 mm
-const USABLE_Y_MAX = SYSTEM.inlayShelfUsableYMaxMm; // 215.0 mm
+const SHELF_X_MIN = SYSTEM.inlayShelfUsableXMinMm; // 8.0 mm
+const SHELF_X_MAX = SYSTEM.inlayShelfUsableXMaxMm; // 49.4 mm
+const SHELF_Y_MIN = SYSTEM.inlayShelfUsableYMinMm; // 5.0 mm
+const SHELF_Y_MAX = SYSTEM.inlayShelfUsableYMaxMm; // 218.0 mm
+const MIN_MARGIN = SYSTEM.inlayMinMarginMm; // 2.6 mm
 const CENTER_X = SYSTEM.inlayCenterXMm; // 28.7 mm
+
+// Permissible boundary box for any cutout's outermost circle edge
+const BOUND_X_MIN = SHELF_X_MIN + MIN_MARGIN; // 10.6 mm
+const BOUND_X_MAX = SHELF_X_MAX - MIN_MARGIN; // 46.8 mm
+const BOUND_Y_MIN = SHELF_Y_MIN + MIN_MARGIN; // 7.6 mm
+const BOUND_Y_MAX = SHELF_Y_MAX - MIN_MARGIN; // 215.4 mm
 
 function clamp(val: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, val));
@@ -50,42 +57,72 @@ export function InlayShelfEditor({
     ? cutouts[activeIndex]
     : null;
 
+  // Calculate maximum allowable diameter for a hole at a given (x, y) center
+  const getMaxDiameterAt = useCallback((cx: number, cy: number): number => {
+    const maxRadius = Math.min(
+      cx - BOUND_X_MIN,
+      BOUND_X_MAX - cx,
+      cy - BOUND_Y_MIN,
+      BOUND_Y_MAX - cy
+    );
+    return Math.max(
+      SYSTEM.inlayMinCutoutDiameterMm,
+      Math.min(SYSTEM.inlayMaxCutoutDiameterMm, round(2 * maxRadius, 1))
+    );
+  }, []);
+
   const handleAdd = useCallback(() => {
     if (cutouts.length >= SYSTEM.inlayMaxCutoutsPerLevel) return;
-    // Neue Aussparung in der Mitte des noch freien Bereichs oder am Ende
-    let nextY = USABLE_Y_MIN + 30;
+    let nextY = BOUND_Y_MIN + 25;
     if (cutouts.length > 0) {
       const maxY = Math.max(...cutouts.map((c) => c.centerYMm));
-      nextY = Math.min(USABLE_Y_MAX - 20, maxY + 35);
+      nextY = Math.min(BOUND_Y_MAX - 20, maxY + 35);
     }
+    const maxDia = getMaxDiameterAt(CENTER_X, nextY);
     const newCutout: InlayCutout = {
-      diameterMm: 32,
+      diameterMm: Math.min(32, maxDia),
       centerXMm: CENTER_X,
       centerYMm: round(nextY, 1)
     };
     const next = [...cutouts, newCutout];
     onChange(next);
     onActiveIndexChange(next.length - 1);
-  }, [cutouts, onChange, onActiveIndexChange]);
+  }, [cutouts, onChange, onActiveIndexChange, getMaxDiameterAt]);
 
   const handleUpdate = useCallback(
     (index: number, patch: Partial<InlayCutout>) => {
       const next = cutouts.map((c, i) => {
         if (i !== index) return c;
-        const updated = { ...c, ...patch };
+        const targetDia = patch.diameterMm !== undefined ? patch.diameterMm : c.diameterMm;
+        const targetX = patch.centerXMm !== undefined ? patch.centerXMm : c.centerXMm;
+        const targetY = patch.centerYMm !== undefined ? patch.centerYMm : c.centerYMm;
+
+        // Preliminary clamp of coordinates to interior region
+        const clampedX = clamp(round(targetX, 1), BOUND_X_MIN + 2.5, BOUND_X_MAX - 2.5);
+        const clampedY = clamp(round(targetY, 1), BOUND_Y_MIN + 2.5, BOUND_Y_MAX - 2.5);
+
+        // Max possible diameter at this center position
+        const maxDia = getMaxDiameterAt(clampedX, clampedY);
+        const clampedDia = clamp(
+          round(targetDia, 1),
+          SYSTEM.inlayMinCutoutDiameterMm,
+          maxDia
+        );
+
+        // Re-clamp center coordinates with the final chosen radius
+        const radius = clampedDia / 2.0;
+        const finalX = clamp(clampedX, BOUND_X_MIN + radius, BOUND_X_MAX - radius);
+        const finalY = clamp(clampedY, BOUND_Y_MIN + radius, BOUND_Y_MAX - radius);
+
         return {
-          diameterMm: clamp(
-            round(updated.diameterMm, 1),
-            SYSTEM.inlayMinCutoutDiameterMm,
-            SYSTEM.inlayMaxCutoutDiameterMm
-          ),
-          centerXMm: clamp(round(updated.centerXMm, 1), USABLE_X_MIN, USABLE_X_MAX),
-          centerYMm: clamp(round(updated.centerYMm, 1), USABLE_Y_MIN, USABLE_Y_MAX)
+          diameterMm: round(clampedDia, 1),
+          centerXMm: round(finalX, 1),
+          centerYMm: round(finalY, 1)
         };
       });
       onChange(next);
     },
-    [cutouts, onChange]
+    [cutouts, onChange, getMaxDiameterAt]
   );
 
   const handleDelete = useCallback(
@@ -106,10 +143,11 @@ export function InlayShelfEditor({
       if (cutouts.length >= SYSTEM.inlayMaxCutoutsPerLevel) return;
       const target = cutouts[index];
       if (!target) return;
+      const targetY = Math.min(BOUND_Y_MAX - target.diameterMm / 2, target.centerYMm + target.diameterMm + 5);
       const newCutout: InlayCutout = {
         diameterMm: target.diameterMm,
         centerXMm: target.centerXMm,
-        centerYMm: Math.min(USABLE_Y_MAX, target.centerYMm + target.diameterMm + 5)
+        centerYMm: round(targetY, 1)
       };
       const next = [...cutouts, newCutout];
       onChange(next);
@@ -130,12 +168,12 @@ export function InlayShelfEditor({
     onActiveIndexChange(null);
   }, [onChange, onActiveIndexChange]);
 
-  const applyBottles41Preset = useCallback(() => {
+  const applyBottles36Preset = useCallback(() => {
     const next: InlayCutout[] = [
-      { diameterMm: 41, centerXMm: CENTER_X, centerYMm: 30 },
-      { diameterMm: 41, centerXMm: CENTER_X, centerYMm: 76 },
-      { diameterMm: 41, centerXMm: CENTER_X, centerYMm: 122 },
-      { diameterMm: 41, centerXMm: CENTER_X, centerYMm: 168 }
+      { diameterMm: 36, centerXMm: CENTER_X, centerYMm: 30 },
+      { diameterMm: 36, centerXMm: CENTER_X, centerYMm: 76 },
+      { diameterMm: 36, centerXMm: CENTER_X, centerYMm: 122 },
+      { diameterMm: 36, centerXMm: CENTER_X, centerYMm: 168 }
     ];
     onChange(next);
     onActiveIndexChange(null);
@@ -155,14 +193,14 @@ export function InlayShelfEditor({
 
   const applyVialsZigzagPreset = useCallback(() => {
     const next: InlayCutout[] = [
-      { diameterMm: 25, centerXMm: 22.0, centerYMm: 25 },
-      { diameterMm: 25, centerXMm: 35.4, centerYMm: 50 },
-      { diameterMm: 25, centerXMm: 22.0, centerYMm: 75 },
-      { diameterMm: 25, centerXMm: 35.4, centerYMm: 100 },
-      { diameterMm: 25, centerXMm: 22.0, centerYMm: 125 },
-      { diameterMm: 25, centerXMm: 35.4, centerYMm: 150 },
-      { diameterMm: 25, centerXMm: 22.0, centerYMm: 175 },
-      { diameterMm: 25, centerXMm: 35.4, centerYMm: 200 }
+      { diameterMm: 25, centerXMm: 23.7, centerYMm: 25 },
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 50 },
+      { diameterMm: 25, centerXMm: 23.7, centerYMm: 75 },
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 100 },
+      { diameterMm: 25, centerXMm: 23.7, centerYMm: 125 },
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 150 },
+      { diameterMm: 25, centerXMm: 23.7, centerYMm: 175 },
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 200 }
     ];
     onChange(next);
     onActiveIndexChange(null);
@@ -212,10 +250,15 @@ export function InlayShelfEditor({
       try {
         (e.target as Element).releasePointerCapture?.(e.pointerId);
       } catch {
-        // Ignorieren falls nicht erfasst
+        // Fallback
       }
     }
   };
+
+  // Max diameter for currently selected cutout
+  const activeMaxDia = activeCutout
+    ? getMaxDiameterAt(activeCutout.centerXMm, activeCutout.centerYMm)
+    : SYSTEM.inlayMaxCutoutDiameterMm;
 
   return (
     <div className="space-y-4">
@@ -231,10 +274,10 @@ export function InlayShelfEditor({
         </button>
         <button
           type="button"
-          onClick={applyBottles41Preset}
+          onClick={applyBottles36Preset}
           className="slotcrate-button-secondary text-xs py-1 px-2.5"
         >
-          {t("inlay.presets.bottles41")}
+          {t("inlay.presets.bottles36")}
         </button>
         <button
           type="button"
@@ -265,7 +308,7 @@ export function InlayShelfEditor({
           <div className="text-xs text-white/70 mb-2 font-mono">
             {t("inlay.editor.shelfPlan")} ({TOTAL_W} × {TOTAL_D} mm)
           </div>
-          <div className="relative border border-white/20 rounded-2xl p-3 bg-black/50 shadow-inner flex justify-center">
+          <div className="relative border border-white/20 rounded-2xl p-3 bg-black/60 shadow-inner flex justify-center">
             <svg
               ref={svgRef}
               viewBox={`0 0 ${TOTAL_W} ${TOTAL_D}`}
@@ -287,17 +330,28 @@ export function InlayShelfEditor({
                 strokeWidth="1"
               />
 
-              {/* Usable interior zone */}
+              {/* Shelf physical edges */}
               <rect
-                x={USABLE_X_MIN}
-                y={USABLE_Y_MIN}
-                width={USABLE_X_MAX - USABLE_X_MIN}
-                height={USABLE_Y_MAX - USABLE_Y_MIN}
+                x={SHELF_X_MIN}
+                y={SHELF_Y_MIN}
+                width={SHELF_X_MAX - SHELF_X_MIN}
+                height={SHELF_Y_MAX - SHELF_Y_MIN}
                 fill="#0d1117"
+                stroke="#484f58"
+                strokeWidth="0.5"
+              />
+
+              {/* Usable zone (reflecting 2.6mm margin limit) */}
+              <rect
+                x={BOUND_X_MIN}
+                y={BOUND_Y_MIN}
+                width={BOUND_X_MAX - BOUND_X_MIN}
+                height={BOUND_Y_MAX - BOUND_Y_MIN}
+                fill="none"
                 stroke="#ff7b00"
                 strokeWidth="0.5"
                 strokeDasharray="2,2"
-                opacity="0.6"
+                opacity="0.75"
               />
 
               {/* Center guide line */}
@@ -367,7 +421,7 @@ export function InlayShelfEditor({
             </svg>
           </div>
           <p className="text-[11px] text-white/50 mt-2 text-center">
-            {t("inlay.editor.dragHint")}
+            {t("inlay.editor.dragHint")} ({t("inlay.editor.marginHint")})
           </p>
         </div>
 
@@ -390,7 +444,7 @@ export function InlayShelfEditor({
 
           {/* Active Cutout Detail Inspector */}
           {activeCutout && activeIndex !== null ? (
-            <div className="rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 space-y-3">
+            <div className="rounded-2xl border border-amber-500/40 bg-amber-950/20 p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-amber-400">
                   {t("inlay.editor.editCutout")} #{activeIndex + 1}
@@ -417,13 +471,18 @@ export function InlayShelfEditor({
               <div className="space-y-1">
                 <div className="flex justify-between text-xs text-white/80">
                   <span>{t("inlay.editor.diameter")} (mm):</span>
-                  <span className="font-mono font-semibold">{activeCutout.diameterMm} mm</span>
+                  <span className="font-mono font-semibold text-amber-300">
+                    {activeCutout.diameterMm} mm{" "}
+                    <span className="text-white/40 font-normal">
+                      (max. {activeMaxDia} mm)
+                    </span>
+                  </span>
                 </div>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
                     min={SYSTEM.inlayMinCutoutDiameterMm}
-                    max={SYSTEM.inlayMaxCutoutDiameterMm}
+                    max={activeMaxDia}
                     step={0.5}
                     value={activeCutout.diameterMm}
                     onChange={(e) =>
@@ -434,30 +493,38 @@ export function InlayShelfEditor({
                   <input
                     type="number"
                     min={SYSTEM.inlayMinCutoutDiameterMm}
-                    max={SYSTEM.inlayMaxCutoutDiameterMm}
+                    max={activeMaxDia}
                     step={0.5}
                     value={activeCutout.diameterMm}
                     onChange={(e) =>
                       handleUpdate(activeIndex, { diameterMm: parseFloat(e.target.value) || 10 })
                     }
-                    className="slotcrate-input w-20 text-xs text-center py-1 font-mono"
+                    className="slotcrate-input w-24 text-xs text-center py-1 font-mono font-semibold"
                   />
                 </div>
               </div>
 
-              {/* Quick Size Presets */}
-              <div className="flex items-center gap-1.5 text-xs">
+              {/* Quick Size Presets (only show ones that fit) */}
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 <span className="text-white/60">{t("inlay.editor.commonSizes")}:</span>
-                {[15, 20, 25, 32, 41].map((dia) => (
-                  <button
-                    key={dia}
-                    type="button"
-                    onClick={() => handleUpdate(activeIndex, { diameterMm: dia })}
-                    className="px-2 py-0.5 rounded bg-white/10 hover:bg-white/20 text-[11px] font-mono text-white/90"
-                  >
-                    {dia}mm
-                  </button>
-                ))}
+                {[15, 20, 25, 30, 32, 36].map((dia) => {
+                  const fits = dia <= activeMaxDia;
+                  return (
+                    <button
+                      key={dia}
+                      type="button"
+                      disabled={!fits}
+                      onClick={() => handleUpdate(activeIndex, { diameterMm: dia })}
+                      className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors ${
+                        fits
+                          ? "bg-white/10 hover:bg-white/20 text-white/90 cursor-pointer"
+                          : "bg-white/5 text-white/30 cursor-not-allowed opacity-50"
+                      }`}
+                    >
+                      {dia}mm
+                    </button>
+                  );
+                })}
               </div>
 
               {/* X & Y Coordinates */}
@@ -475,14 +542,14 @@ export function InlayShelfEditor({
                   </div>
                   <input
                     type="number"
-                    min={USABLE_X_MIN}
-                    max={USABLE_X_MAX}
+                    min={BOUND_X_MIN + activeCutout.diameterMm / 2}
+                    max={BOUND_X_MAX - activeCutout.diameterMm / 2}
                     step={0.5}
                     value={activeCutout.centerXMm}
                     onChange={(e) =>
                       handleUpdate(activeIndex, { centerXMm: parseFloat(e.target.value) || CENTER_X })
                     }
-                    className="slotcrate-input w-full text-xs py-1 font-mono"
+                    className="slotcrate-input w-full text-xs py-1 font-mono font-semibold"
                   />
                 </div>
 
@@ -492,14 +559,14 @@ export function InlayShelfEditor({
                   </div>
                   <input
                     type="number"
-                    min={USABLE_Y_MIN}
-                    max={USABLE_Y_MAX}
+                    min={BOUND_Y_MIN + activeCutout.diameterMm / 2}
+                    max={BOUND_Y_MAX - activeCutout.diameterMm / 2}
                     step={0.5}
                     value={activeCutout.centerYMm}
                     onChange={(e) =>
-                      handleUpdate(activeIndex, { centerYMm: parseFloat(e.target.value) || USABLE_Y_MIN })
+                      handleUpdate(activeIndex, { centerYMm: parseFloat(e.target.value) || BOUND_Y_MIN })
                     }
-                    className="slotcrate-input w-full text-xs py-1 font-mono"
+                    className="slotcrate-input w-full text-xs py-1 font-mono font-semibold"
                   />
                 </div>
               </div>

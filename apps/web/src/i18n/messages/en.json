@@ -183,6 +183,7 @@
     },
     "inlay": {
         "badge": "Maintenance Module Inlay",
+        "variant": "Suitcase variant",
         "title": "Apothecary 2-Tier Inlay Generator",
         "description": "Freely place and configure cylindrical cutouts for bottles, vials, and jars across two shelf levels.",
         "level1Tab": "Level 1 (Lower)",
@@ -205,7 +206,7 @@
         "presets": {
             "title": "Quick Presets",
             "reference": "Reference Default",
-            "bottles41": "4x 41mm Bottles",
+            "bottles36": "4x 36mm Bottles",
             "bottles32": "5x 32mm Bottles",
             "vialsZigzag": "8x 25mm Vials (Zig-Zag)",
             "clear": "Clear Level"
@@ -213,6 +214,7 @@
         "editor": {
             "shelfPlan": "Shelf Top View",
             "dragHint": "Click and drag a cutout directly on the shelf plan or use the controls on the right.",
+            "marginHint": "Minimum edge margin: 2.6 mm",
             "cutoutsList": "Cutouts on this level",
             "addCutout": "Add Cutout",
             "editCutout": "Edit Cutout",

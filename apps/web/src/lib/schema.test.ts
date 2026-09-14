@@ -152,11 +152,13 @@ describe("layoutRequestSchema", () => {
 describe("inlayRequestSchema", () => {
   it("accepts valid empty or populated cutout lists", () => {
     const res = inlayRequestSchema.parse({
+      suitcaseVariantId: "sc-124-v2",
       level1Cutouts: [{ diameterMm: 25, centerXMm: 28.7, centerYMm: 30 }],
       level2Cutouts: [{ diameterMm: 32, centerXMm: 28.7, centerYMm: 60 }]
     });
     expect(res.level1Cutouts).toHaveLength(1);
     expect(res.level2Cutouts).toHaveLength(1);
+    expect(res.suitcaseVariantId).toBe("sc-124-v2");
     expect(res.settingsVersion).toBe(1);
   });
 
@@ -169,6 +171,15 @@ describe("inlayRequestSchema", () => {
     expect(() =>
       inlayRequestSchema.parse({
         level1Cutouts: [{ diameterMm: 60, centerXMm: 28.7, centerYMm: 30 }]
+      })
+    ).toThrow();
+  });
+
+  it("rejects cutout violating 2.6mm edge margin", () => {
+    // 36mm cutout at X=15 leaves (15 - 18) = -3mm, violating margin of 2.6mm to shelf edge at X=8.0
+    expect(() =>
+      inlayRequestSchema.parse({
+        level1Cutouts: [{ diameterMm: 36, centerXMm: 15.0, centerYMm: 50 }]
       })
     ).toThrow();
   });

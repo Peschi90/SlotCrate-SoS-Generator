@@ -185,3 +185,41 @@ body {
     background: #f5f7fb;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
+
+/* Form inputs: Dark theme styling preventing white-on-white text */
+input,
+select,
+textarea {
+    color-scheme: dark;
+}
+
+.slotcrate-input {
+    background-color: #121820;
+    color: #f0f6fc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    font-family: inherit;
+    color-scheme: dark;
+}
+
+.slotcrate-input:focus {
+    outline: none;
+    border-color: #ff7b00;
+    box-shadow: 0 0 0 2px rgba(255, 123, 0, 0.25);
+}
+
+.slotcrate-select {
+    background-color: #121820;
+    color: #f0f6fc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    color-scheme: dark;
+}
+
+.slotcrate-select:focus {
+    outline: none;
+    border-color: #ff7b00;
+    box-shadow: 0 0 0 2px rgba(255, 123, 0, 0.25);
+}
