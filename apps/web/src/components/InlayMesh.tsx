@@ -61,9 +61,9 @@ export function InlayMesh({
   const activeBottleMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
-        color: 0xff7b00,
+        color: 0x7ed321,
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.85,
         roughness: 0.2,
         metalness: 0.2
       }),
@@ -82,7 +82,7 @@ export function InlayMesh({
   const activeHoleOutlineMaterial = useMemo(
     () =>
       new THREE.MeshBasicMaterial({
-        color: 0xff7b00,
+        color: 0x7ed321,
         wireframe: true
       }),
     []

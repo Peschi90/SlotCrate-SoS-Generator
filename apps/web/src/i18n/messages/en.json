@@ -229,6 +229,26 @@
             "center": "Center",
             "noSelectionHint": "Click a cutout on the shelf plan or list to adjust its size and position.",
             "emptyLevel": "No cutouts on this level. Click '+ Add Cutout' or choose a quick preset."
+        },
+        "wizard": {
+            "button": "Placement Wizard",
+            "title": "Auto Placement Wizard",
+            "subtitle": "Select your bottle and vial diameters for Level {level}. The wizard calculates the optimal layout and checks capacity in real-time.",
+            "modeLabel": "Mode",
+            "modeReplace": "Replace level",
+            "modeAppend": "Append to existing",
+            "itemsTitle": "Required Bottles & Vials",
+            "addItem": "Add size",
+            "noItemsHint": "No bottles added yet. Click '+ Add size'.",
+            "count": "Count",
+            "capacityTitle": "Shelf Capacity",
+            "occupied": "occupied",
+            "enterItemsPrompt": "Enter desired diameters and quantities to check shelf capacity.",
+            "fitsAllSuccess": "All {count} bottles fit on this shelf level!",
+            "overflowWarning": "Not enough space ({unplaced} {unplaced, plural, one {bottle does} other {bottles do}} not fit)",
+            "overflowDetail": "Only {placed} of {total} bottles could be placed.",
+            "cancel": "Cancel",
+            "apply": "Apply Cutouts"
         }
     },
     "admin": {

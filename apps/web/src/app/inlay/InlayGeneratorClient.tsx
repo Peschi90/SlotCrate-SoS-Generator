@@ -98,10 +98,10 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-white/10 pb-6">
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <span className="text-xs uppercase tracking-widest text-amber-400 font-mono">
+            <span className="text-xs uppercase tracking-widest text-[#7ed321] font-mono font-semibold">
               {t("inlay.badge")}
             </span>
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
+            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-[#5fbb2e]/20 text-[#7ed321] border border-[#5fbb2e]/40 font-mono">
               🚧 {t("inDevelopmentBadge")}
             </span>
             <span className="text-white/40">·</span>
@@ -144,7 +144,7 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
             type="button"
             onClick={handleDownloadStl}
             disabled={busy}
-            className="slotcrate-button-primary flex items-center gap-2 text-sm py-2.5 px-6 shadow-lg hover:shadow-amber-500/20"
+            className="slotcrate-button-primary flex items-center gap-2 text-sm py-2.5 px-6 shadow-lg hover:shadow-[#5fbb2e]/25"
           >
             {busy ? (
               <>
@@ -213,14 +213,14 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
               onClick={() => handleLevelSwitch(1)}
               className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
                 activeLevel === 1
-                  ? "bg-amber-500 text-black shadow-md"
+                  ? "bg-gradient-to-r from-[#5fbb2e] to-[#7ed321] text-black font-bold shadow-[0_0_15px_rgba(95,187,46,0.35)]"
                   : "text-white/70 hover:text-white hover:bg-white/5"
               }`}
             >
               <span>{t("inlay.level1Tab")}</span>
               <span
                 className={`text-[11px] px-2 py-0.5 rounded-full font-mono ${
-                  activeLevel === 1 ? "bg-black/20 text-black" : "bg-white/10 text-white/80"
+                  activeLevel === 1 ? "bg-black/20 text-black font-bold" : "bg-white/10 text-white/80"
                 }`}
               >
                 {level1Cutouts.length}
@@ -232,14 +232,14 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
               onClick={() => handleLevelSwitch(2)}
               className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
                 activeLevel === 2
-                  ? "bg-amber-500 text-black shadow-md"
+                  ? "bg-gradient-to-r from-[#5fbb2e] to-[#7ed321] text-black font-bold shadow-[0_0_15px_rgba(95,187,46,0.35)]"
                   : "text-white/70 hover:text-white hover:bg-white/5"
               }`}
             >
               <span>{t("inlay.level2Tab")}</span>
               <span
                 className={`text-[11px] px-2 py-0.5 rounded-full font-mono ${
-                  activeLevel === 2 ? "bg-black/20 text-black" : "bg-white/10 text-white/80"
+                  activeLevel === 2 ? "bg-black/20 text-black font-bold" : "bg-white/10 text-white/80"
                 }`}
               >
                 {level2Cutouts.length}

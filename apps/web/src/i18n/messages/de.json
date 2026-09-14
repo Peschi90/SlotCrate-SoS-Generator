@@ -229,6 +229,26 @@
             "center": "Zentrieren",
             "noSelectionHint": "Klicke auf eine Aussparung im Plan oder in der Liste, um ihre Maße und Position anzupassen.",
             "emptyLevel": "Keine Aussparungen auf dieser Ebene. Klicke auf „+ Aussparung hinzufügen“ oder wähle eine Schnellvorlage."
+        },
+        "wizard": {
+            "button": "Bestückungs-Assistent",
+            "title": "Automatischer Bestückungs-Assistent",
+            "subtitle": "Wähle deine Gefäß- und Flaschendurchmesser für Ebene {level}. Der Assistent berechnet die platzoptimierte Anordnung und prüft die Kapazität.",
+            "modeLabel": "Modus",
+            "modeReplace": "Ebene neu belegen",
+            "modeAppend": "An bestehende anhängen",
+            "itemsTitle": "Benötigte Gefäße & Fläschchen",
+            "addItem": "Größe hinzufügen",
+            "noItemsHint": "Noch keine Gefäße hinzugefügt. Klicke auf „+ Größe hinzufügen“.",
+            "count": "Anzahl",
+            "capacityTitle": "Regal-Kapazität",
+            "occupied": "belegt",
+            "enterItemsPrompt": "Gib gewünschte Durchmesser und Mengen ein, um die Belegung zu prüfen.",
+            "fitsAllSuccess": "Alle {count} Gefäße passen auf die Regalebene!",
+            "overflowWarning": "Platz reicht nicht aus ({unplaced} {unplaced, plural, one {Gefäß passt} other {Gefäße passen}} nicht mehr)",
+            "overflowDetail": "Es konnten nur {placed} von {total} Gefäßen untergebracht werden.",
+            "cancel": "Abbrechen",
+            "apply": "Aussparungen übernehmen"
         }
     },
     "admin": {
