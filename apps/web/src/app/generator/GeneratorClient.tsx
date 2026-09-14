@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { BoxPreview } from "@/components/BoxPreview";
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { DividerEditor } from "@/components/DividerEditor";
 import { PocketEditor } from "@/components/PocketEditor";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
@@ -241,7 +242,7 @@ export function GeneratorClient({
           <p className="text-sm text-neutral-400">{t("generator.subtitle")}</p>
         </header>
 
-        <section className="space-y-2">
+        <section className="space-y-2 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-3">
           <label htmlFor="variant" className="text-sm font-medium text-neutral-100">
             {t("generator.variant")}
           </label>
@@ -272,27 +273,29 @@ export function GeneratorClient({
           </select>
         </section>
 
-        <SliderField
-          id="w"
-          label={t("generator.width")}
-          value={widthCells}
-          min={Math.max(SYSTEM.minCells, activeVariant.minCells)}
-          max={Math.min(SYSTEM.maxCells, activeVariant.maxWidthCells)}
-          unit="x"
-          onChange={setWidthCells}
-        />
+        <section className="space-y-4 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-3">
+          <p className="text-sm font-medium text-neutral-100">{t("generator.dimensionsSection")}</p>
+          <SliderField
+            id="w"
+            label={t("generator.width")}
+            value={widthCells}
+            min={Math.max(SYSTEM.minCells, activeVariant.minCells)}
+            max={Math.min(SYSTEM.maxCells, activeVariant.maxWidthCells)}
+            unit="x"
+            onChange={setWidthCells}
+          />
 
-        <SliderField
-          id="d"
-          label={t("generator.depth")}
-          value={depthCells}
-          min={Math.max(SYSTEM.minCells, activeVariant.minCells)}
-          max={Math.min(SYSTEM.maxCells, activeVariant.maxDepthCells)}
-          unit="x"
-          onChange={setDepthCells}
-        />
+          <SliderField
+            id="d"
+            label={t("generator.depth")}
+            value={depthCells}
+            min={Math.max(SYSTEM.minCells, activeVariant.minCells)}
+            max={Math.min(SYSTEM.maxCells, activeVariant.maxDepthCells)}
+            unit="x"
+            onChange={setDepthCells}
+          />
 
-        <section className="space-y-3">
+          <div className="space-y-3 border-t border-neutral-800 pt-3">
           <div className="flex items-end justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-neutral-100">{t("generator.height")}</p>
@@ -357,9 +360,14 @@ export function GeneratorClient({
           </div>
 
           <p className="text-xs text-neutral-400">{t("generator.hint")}</p>
+          </div>
         </section>
 
-        <div className="border-t border-neutral-800 pt-4">
+        <CollapsibleSection
+          title={t("dividers.title")}
+          badge={sanitizedDividers.length > 0 ? sanitizedDividers.length : undefined}
+          defaultOpen={sanitizedDividers.length > 0}
+        >
           <DividerEditor
             widthCells={widthCells}
             depthCells={depthCells}
@@ -369,9 +377,13 @@ export function GeneratorClient({
             dividers={sanitizedDividers}
             onChange={setDividers}
           />
-        </div>
+        </CollapsibleSection>
 
-        <div className="border-t border-neutral-800 pt-4">
+        <CollapsibleSection
+          title={t("pockets.title")}
+          badge={sanitizedPockets.length > 0 ? sanitizedPockets.length : undefined}
+          defaultOpen={sanitizedPockets.length > 0}
+        >
           <PocketEditor
             widthCells={widthCells}
             depthCells={depthCells}
@@ -383,7 +395,7 @@ export function GeneratorClient({
             fillOuter={pocketsFillOuter}
             onFillOuterChange={setPocketsFillOuter}
           />
-        </div>
+        </CollapsibleSection>
 
         <div className="flex gap-2 flex-wrap">
           <button

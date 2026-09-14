@@ -111,12 +111,6 @@ export function PocketEditor({
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-neutral-100">{t("pockets.title")}</h2>
-        <span className="text-[11px] text-neutral-500">
-          {t("pockets.count", { count: pockets.length })}
-        </span>
-      </div>
 
       <div className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-2 space-y-2">
         <div className="grid grid-cols-2 gap-2">

@@ -37,6 +37,7 @@
         "title": "Einzelkasten-Generator",
         "subtitle": "Mit intuitiven Schiebereglern für Breite, Tiefe und Schubladenhöhe.",
         "variant": "Koffervariante",
+        "dimensionsSection": "Abmessungen",
         "width": "Breite (Rasterfelder)",
         "depth": "Tiefe (Rasterfelder)",
         "height": "Höhe (mm)",
@@ -143,7 +144,6 @@
     "pockets": {
         "title": "Runde Taschen",
         "empty": "Keine Taschen — Innenraum ist offen.",
-        "count": "{count} Taschen",
         "diameter": "Durchmesser",
         "height": "Höhe",
         "addOne": "Tasche mittig",

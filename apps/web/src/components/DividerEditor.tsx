@@ -64,8 +64,7 @@ export function DividerEditor({
 
   return (
     <section className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-medium text-neutral-100">{t("dividers.title")}</h2>
+      <div className="flex items-center justify-end">
         <div className="flex gap-1">
           <button
             type="button"

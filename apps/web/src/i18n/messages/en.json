@@ -37,6 +37,7 @@
         "title": "Single Box Generator",
         "subtitle": "With intuitive sliders for width, depth, and drawer height.",
         "variant": "Suitcase variant",
+        "dimensionsSection": "Dimensions",
         "width": "Width (grid cells)",
         "depth": "Depth (grid cells)",
         "height": "Height (mm)",
@@ -143,7 +144,6 @@
     "pockets": {
         "title": "Round pockets",
         "empty": "No pockets — cavity is open.",
-        "count": "{count} pockets",
         "diameter": "Diameter",
         "height": "Height",
         "addOne": "Pocket centered",

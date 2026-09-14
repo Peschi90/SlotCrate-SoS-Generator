@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { LayoutGrid } from "@/components/LayoutGrid";
 import { Layout3DView } from "@/components/Layout3DView";
 import { PlannerPersistencePanel } from "@/components/PlannerPersistencePanel";
+import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { DividerEditor } from "@/components/DividerEditor";
 import { PocketEditor } from "@/components/PocketEditor";
 import { useLayoutStore } from "@/lib/layout-store";
@@ -209,7 +210,7 @@ export function PlannerClient({
           <p className="text-neutral-400">{t("planner.description")}</p>
         </header>
 
-        <section className="space-y-2 border-t border-neutral-800 pt-3">
+        <section className="space-y-2 rounded-2xl border border-neutral-800 bg-neutral-900/40 p-3">
           <label htmlFor="planner-variant" className="text-sm font-medium text-neutral-100">
             {t("planner.variant")}
           </label>
@@ -229,9 +230,8 @@ export function PlannerClient({
               </option>
             ))}
           </select>
-        </section>
 
-        <section className="space-y-3 border-t border-neutral-800 pt-3">
+          <div className="space-y-3 border-t border-neutral-800 pt-3">
           <div className="flex items-end justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-neutral-100">{t("planner.heightTitle")}</p>
@@ -272,9 +272,10 @@ export function PlannerClient({
               );
             })}
           </div>
+          </div>
         </section>
 
-        <div className="flex gap-2 flex-wrap border-t border-neutral-800 pt-3">
+        <div className="flex gap-2 flex-wrap rounded-2xl border border-neutral-800 bg-neutral-900/40 p-3">
           <button
             onClick={undo}
             disabled={past === 0}
@@ -298,7 +299,7 @@ export function PlannerClient({
           </button>
         </div>
 
-        <div className="border-t border-neutral-800 pt-3 space-y-1 text-xs text-neutral-300">
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-3 space-y-1 text-xs text-neutral-300">
           <div>{t("planner.usedCells", { used: usedCells, total: totalCells })}</div>
           <div>{t("planner.boxCount", { count: boxes.length })}</div>
           <div>{t("planner.gridPitch", { pitch: activeVariant.gridPitchMm.toFixed(2) })}</div>
@@ -377,49 +378,62 @@ export function PlannerClient({
 
             {selectedIds.length === 1 && (
               <div className="border-t border-neutral-800 pt-3">
-                <DividerEditor
-                  widthCells={selected.widthCells}
-                  depthCells={selected.depthCells}
-                  heightMm={selected.heightMm}
-                  gridPitchMm={activeVariant.gridPitchMm}
-                  wallThicknessMm={activeVariant.wallThicknessMm}
-                  dividers={selected.dividers}
-                  onChange={(next) => setBoxDividers(selected.id, next)}
-                />
+                <CollapsibleSection
+                  title={t("dividers.title")}
+                  badge={selected.dividers.length > 0 ? selected.dividers.length : undefined}
+                  defaultOpen={selected.dividers.length > 0}
+                >
+                  <DividerEditor
+                    widthCells={selected.widthCells}
+                    depthCells={selected.depthCells}
+                    heightMm={selected.heightMm}
+                    gridPitchMm={activeVariant.gridPitchMm}
+                    wallThicknessMm={activeVariant.wallThicknessMm}
+                    dividers={selected.dividers}
+                    onChange={(next) => setBoxDividers(selected.id, next)}
+                  />
+                </CollapsibleSection>
               </div>
             )}
 
             {selectedIds.length === 1 && (
-              <div className="border-t border-neutral-800 pt-3">
-                <PocketEditor
-                  widthCells={selected.widthCells}
-                  depthCells={selected.depthCells}
-                  heightMm={selected.heightMm}
-                  gridPitchMm={activeVariant.gridPitchMm}
-                  wallThicknessMm={activeVariant.wallThicknessMm}
-                  pockets={selected.pockets}
-                  onChange={(next) => setBoxPockets(selected.id, next)}
-                  fillOuter={selected.pocketsFillOuter}
-                  onFillOuterChange={(v) => setBoxPocketsFillOuter(selected.id, v)}
-                />
+              <div className="pt-3">
+                <CollapsibleSection
+                  title={t("pockets.title")}
+                  badge={selected.pockets.length > 0 ? selected.pockets.length : undefined}
+                  defaultOpen={selected.pockets.length > 0}
+                >
+                  <PocketEditor
+                    widthCells={selected.widthCells}
+                    depthCells={selected.depthCells}
+                    heightMm={selected.heightMm}
+                    gridPitchMm={activeVariant.gridPitchMm}
+                    wallThicknessMm={activeVariant.wallThicknessMm}
+                    pockets={selected.pockets}
+                    onChange={(next) => setBoxPockets(selected.id, next)}
+                    fillOuter={selected.pocketsFillOuter}
+                    onFillOuterChange={(v) => setBoxPocketsFillOuter(selected.id, v)}
+                  />
+                </CollapsibleSection>
               </div>
             )}
           </div>
         )}
 
-        <section className="border-t border-neutral-800 pt-3 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-neutral-100">{t("planner.autofill.title")}</h2>
-            <label className="inline-flex items-center gap-2 text-[11px] text-neutral-400 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={highlightFree}
-                onChange={(e) => setHighlightFree(e.target.checked)}
-                className="accent-crate-box"
-              />
-              {t("planner.autofill.highlight")}
-            </label>
-          </div>
+        <CollapsibleSection
+          title={t("planner.autofill.title")}
+          badge={t("planner.autofill.freeCells", { count: freeReport.freeCells })}
+        >
+          <div className="space-y-3">
+          <label className="inline-flex items-center gap-2 text-[11px] text-neutral-400 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={highlightFree}
+              onChange={(e) => setHighlightFree(e.target.checked)}
+              className="accent-crate-box"
+            />
+            {t("planner.autofill.highlight")}
+          </label>
           <label htmlFor="planner-fill-size" className="block space-y-1">
             <span className="text-[11px] text-neutral-400">{t("planner.autofill.preferredSize")}</span>
             <select
@@ -465,9 +479,6 @@ export function PlannerClient({
               {t("planner.autofill.fillLargest")}
             </button>
           </div>
-          <div className="text-[11px] text-neutral-500">
-            {t("planner.autofill.freeCells", { count: freeReport.freeCells })}
-          </div>
           {freeReport.smallRegions > 0 && (
             <div className="rounded-xl border border-amber-800/60 bg-amber-900/20 p-2 text-[11px] text-amber-200">
               {t("planner.autofill.smallRemainderWarning", {
@@ -476,9 +487,10 @@ export function PlannerClient({
               })}
             </div>
           )}
-        </section>
+          </div>
+        </CollapsibleSection>
 
-        <div className="border-t border-neutral-800 pt-3 flex gap-2">
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900/40 p-3 flex gap-2">
           <button
             onClick={exportZip}
             disabled={boxes.length === 0 || downloading}
