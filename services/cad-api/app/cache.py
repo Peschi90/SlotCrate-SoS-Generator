@@ -35,6 +35,17 @@ def _pockets_key_part(pockets: Sequence[Tuple[float, float, float, float]] | Non
     )
 
 
+def _wave_inserts_key_part(
+    wave_inserts: Sequence[Tuple[str, float, float, float, int, float]] | None
+) -> str:
+    if not wave_inserts:
+        return "-"
+    return ";".join(
+        f"{axis}:{round(offset, 4)}:{round(height, 4)}:{round(gd, 4)}:{gc}:{round(gdep, 4)}"
+        for axis, offset, height, gd, gc, gdep in sorted(wave_inserts)
+    )
+
+
 def cache_key(
     width_cells: int,
     depth_cells: int,
@@ -49,6 +60,7 @@ def cache_key(
     dividers: Sequence[Tuple[str, float, float]] | None = None,
     pockets: Sequence[Tuple[float, float, float, float]] | None = None,
     pockets_fill_outer: bool = False,
+    wave_inserts: Sequence[Tuple[str, float, float, float, int, float]] | None = None,
     geometry_version: str = GEOMETRY_VERSION,
 ) -> str:
     payload = (
@@ -57,7 +69,7 @@ def cache_key(
         f"{round(inner_floor_radius_mm, 4)}|{round(outer_clearance_mm, 4)}|"
         f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
         f"{_dividers_key_part(dividers)}|{_pockets_key_part(pockets)}|"
-        f"{'1' if pockets_fill_outer else '0'}|{geometry_version}"
+        f"{'1' if pockets_fill_outer else '0'}|{_wave_inserts_key_part(wave_inserts)}|{geometry_version}"
     )
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

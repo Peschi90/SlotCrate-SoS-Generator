@@ -29,6 +29,13 @@ from slotcrate.geometry.constants import (
     MIN_DIVIDER_OFFSET_MM,
     MIN_POCKET_DIAMETER_MM,
     MIN_POCKET_HEIGHT_MM,
+    MAX_WAVE_GROOVE_COUNT,
+    MAX_WAVE_GROOVE_DIAMETER_MM,
+    MAX_WAVE_INSERTS_PER_BOX,
+    MIN_WAVE_GROOVE_COUNT,
+    MIN_WAVE_GROOVE_DEPTH_MM,
+    MIN_WAVE_GROOVE_DIAMETER_MM,
+    MIN_WAVE_HEIGHT_MM,
     PICKUP_TOP_Z_MM,
 )
 
@@ -50,6 +57,7 @@ MIN_STL_ANGULAR_RAD: float = 0.05
 MAX_STL_ANGULAR_RAD: float = 1.0
 MAX_DIVIDER_OFFSET_MM: float = MAX_CELLS * MAX_GRID_PITCH_MM  # harte Payload-Obergrenze
 MAX_POCKET_CENTER_MM: float = MAX_CELLS * MAX_GRID_PITCH_MM
+MAX_WAVE_OFFSET_MM: float = MAX_CELLS * MAX_GRID_PITCH_MM
 SAFE_STEP_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.(step|stp)$", re.IGNORECASE)
 
 
@@ -88,6 +96,29 @@ class PocketSpec(BaseModel):
     heightMm: Annotated[float, Field(ge=MIN_POCKET_HEIGHT_MM, le=MAX_HEIGHT_MM)]
 
 
+class WaveInsertSpec(BaseModel):
+    """Wannen-Einsatz: rechteckiger Sockel mit N parallelen Rinnen
+    (Kreisbogen-Profil), damit runde Werkzeuge in einem festen Bogen liegen.
+
+    ``axis`` folgt der Divider-Konvention: Position/Breite des Sockels liegt
+    entlang dieser Achse (``offsetMm`` = Sockelmitte), volle Spannweite über
+    die jeweils andere Innenraum-Dimension. ``grooveDiameterMm`` bestimmt den
+    Krümmungsradius je Rinne (sollte dem Werkzeugdurchmesser entsprechen),
+    ``grooveDepthMm`` die Eintauchtiefe (≤ grooveDiameterMm/2).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    axis: Literal["x", "y"]
+    offsetMm: Annotated[float, Field(ge=0.0, le=MAX_WAVE_OFFSET_MM)]
+    heightMm: Annotated[float, Field(ge=MIN_WAVE_HEIGHT_MM, le=MAX_HEIGHT_MM)]
+    grooveDiameterMm: Annotated[
+        float, Field(ge=MIN_WAVE_GROOVE_DIAMETER_MM, le=MAX_WAVE_GROOVE_DIAMETER_MM)
+    ]
+    grooveCount: Annotated[int, Field(ge=MIN_WAVE_GROOVE_COUNT, le=MAX_WAVE_GROOVE_COUNT)]
+    grooveDepthMm: Annotated[float, Field(ge=MIN_WAVE_GROOVE_DEPTH_MM, le=MAX_WAVE_GROOVE_DIAMETER_MM)]
+
+
 class BoxRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -104,6 +135,9 @@ class BoxRequest(BaseModel):
     dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
     pockets: Annotated[List[PocketSpec], Field(max_length=MAX_POCKETS_PER_BOX)] = Field(default_factory=list)
     pocketsFillOuter: bool = False
+    waveInserts: Annotated[List[WaveInsertSpec], Field(max_length=MAX_WAVE_INSERTS_PER_BOX)] = Field(
+        default_factory=list
+    )
 
 
 class PlateRequest(BaseModel):
@@ -136,6 +170,9 @@ class LayoutBox(BaseModel):
     dividers: Annotated[List[DividerSpec], Field(max_length=MAX_DIVIDERS_PER_BOX)] = Field(default_factory=list)
     pockets: Annotated[List[PocketSpec], Field(max_length=MAX_POCKETS_PER_BOX)] = Field(default_factory=list)
     pocketsFillOuter: bool = False
+    waveInserts: Annotated[List[WaveInsertSpec], Field(max_length=MAX_WAVE_INSERTS_PER_BOX)] = Field(
+        default_factory=list
+    )
 
 
 class LayoutGrid(BaseModel):

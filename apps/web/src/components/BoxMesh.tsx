@@ -5,7 +5,7 @@ import { useCallback, useMemo, useRef } from "react";
 import { useThree, type ThreeEvent } from "@react-three/fiber";
 import { RoundedBox } from "@react-three/drei";
 import { SYSTEM } from "@/lib/system";
-import type { Divider, Pocket } from "@/lib/schema";
+import type { Divider, Pocket, WaveInsert } from "@/lib/schema";
 
 interface Props {
   widthCells: number;
@@ -21,12 +21,15 @@ interface Props {
   dividers?: Divider[];
   pockets?: Pocket[];
   pocketsFillOuter?: boolean;
+  waveInserts?: WaveInsert[];
   activeDividerIndex?: number | null;
   activePocketIndex?: number | null;
+  activeWaveInsertIndex?: number | null;
   onDividerChange?: (index: number, patch: Partial<Divider>) => void;
   onPocketChange?: (index: number, patch: Partial<Pocket>) => void;
   onDividerActivate?: (index: number) => void;
   onPocketActivate?: (index: number) => void;
+  onWaveInsertActivate?: (index: number) => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
@@ -51,12 +54,15 @@ export function BoxMesh({
   dividers = [],
   pockets = [],
   pocketsFillOuter = false,
+  waveInserts = [],
   activeDividerIndex = null,
   activePocketIndex = null,
+  activeWaveInsertIndex = null,
   onDividerChange,
   onPocketChange,
   onDividerActivate,
   onPocketActivate,
+  onWaveInsertActivate,
   onDragStart,
   onDragEnd
 }: Props) {
@@ -338,6 +344,21 @@ export function BoxMesh({
           </mesh>
         );
       })}
+      {waveInserts.map((w, idx) => (
+        <WaveInsertMesh
+          key={`wave-${idx}`}
+          insert={w}
+          innerW={innerW}
+          innerD={innerD}
+          wall={wall}
+          cavityH={cavityH}
+          baseZ={pickupTop + floorT}
+          color={idx === activeWaveInsertIndex ? "#ffb020" : color}
+          opacity={opacity}
+          isActive={idx === activeWaveInsertIndex}
+          onActivate={() => onWaveInsertActivate?.(idx)}
+        />
+      ))}
     </group>
   );
 }
@@ -459,6 +480,112 @@ function PocketSlabMesh({
         opacity={opacity}
       />
     </mesh>
+  );
+}
+
+interface WaveInsertMeshProps {
+  insert: WaveInsert;
+  innerW: number;
+  innerD: number;
+  wall: number;
+  cavityH: number;
+  baseZ: number;
+  color: string;
+  opacity: number;
+  isActive: boolean;
+  onActivate?: () => void;
+}
+
+/**
+ * Wannen-Einsatz-Vorschau: massiver Block mit wellenförmiger Oberseite
+ * (kreisbogenförmige Rinnen). Profil wird in (u, Höhe) aufgebaut und
+ * entlang der Spannweiten-Achse extrudiert; anschließend je nach Achse
+ * ausgerichtet (siehe Herleitung: rotateX(-90°) [+ rotateZ(90°) für Achse Y]).
+ */
+function WaveInsertMesh({
+  insert,
+  innerW,
+  innerD,
+  wall,
+  cavityH,
+  baseZ,
+  color,
+  opacity,
+  isActive,
+  onActivate
+}: WaveInsertMeshProps) {
+  const eff = Math.min(Math.max(0, insert.heightMm), cavityH);
+  const blockSpan = insert.grooveCount * insert.grooveDiameterMm;
+  const halfSpan = blockSpan / 2;
+  const spanLen = insert.axis === "x" ? innerD : innerW;
+
+  const geometry = useMemo(() => {
+    if (eff <= 0 || blockSpan <= 0 || spanLen <= 0) return null;
+    const R = insert.grooveDiameterMm / 2;
+    const depth = Math.min(insert.grooveDepthMm, R, eff);
+    const halfW = Math.sqrt(Math.max(0, 2 * R * depth - depth * depth));
+    const zTop = eff;
+    const Zc = zTop + (R - depth);
+    const angleLeft = Math.atan2(zTop - Zc, -halfW);
+    const angleRight = Math.atan2(zTop - Zc, halfW);
+
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(0, -zTop);
+    for (let i = 0; i < insert.grooveCount; i++) {
+      const center = R + i * insert.grooveDiameterMm;
+      const leftChord = center - halfW;
+      const rightChord = center + halfW;
+      shape.lineTo(leftChord, -zTop);
+      if (halfW > 0.0001) {
+        shape.absarc(center, -Zc, R, -angleLeft, -angleRight, true);
+      } else {
+        shape.lineTo(rightChord, -zTop);
+      }
+    }
+    shape.lineTo(blockSpan, -zTop);
+    shape.lineTo(blockSpan, 0);
+    shape.lineTo(0, 0);
+
+    const geom = new THREE.ExtrudeGeometry(shape, {
+      depth: spanLen,
+      bevelEnabled: false,
+      curveSegments: 16
+    });
+    geom.rotateX(-Math.PI / 2);
+    if (insert.axis === "y") {
+      geom.rotateZ(Math.PI / 2);
+      geom.translate(spanLen, 0, 0);
+    }
+    geom.computeVertexNormals();
+    return geom;
+  }, [insert.axis, insert.grooveCount, insert.grooveDiameterMm, insert.grooveDepthMm, eff, blockSpan, spanLen]);
+
+  if (!geometry) return null;
+
+  const position: [number, number, number] =
+    insert.axis === "x"
+      ? [wall + insert.offsetMm - halfSpan, wall, baseZ]
+      : [wall, wall + insert.offsetMm - halfSpan, baseZ];
+
+  return (
+    <group>
+      <mesh position={position} geometry={geometry} onPointerDown={onActivate}>
+        <meshStandardMaterial
+          color={color}
+          metalness={0.15}
+          roughness={0.6}
+          transparent={opacity < 1}
+          opacity={opacity}
+        />
+      </mesh>
+      {isActive && (
+        <lineSegments position={position} renderOrder={3}>
+          <edgesGeometry args={[geometry]} />
+          <lineBasicMaterial color="#ffb020" />
+        </lineSegments>
+      )}
+    </group>
   );
 }
 

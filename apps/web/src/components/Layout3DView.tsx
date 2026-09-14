@@ -19,8 +19,10 @@ export function Layout3DView({
   outerClearanceMm = 0,
   activeDividerIndex = null,
   activePocketIndex = null,
+  activeWaveInsertIndex = null,
   onDividerActivate,
-  onPocketActivate
+  onPocketActivate,
+  onWaveInsertActivate
 }: {
   gridPitchMm?: number;
   wallThicknessMm?: number;
@@ -28,8 +30,10 @@ export function Layout3DView({
   outerClearanceMm?: number;
   activeDividerIndex?: number | null;
   activePocketIndex?: number | null;
+  activeWaveInsertIndex?: number | null;
   onDividerActivate?: (index: number) => void;
   onPocketActivate?: (index: number) => void;
+  onWaveInsertActivate?: (index: number) => void;
 }) {
   const boxes = useLayoutStore((s) => s.boxes);
   const selectedId = useLayoutStore((s) => s.selectedId);
@@ -122,12 +126,15 @@ export function Layout3DView({
               dividers={b.dividers}
               pockets={b.pockets}
               pocketsFillOuter={b.pocketsFillOuter}
+              waveInserts={b.waveInserts}
               activeDividerIndex={isSel ? activeDividerIndex : null}
               activePocketIndex={isSel ? activePocketIndex : null}
+              activeWaveInsertIndex={isSel ? activeWaveInsertIndex : null}
               onDividerChange={(idx, patch) => updateBoxDividerLive(b.id, idx, patch)}
               onPocketChange={(idx, patch) => updateBoxPocketLive(b.id, idx, patch)}
               onDividerActivate={onDividerActivate}
               onPocketActivate={onPocketActivate}
+              onWaveInsertActivate={onWaveInsertActivate}
               onDragStart={() => {
                 select(b.id);
                 beginLiveEdit();

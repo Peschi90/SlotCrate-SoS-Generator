@@ -254,6 +254,39 @@ describe("layout store", () => {
     expect(useLayoutStore.getState().boxes.find((b) => b.id === a.id)!.pocketsFillOuter).toBe(false);
   });
 
+  it("setBoxWaveInserts stores wave inserts on the selected box and is undoable", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    useLayoutStore.getState().setBoxWaveInserts(a.id, [
+      { axis: "x", offsetMm: 15, heightMm: 20, grooveDiameterMm: 10, grooveCount: 2, grooveDepthMm: 3 }
+    ]);
+    const withWave = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(withWave.waveInserts).toHaveLength(1);
+    useLayoutStore.getState().undo();
+    const restored = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(restored.waveInserts).toHaveLength(0);
+  });
+
+  it("rotateBox swaps wave insert axis (x <-> y)", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 2, 3)!;
+    useLayoutStore.getState().setBoxWaveInserts(a.id, [
+      { axis: "x", offsetMm: 10, heightMm: 20, grooveDiameterMm: 8, grooveCount: 1, grooveDepthMm: 2 }
+    ]);
+    expect(useLayoutStore.getState().rotateBox(a.id)).toBe(true);
+    const rotated = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(rotated.waveInserts[0]!.axis).toBe("y");
+  });
+
+  it("resizeBox drops wave inserts that no longer fit", () => {
+    const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
+    useLayoutStore.getState().setBoxWaveInserts(a.id, [
+      { axis: "x", offsetMm: 40, heightMm: 20, grooveDiameterMm: 10, grooveCount: 1, grooveDepthMm: 3 }
+    ]);
+    // Inner width of 1×1 (~19 mm) can't hold a wave insert offset at 40 mm.
+    expect(useLayoutStore.getState().resizeBox(a.id, 1, 1)).toBe(true);
+    const resized = useLayoutStore.getState().boxes.find((b) => b.id === a.id)!;
+    expect(resized.waveInserts).toHaveLength(0);
+  });
+
   it("live divider/pocket updates skip history until commitLiveEdit", () => {
     const a = useLayoutStore.getState().addBox(0, 0, 3, 3)!;
     useLayoutStore.getState().setBoxDividers(a.id, [

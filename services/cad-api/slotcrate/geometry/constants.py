@@ -54,6 +54,16 @@ MAX_POCKET_DIAMETER_MM: float = 200.0
 MIN_POCKET_HEIGHT_MM: float = 1.0
 MAX_POCKETS_PER_BOX: int = 1000
 
+# Wannen-Einsätze (Wellen-Einsatz): rechteckiger Sockel mit N parallelen
+# rinnenförmigen Vertiefungen (Kreisbogen-Profil) für runde Werkzeuge.
+MIN_WAVE_HEIGHT_MM: float = 2.0
+MIN_WAVE_GROOVE_DIAMETER_MM: float = 4.0
+MAX_WAVE_GROOVE_DIAMETER_MM: float = 80.0
+MIN_WAVE_GROOVE_DEPTH_MM: float = 0.5
+MIN_WAVE_GROOVE_COUNT: int = 1
+MAX_WAVE_GROOVE_COUNT: int = 20
+MAX_WAVE_INSERTS_PER_BOX: int = 16
+
 # Toleranzen für Geometrietests
 BBOX_TOLERANCE_MM: float = 0.02
 VOLUME_TOLERANCE_PCT: float = 0.5

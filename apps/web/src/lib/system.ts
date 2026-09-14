@@ -22,6 +22,13 @@ export const SYSTEM = {
   maxPocketDiameterMm: 200.0,
   minPocketHeightMm: 1.0,
   maxPocketsPerBox: 1000,
+  minWaveHeightMm: 2.0,
+  minWaveGrooveDiameterMm: 4.0,
+  maxWaveGrooveDiameterMm: 80.0,
+  minWaveGrooveDepthMm: 0.5,
+  minWaveGrooveCount: 1,
+  maxWaveGrooveCount: 20,
+  maxWaveInsertsPerBox: 16,
   geometryVersion: "slotcrate-v1"
 } as const;
 

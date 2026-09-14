@@ -158,6 +158,19 @@
         "fillOuterHintOn": "Fill mode: the cavity is filled up to the tallest pocket height and pockets are drilled into that slab as wells.",
         "dragHint": "Tip: hold Alt + left-click on a pocket in the 3D view and drag to move it directly."
     },
+    "waveInserts": {
+        "title": "Wave inserts",
+        "empty": "No wave inserts — cavity is open.",
+        "addX": "Groove across (X)",
+        "addY": "Groove along (Y)",
+        "remove": "Remove",
+        "offsetLabel": "Position (mm)",
+        "heightLabel": "Height (mm)",
+        "grooveDiameter": "Groove diameter",
+        "grooveCount": "Groove count",
+        "grooveDepth": "Groove depth (arc)",
+        "hint": "Wave-shaped grooves for round tools (e.g. screwdrivers), which then rest in a curved arc. Groove depth controls how hard or soft the arc is (max. = half the groove diameter)."
+    },
     "admin": {
         "title": "Admin panel",
         "activeVersion": "Active version: {version}, created {createdAt}",

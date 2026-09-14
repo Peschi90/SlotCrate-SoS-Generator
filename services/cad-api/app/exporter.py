@@ -18,11 +18,12 @@ from slotcrate.geometry.box import build_box
 from slotcrate.geometry.export import export_stl
 from slotcrate.geometry.reference import load_normalized_plate_from_step_file
 
-from .schemas import DividerSpec, LayoutRequest, PocketSpec
+from .schemas import DividerSpec, LayoutRequest, PocketSpec, WaveInsertSpec
 
 
 DividerKey = Tuple[str, float, float]
 PocketKey = Tuple[float, float, float, float]
+WaveInsertKey = Tuple[str, float, float, float, int, float]
 
 
 def _dividers_to_key(dividers: Sequence[DividerSpec] | None) -> Tuple[DividerKey, ...]:
@@ -49,6 +50,24 @@ def _pockets_to_key(pockets: Sequence[PocketSpec] | None) -> Tuple[PocketKey, ..
     )
 
 
+def _wave_inserts_to_key(wave_inserts: Sequence[WaveInsertSpec] | None) -> Tuple[WaveInsertKey, ...]:
+    if not wave_inserts:
+        return ()
+    return tuple(
+        sorted(
+            (
+                w.axis,
+                round(float(w.offsetMm), 4),
+                round(float(w.heightMm), 4),
+                round(float(w.grooveDiameterMm), 4),
+                int(w.grooveCount),
+                round(float(w.grooveDepthMm), 4),
+            )
+            for w in wave_inserts
+        )
+    )
+
+
 @dataclass(frozen=True)
 class UniqueBox:
     width_cells: int
@@ -57,13 +76,14 @@ class UniqueBox:
     dividers: Tuple[DividerKey, ...] = ()
     pockets: Tuple[PocketKey, ...] = ()
     pockets_fill_outer: bool = False
+    wave_inserts: Tuple[WaveInsertKey, ...] = ()
 
     def filename(self, prefix: str) -> str:
         h = f"{self.height_mm:g}"
         base = f"{prefix}_{self.width_cells}x{self.depth_cells}_H{h}"
-        if self.dividers or self.pockets:
+        if self.dividers or self.pockets or self.wave_inserts:
             digest = hashlib.sha1(
-                f"{self.dividers}|{self.pockets}|{int(self.pockets_fill_outer)}".encode("utf-8")
+                f"{self.dividers}|{self.pockets}|{int(self.pockets_fill_outer)}|{self.wave_inserts}".encode("utf-8")
             ).hexdigest()[:6]
             base += f"_F{digest}"
         return f"{base}.stl"
@@ -82,6 +102,7 @@ def stl_bytes_for_box(
     dividers: Sequence[DividerKey] = (),
     pockets: Sequence[PocketKey] = (),
     pockets_fill_outer: bool = False,
+    wave_inserts: Sequence[WaveInsertKey] = (),
 ) -> bytes:
     shape = build_box(
         width_cells,
@@ -94,6 +115,7 @@ def stl_bytes_for_box(
         dividers=dividers,
         pockets=pockets,
         pockets_fill_outer=pockets_fill_outer,
+        wave_inserts=wave_inserts,
     )
     return stl_bytes_for_shape(
         shape,
@@ -132,6 +154,7 @@ def _unique_boxes(layout: LayoutRequest) -> Counter[UniqueBox]:
                 _dividers_to_key(b.dividers),
                 _pockets_to_key(b.pockets),
                 bool(b.pocketsFillOuter),
+                _wave_inserts_to_key(b.waveInserts),
             )
         ] += 1
     return counter
@@ -155,6 +178,7 @@ def build_layout_zip(layout: LayoutRequest, filename_prefix: str) -> bytes:
                 dividers=unique.dividers,
                 pockets=unique.pockets,
                 pockets_fill_outer=unique.pockets_fill_outer,
+                wave_inserts=unique.wave_inserts,
             )
             zf.writestr(f"models/{unique.filename(filename_prefix)}", stl)
 

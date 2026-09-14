@@ -34,6 +34,22 @@ export type Pocket = z.infer<typeof pocketSchema>;
 
 const pockets = z.array(pocketSchema).max(SYSTEM.maxPocketsPerBox).default([]);
 
+export const waveInsertSchema = z.object({
+  axis: z.enum(["x", "y"]),
+  offsetMm: z.number().min(0).max(SYSTEM.maxCells * 30),
+  heightMm: z.number().min(SYSTEM.minWaveHeightMm).max(SYSTEM.maxHeightMm),
+  grooveDiameterMm: z
+    .number()
+    .min(SYSTEM.minWaveGrooveDiameterMm)
+    .max(SYSTEM.maxWaveGrooveDiameterMm),
+  grooveCount: z.number().int().min(SYSTEM.minWaveGrooveCount).max(SYSTEM.maxWaveGrooveCount),
+  grooveDepthMm: z.number().min(SYSTEM.minWaveGrooveDepthMm).max(SYSTEM.maxWaveGrooveDiameterMm)
+});
+
+export type WaveInsert = z.infer<typeof waveInsertSchema>;
+
+const waveInserts = z.array(waveInsertSchema).max(SYSTEM.maxWaveInsertsPerBox).default([]);
+
 export const boxRequestSchema = z.object({
   widthCells: cells,
   depthCells: cells,
@@ -47,7 +63,8 @@ export const boxRequestSchema = z.object({
   stlTessellationAngularRad,
   dividers,
   pockets,
-  pocketsFillOuter: z.boolean().default(false)
+  pocketsFillOuter: z.boolean().default(false),
+  waveInserts
 });
 
 export type BoxRequest = z.infer<typeof boxRequestSchema>;
@@ -76,7 +93,8 @@ export const layoutBoxSchema = z.object({
   heightMm: heightMm.default(SYSTEM.defaultBoxHeightMm),
   dividers,
   pockets,
-  pocketsFillOuter: z.boolean().default(false)
+  pocketsFillOuter: z.boolean().default(false),
+  waveInserts
 });
 
 export type LayoutBox = z.infer<typeof layoutBoxSchema>;

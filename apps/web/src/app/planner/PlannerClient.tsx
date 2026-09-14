@@ -9,6 +9,7 @@ import { PlannerPersistencePanel } from "@/components/PlannerPersistencePanel";
 import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { DividerEditor } from "@/components/DividerEditor";
 import { PocketEditor } from "@/components/PocketEditor";
+import { WaveInsertEditor } from "@/components/WaveInsertEditor";
 import { useLayoutStore } from "@/lib/layout-store";
 import { analyzeFreeCells, planFillLargest, planFillWithSize } from "@/lib/layout-fill";
 import { SYSTEM } from "@/lib/system";
@@ -44,6 +45,7 @@ export function PlannerClient({
   const setBoxDividers = useLayoutStore((s) => s.setBoxDividers);
   const setBoxPockets = useLayoutStore((s) => s.setBoxPockets);
   const setBoxPocketsFillOuter = useLayoutStore((s) => s.setBoxPocketsFillOuter);
+  const setBoxWaveInserts = useLayoutStore((s) => s.setBoxWaveInserts);
   const clearSelection = useLayoutStore((s) => s.clearSelection);
   const applyFillPlan = useLayoutStore((s) => s.applyFillPlan);
   const undo = useLayoutStore((s) => s.undo);
@@ -62,6 +64,7 @@ export function PlannerClient({
   const [preferredFillSize, setPreferredFillSize] = useState<string>("2x2");
   const [activeDividerIndex, setActiveDividerIndex] = useState<number | null>(null);
   const [activePocketIndex, setActivePocketIndex] = useState<number | null>(null);
+  const [activeWaveInsertIndex, setActiveWaveInsertIndex] = useState<number | null>(null);
 
   const activeVariant = variants.find((variant) => variant.id === variantId) ?? variants[0]!;
   const pitchMm = activeVariant.gridPitchMm;
@@ -125,6 +128,7 @@ export function PlannerClient({
   useEffect(() => {
     setActiveDividerIndex(null);
     setActivePocketIndex(null);
+    setActiveWaveInsertIndex(null);
   }, [selectedId]);
 
   useEffect(() => {
@@ -132,7 +136,9 @@ export function PlannerClient({
     setActiveDividerIndex((idx) => (idx !== null && idx >= dividerCount ? null : idx));
     const pocketCount = selected?.pockets.length ?? 0;
     setActivePocketIndex((idx) => (idx !== null && idx >= pocketCount ? null : idx));
-  }, [selected?.dividers.length, selected?.pockets.length]);
+    const waveInsertCount = selected?.waveInserts.length ?? 0;
+    setActiveWaveInsertIndex((idx) => (idx !== null && idx >= waveInsertCount ? null : idx));
+  }, [selected?.dividers.length, selected?.pockets.length, selected?.waveInserts.length]);
 
   const heightState = useMemo(() => computeHeightState(selectedBoxes, selectedHeightMm), [selectedBoxes, selectedHeightMm]);
 
@@ -212,8 +218,10 @@ export function PlannerClient({
             outerClearanceMm={activeVariant.outerClearanceMm}
             activeDividerIndex={activeDividerIndex}
             activePocketIndex={activePocketIndex}
+            activeWaveInsertIndex={activeWaveInsertIndex}
             onDividerActivate={setActiveDividerIndex}
             onPocketActivate={setActivePocketIndex}
+            onWaveInsertActivate={setActiveWaveInsertIndex}
           />
         </div>
       </section>
@@ -435,6 +443,28 @@ export function PlannerClient({
                     onFillOuterChange={(v) => setBoxPocketsFillOuter(selected.id, v)}
                     activeIndex={activePocketIndex}
                     onActiveIndexChange={setActivePocketIndex}
+                  />
+                </CollapsibleSection>
+              </div>
+            )}
+
+            {selectedIds.length === 1 && (
+              <div className="pt-3">
+                <CollapsibleSection
+                  title={t("waveInserts.title")}
+                  badge={selected.waveInserts.length > 0 ? selected.waveInserts.length : undefined}
+                  defaultOpen={selected.waveInserts.length > 0}
+                >
+                  <WaveInsertEditor
+                    widthCells={selected.widthCells}
+                    depthCells={selected.depthCells}
+                    heightMm={selected.heightMm}
+                    gridPitchMm={activeVariant.gridPitchMm}
+                    wallThicknessMm={activeVariant.wallThicknessMm}
+                    waveInserts={selected.waveInserts}
+                    onChange={(next) => setBoxWaveInserts(selected.id, next)}
+                    activeIndex={activeWaveInsertIndex}
+                    onActiveIndexChange={setActiveWaveInsertIndex}
                   />
                 </CollapsibleSection>
               </div>

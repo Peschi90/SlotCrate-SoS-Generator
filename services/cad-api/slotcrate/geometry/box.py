@@ -31,6 +31,9 @@ from .constants import (
     MIN_DIVIDER_OFFSET_MM,
     MIN_POCKET_DIAMETER_MM,
     MIN_POCKET_HEIGHT_MM,
+    MIN_WAVE_GROOVE_DEPTH_MM,
+    MIN_WAVE_GROOVE_DIAMETER_MM,
+    MIN_WAVE_HEIGHT_MM,
     PICKUP_TOP_Z_MM,
 )
 
@@ -41,6 +44,12 @@ Divider = Tuple[str, float, float]
 # (center_x_mm, center_y_mm, diameter_mm, height_mm): Position vom
 # Innenraum-Ursprung, Becherwand = wall_thickness.
 Pocket = Tuple[float, float, float, float]
+
+# (axis, offset_mm, height_mm, groove_diameter_mm, groove_count, groove_depth_mm):
+# axis ∈ {"x","y"} wie bei Divider (Position/Dicke entlang dieser Achse,
+# Spannweite über die volle Innentiefe/-breite). Rinnen laufen entlang der
+# Spannweite, ihr Kreisbogen-Radius = groove_diameter_mm/2.
+WaveInsert = Tuple[str, float, float, float, int, float]
 
 
 class UnsupportedBoxSize(NotImplementedError):
@@ -69,6 +78,7 @@ def build_box(
     dividers: Sequence[Divider] = (),
     pockets: Sequence[Pocket] = (),
     pockets_fill_outer: bool = False,
+    wave_inserts: Sequence[WaveInsert] = (),
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if grid_pitch_mm <= 0:
@@ -85,9 +95,15 @@ def build_box(
 
     normalized_dividers = _normalize_dividers(dividers)
     normalized_pockets = _normalize_pockets(pockets)
+    normalized_waves = _normalize_wave_inserts(wave_inserts)
     effective_fill = bool(pockets_fill_outer) and bool(normalized_pockets)
 
-    if _is_default_height(height_mm) and not normalized_dividers and not normalized_pockets:
+    if (
+        _is_default_height(height_mm)
+        and not normalized_dividers
+        and not normalized_pockets
+        and not normalized_waves
+    ):
         default_geometry = (
             abs(grid_pitch_mm - GRID_PITCH_MM) < 1e-9
             and abs(wall_thickness_mm - DEFAULT_WALL_THICKNESS_MM) < 1e-9
@@ -112,6 +128,7 @@ def build_box(
         normalized_dividers,
         normalized_pockets,
         effective_fill,
+        normalized_waves,
     )
     return shape
 
@@ -129,6 +146,7 @@ def _build_parametric_cached(
     dividers: Tuple[Divider, ...],
     pockets: Tuple[Pocket, ...],
     pockets_fill_outer: bool,
+    wave_inserts: Tuple[WaveInsert, ...],
 ) -> cq.Shape:
     return build_box_parametric(
         width_cells,
@@ -142,6 +160,7 @@ def _build_parametric_cached(
         dividers=dividers,
         pockets=pockets,
         pockets_fill_outer=pockets_fill_outer,
+        wave_inserts=wave_inserts,
     )
 
 
@@ -157,6 +176,7 @@ def build_box_parametric(
     dividers: Sequence[Divider] = (),
     pockets: Sequence[Pocket] = (),
     pockets_fill_outer: bool = False,
+    wave_inserts: Sequence[WaveInsert] = (),
 ) -> cq.Shape:
     _validate_cells(width_cells, depth_cells)
     if height_mm <= PICKUP_TOP_Z_MM + floor_thickness_mm + 1.0:
@@ -226,6 +246,17 @@ def build_box_parametric(
             hollow_body = hollow_body.fuse(*outer_cyls)
         if inner_cyls:
             hollow_body = hollow_body.cut(cq.Compound.makeCompound(inner_cyls))
+
+    wave_solids = _build_wave_insert_solids(
+        _normalize_wave_inserts(wave_inserts),
+        inner_w=inner_w,
+        inner_d=inner_d,
+        wall_thickness_mm=wall_thickness_mm,
+        cavity_z0=cavity_z0,
+        cavity_h=cavity_h,
+    )
+    if wave_solids:
+        hollow_body = hollow_body.fuse(*wave_solids)
 
     pickup = features.pickup_template()
     if abs(grid_pitch_mm - GRID_PITCH_MM) > 1e-9:
@@ -413,6 +444,121 @@ def _apply_pockets_fill_mode(
     if inner_solids:
         hollow_body = hollow_body.cut(cq.Compound.makeCompound(inner_solids))
     return hollow_body
+
+
+def _normalize_wave_inserts(wave_inserts: Sequence[WaveInsert]) -> Tuple[WaveInsert, ...]:
+    if not wave_inserts:
+        return ()
+    normalized: list[WaveInsert] = []
+    for entry in wave_inserts:
+        axis, offset_mm, height_mm, groove_diameter_mm, groove_count, groove_depth_mm = entry
+        if axis not in ("x", "y"):
+            raise ValueError(f"waveInsert.axis muss 'x' oder 'y' sein, war {axis!r}")
+        normalized.append(
+            (
+                axis,
+                round(float(offset_mm), 4),
+                round(float(height_mm), 4),
+                round(float(groove_diameter_mm), 4),
+                int(groove_count),
+                round(float(groove_depth_mm), 4),
+            )
+        )
+    return tuple(sorted(normalized))
+
+
+def _build_wave_insert_solids(
+    wave_inserts: Tuple[WaveInsert, ...],
+    *,
+    inner_w: float,
+    inner_d: float,
+    wall_thickness_mm: float,
+    cavity_z0: float,
+    cavity_h: float,
+) -> list[cq.Shape]:
+    """Wannen-Einsatz: rechteckiger Sockel mit N parallelen Rinnen (Kreisbogen-
+    Profil), damit runde Werkzeuge in einem festen Bogen liegen. `axis`
+    folgt derselben Konvention wie bei Divider: Position/Dicke entlang dieser
+    Achse, volle Spannweite über die jeweils andere Innenraum-Dimension."""
+    if not wave_inserts:
+        return []
+    solids: list[cq.Shape] = []
+    for axis, offset_mm, height_mm, groove_diameter_mm, groove_count, groove_depth_mm in wave_inserts:
+        if height_mm < MIN_WAVE_HEIGHT_MM:
+            raise ValueError(f"waveInsert.heightMm={height_mm} unter Minimum {MIN_WAVE_HEIGHT_MM}")
+        if groove_diameter_mm < MIN_WAVE_GROOVE_DIAMETER_MM:
+            raise ValueError(
+                f"waveInsert.grooveDiameterMm={groove_diameter_mm} unter Minimum {MIN_WAVE_GROOVE_DIAMETER_MM}"
+            )
+        if groove_count < 1:
+            raise ValueError(f"waveInsert.grooveCount={groove_count} muss >= 1 sein")
+        groove_radius = groove_diameter_mm / 2.0
+        if groove_depth_mm < MIN_WAVE_GROOVE_DEPTH_MM or groove_depth_mm > groove_radius:
+            raise ValueError(
+                f"waveInsert.grooveDepthMm={groove_depth_mm} außerhalb (0, {groove_radius}]"
+            )
+        eff_h = min(height_mm, cavity_h)
+        if groove_depth_mm > eff_h:
+            raise ValueError(
+                f"waveInsert.grooveDepthMm={groove_depth_mm} > verfügbare Höhe {eff_h}"
+            )
+        block_span = groove_count * groove_diameter_mm
+        half_span = block_span / 2.0
+
+        if axis == "x":
+            span_len = inner_d
+            if offset_mm - half_span < 0 or offset_mm + half_span > inner_w:
+                raise ValueError(
+                    f"waveInsert.offsetMm={offset_mm} mit Breite {block_span} außerhalb "
+                    f"Innenbreite [0, {inner_w}]"
+                )
+            block_x0 = wall_thickness_mm + offset_mm - half_span
+            block = cq.Solid.makeBox(
+                block_span, span_len, eff_h,
+                cq.Vector(block_x0, wall_thickness_mm, cavity_z0),
+            )
+            groove_dir = cq.Vector(0.0, 1.0, 0.0)
+            groove_len = span_len + 0.02
+            groove_start_offset = -0.01
+        else:  # axis == "y"
+            span_len = inner_w
+            if offset_mm - half_span < 0 or offset_mm + half_span > inner_d:
+                raise ValueError(
+                    f"waveInsert.offsetMm={offset_mm} mit Breite {block_span} außerhalb "
+                    f"Innentiefe [0, {inner_d}]"
+                )
+            block_y0 = wall_thickness_mm + offset_mm - half_span
+            block = cq.Solid.makeBox(
+                span_len, block_span, eff_h,
+                cq.Vector(wall_thickness_mm, block_y0, cavity_z0),
+            )
+            groove_dir = cq.Vector(1.0, 0.0, 0.0)
+            groove_len = span_len + 0.02
+            groove_start_offset = -0.01
+
+        top_z = cavity_z0 + eff_h
+        groove_center_z = top_z + (groove_radius - groove_depth_mm)
+        grooves: list[cq.Solid] = []
+        for i in range(groove_count):
+            u = (offset_mm - half_span) + groove_radius + i * groove_diameter_mm
+            if axis == "x":
+                origin = cq.Vector(
+                    wall_thickness_mm + u,
+                    wall_thickness_mm + groove_start_offset,
+                    groove_center_z,
+                )
+            else:
+                origin = cq.Vector(
+                    wall_thickness_mm + groove_start_offset,
+                    wall_thickness_mm + u,
+                    groove_center_z,
+                )
+            grooves.append(
+                cq.Solid.makeCylinder(groove_radius, groove_len, origin, groove_dir)
+            )
+        notched = block.cut(cq.Compound.makeCompound(grooves))
+        solids.append(notched)
+    return solids
 
 
 def expected_outer_dimensions_mm(

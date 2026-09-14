@@ -158,6 +158,19 @@
         "fillOuterHintOn": "Fill-Modus: Innenraum wird bis zur höchsten Taschenhöhe zu einer massiven Platte, in die die Taschen als Wells eingebohrt werden.",
         "dragHint": "Tipp: Alt + Linksklick auf eine Tasche in der 3D-Ansicht gedrückt halten und ziehen, um sie direkt zu verschieben."
     },
+    "waveInserts": {
+        "title": "Wannen-Einsätze",
+        "empty": "Keine Wannen-Einsätze — Innenraum ist offen.",
+        "addX": "Rinne quer (X)",
+        "addY": "Rinne längs (Y)",
+        "remove": "Entfernen",
+        "offsetLabel": "Position (mm)",
+        "heightLabel": "Höhe (mm)",
+        "grooveDiameter": "Rinnendurchmesser",
+        "grooveCount": "Anzahl Rinnen",
+        "grooveDepth": "Rinnentiefe (Bogen)",
+        "hint": "Wellenförmige Rinnen für runde Werkzeuge (z. B. Schraubendreher), die dann in einem Bogen liegen. Die Rinnentiefe bestimmt, wie hart bzw. weich der Bogen ausfällt (max. = halber Rinnendurchmesser)."
+    },
     "admin": {
         "title": "Admin-Panel",
         "activeVersion": "Aktive Version: {version}, erstellt {createdAt}",

@@ -7,9 +7,10 @@ import { BoxPreview } from "@/components/BoxPreview";
 import { CollapsibleSection } from "@/components/CollapsibleSection";
 import { DividerEditor } from "@/components/DividerEditor";
 import { PocketEditor } from "@/components/PocketEditor";
+import { WaveInsertEditor } from "@/components/WaveInsertEditor";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
-import { clampDividers, clampPockets } from "@/lib/layout-store";
-import type { Divider, Pocket } from "@/lib/schema";
+import { clampDividers, clampPockets, clampWaveInserts } from "@/lib/layout-store";
+import type { Divider, Pocket, WaveInsert } from "@/lib/schema";
 import { SYSTEM } from "@/lib/system";
 
 const DRAWER_HEIGHT_PRESETS = [
@@ -67,8 +68,10 @@ export function GeneratorClient({
   const [dividers, setDividers] = useState<Divider[]>([]);
   const [pockets, setPockets] = useState<Pocket[]>([]);
   const [pocketsFillOuter, setPocketsFillOuter] = useState<boolean>(false);
+  const [waveInserts, setWaveInserts] = useState<WaveInsert[]>([]);
   const [activeDividerIndex, setActiveDividerIndex] = useState<number | null>(null);
   const [activePocketIndex, setActivePocketIndex] = useState<number | null>(null);
+  const [activeWaveInsertIndex, setActiveWaveInsertIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
@@ -118,6 +121,27 @@ export function GeneratorClient({
     setActivePocketIndex((idx) => (idx !== null && idx >= sanitizedPockets.length ? null : idx));
   }, [sanitizedPockets.length]);
 
+  const sanitizedWaveInserts = useMemo(
+    () =>
+      clampWaveInserts(
+        waveInserts,
+        widthCells,
+        depthCells,
+        heightMm,
+        activeVariant.gridPitchMm,
+        activeVariant.wallThicknessMm
+      ),
+    [waveInserts, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm]
+  );
+  useEffect(() => {
+    if (sanitizedWaveInserts.length !== waveInserts.length) {
+      setWaveInserts(sanitizedWaveInserts);
+    }
+  }, [sanitizedWaveInserts, waveInserts.length]);
+  useEffect(() => {
+    setActiveWaveInsertIndex((idx) => (idx !== null && idx >= sanitizedWaveInserts.length ? null : idx));
+  }, [sanitizedWaveInserts.length]);
+
   async function trackEvent(eventType: string, details?: Record<string, string | number | boolean | null>) {
     try {
       await fetch("/api/analytics/event", {
@@ -164,7 +188,8 @@ export function GeneratorClient({
           stlTessellationAngularRad: activeVariant.stlTessellationAngularRad,
           dividers: sanitizedDividers,
           pockets: sanitizedPockets,
-          pocketsFillOuter
+          pocketsFillOuter,
+          waveInserts: sanitizedWaveInserts
         }),
         signal: ac.signal
       });
@@ -409,6 +434,24 @@ export function GeneratorClient({
           />
         </CollapsibleSection>
 
+        <CollapsibleSection
+          title={t("waveInserts.title")}
+          badge={sanitizedWaveInserts.length > 0 ? sanitizedWaveInserts.length : undefined}
+          defaultOpen={sanitizedWaveInserts.length > 0}
+        >
+          <WaveInsertEditor
+            widthCells={widthCells}
+            depthCells={depthCells}
+            heightMm={heightMm}
+            gridPitchMm={activeVariant.gridPitchMm}
+            wallThicknessMm={activeVariant.wallThicknessMm}
+            waveInserts={sanitizedWaveInserts}
+            onChange={setWaveInserts}
+            activeIndex={activeWaveInsertIndex}
+            onActiveIndexChange={setActiveWaveInsertIndex}
+          />
+        </CollapsibleSection>
+
         <div className="flex gap-2 flex-wrap">
           <button
             type="submit"
@@ -456,8 +499,10 @@ export function GeneratorClient({
           dividers={sanitizedDividers}
           pockets={sanitizedPockets}
           pocketsFillOuter={pocketsFillOuter}
+          waveInserts={sanitizedWaveInserts}
           activeDividerIndex={activeDividerIndex}
           activePocketIndex={activePocketIndex}
+          activeWaveInsertIndex={activeWaveInsertIndex}
           onDividerChange={(idx, patch) =>
             setDividers((prev) => prev.map((d, i) => (i === idx ? { ...d, ...patch } : d)))
           }
@@ -466,6 +511,7 @@ export function GeneratorClient({
           }
           onDividerActivate={setActiveDividerIndex}
           onPocketActivate={setActivePocketIndex}
+          onWaveInsertActivate={setActiveWaveInsertIndex}
         />
       </div>
     </div>

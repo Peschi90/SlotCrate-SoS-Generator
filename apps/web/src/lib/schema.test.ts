@@ -72,6 +72,64 @@ describe("boxRequestSchema", () => {
     const r = boxRequestSchema.parse({ widthCells: 2, depthCells: 2 });
     expect(r.pocketsFillOuter).toBe(false);
   });
+  it("accepts a valid wave insert", () => {
+    const r = boxRequestSchema.parse({
+      widthCells: 3,
+      depthCells: 3,
+      waveInserts: [
+        {
+          axis: "x",
+          offsetMm: 15,
+          heightMm: 20,
+          grooveDiameterMm: 10,
+          grooveCount: 2,
+          grooveDepthMm: 3
+        }
+      ]
+    });
+    expect(r.waveInserts).toHaveLength(1);
+    expect(r.waveInserts[0]!.grooveCount).toBe(2);
+  });
+  it("defaults waveInserts to empty array", () => {
+    const r = boxRequestSchema.parse({ widthCells: 2, depthCells: 2 });
+    expect(r.waveInserts).toEqual([]);
+  });
+  it("rejects wave insert groove diameter below minimum", () => {
+    expect(() =>
+      boxRequestSchema.parse({
+        widthCells: 3,
+        depthCells: 3,
+        waveInserts: [
+          {
+            axis: "x",
+            offsetMm: 15,
+            heightMm: 20,
+            grooveDiameterMm: 1,
+            grooveCount: 1,
+            grooveDepthMm: 0.5
+          }
+        ]
+      })
+    ).toThrow();
+  });
+  it("rejects unknown wave insert axis", () => {
+    expect(() =>
+      boxRequestSchema.parse({
+        widthCells: 3,
+        depthCells: 3,
+        waveInserts: [
+          {
+            axis: "z",
+            offsetMm: 15,
+            heightMm: 20,
+            grooveDiameterMm: 10,
+            grooveCount: 1,
+            grooveDepthMm: 3
+          }
+        ]
+      })
+    ).toThrow();
+  });
 });
 
 describe("layoutRequestSchema", () => {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SYSTEM } from "./system";
-import { dividerSchema, pocketSchema } from "./schema";
+import { dividerSchema, pocketSchema, waveInsertSchema } from "./schema";
 
 /**
  * Portables JSON-Format für gespeicherte / geteilte Layouts.
@@ -21,7 +21,8 @@ export const layoutDraftBoxSchema = z.object({
   heightMm,
   dividers: z.array(dividerSchema).max(SYSTEM.maxDividersPerBox).default([]),
   pockets: z.array(pocketSchema).max(SYSTEM.maxPocketsPerBox).default([]),
-  pocketsFillOuter: z.boolean().default(false)
+  pocketsFillOuter: z.boolean().default(false),
+  waveInserts: z.array(waveInsertSchema).max(SYSTEM.maxWaveInsertsPerBox).default([])
 });
 
 export type LayoutDraftBox = z.infer<typeof layoutDraftBoxSchema>;
@@ -138,6 +139,14 @@ export function createDraft(input: {
       heightMm: number;
     }>;
     pocketsFillOuter?: boolean;
+    waveInserts?: Array<{
+      axis: "x" | "y";
+      offsetMm: number;
+      heightMm: number;
+      grooveDiameterMm: number;
+      grooveCount: number;
+      grooveDepthMm: number;
+    }>;
   }>;
 }): LayoutDraft {
   return {
@@ -163,7 +172,15 @@ export function createDraft(input: {
         diameterMm: p.diameterMm,
         heightMm: p.heightMm
       })),
-      pocketsFillOuter: Boolean(b.pocketsFillOuter)
+      pocketsFillOuter: Boolean(b.pocketsFillOuter),
+      waveInserts: (b.waveInserts ?? []).map((w) => ({
+        axis: w.axis,
+        offsetMm: w.offsetMm,
+        heightMm: w.heightMm,
+        grooveDiameterMm: w.grooveDiameterMm,
+        grooveCount: w.grooveCount,
+        grooveDepthMm: w.grooveDepthMm
+      }))
     }))
   };
 }

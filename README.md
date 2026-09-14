@@ -64,6 +64,14 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
     in die die Taschen als Wells eingebohrt werden (Rahmen-Modus bleibt
     Default). Ebenfalls im Generator und pro ausgewähltem Planer-Kasten;
     ZIP-Export dedupliziert baugleiche Kästen inkl. Taschen und Modus.
+  - Optional pro Kasten: **Wannen-Einsätze** — wellenförmige Rinnen für runde
+    Werkzeuge (z. B. Schraubendreher), die dann in einem Bogen liegen.
+    Konfigurierbar: Achse (quer/längs), Position, Höhe, Rinnendurchmesser,
+    Anzahl Rinnen und Rinnentiefe (bestimmt, wie hart/weich der Bogen
+    ausfällt; max. = halber Rinnendurchmesser). Limit
+    `SYSTEM.maxWaveInsertsPerBox`. Verfügbar im Einzelkasten-Generator und
+    pro ausgewähltem Kasten im Planer; ZIP-Export dedupliziert baugleiche
+    Kästen inkl. Wannen-Einsätzen.
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,

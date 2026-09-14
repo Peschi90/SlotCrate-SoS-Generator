@@ -92,6 +92,17 @@ def create_app() -> FastAPI:
             )
             for p in payload.pockets
         )
+        wave_tuples = tuple(
+            (
+                w.axis,
+                round(float(w.offsetMm), 4),
+                round(float(w.heightMm), 4),
+                round(float(w.grooveDiameterMm), 4),
+                int(w.grooveCount),
+                round(float(w.grooveDepthMm), 4),
+            )
+            for w in payload.waveInserts
+        )
         key = cache_key(
             payload.widthCells,
             payload.depthCells,
@@ -106,6 +117,7 @@ def create_app() -> FastAPI:
             dividers=divider_tuples,
             pockets=pocket_tuples,
             pockets_fill_outer=payload.pocketsFillOuter,
+            wave_inserts=wave_tuples,
         )
         cached = cache.get(key)
         if cached is None:
@@ -122,6 +134,7 @@ def create_app() -> FastAPI:
                 dividers=divider_tuples,
                 pockets=pocket_tuples,
                 pockets_fill_outer=payload.pocketsFillOuter,
+                wave_inserts=wave_tuples,
             )
             cache.store_bytes(key, data)
         else:
