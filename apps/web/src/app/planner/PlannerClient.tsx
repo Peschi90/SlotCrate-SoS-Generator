@@ -60,6 +60,8 @@ export function PlannerClient({
   const [ac, setAc] = useState<AbortController | null>(null);
   const [highlightFree, setHighlightFree] = useState(false);
   const [preferredFillSize, setPreferredFillSize] = useState<string>("2x2");
+  const [activeDividerIndex, setActiveDividerIndex] = useState<number | null>(null);
+  const [activePocketIndex, setActivePocketIndex] = useState<number | null>(null);
 
   const activeVariant = variants.find((variant) => variant.id === variantId) ?? variants[0]!;
   const pitchMm = activeVariant.gridPitchMm;
@@ -119,6 +121,18 @@ export function PlannerClient({
   useEffect(() => {
     void trackEvent("planner.open");
   }, [activeVariant.id]);
+
+  useEffect(() => {
+    setActiveDividerIndex(null);
+    setActivePocketIndex(null);
+  }, [selectedId]);
+
+  useEffect(() => {
+    const dividerCount = selected?.dividers.length ?? 0;
+    setActiveDividerIndex((idx) => (idx !== null && idx >= dividerCount ? null : idx));
+    const pocketCount = selected?.pockets.length ?? 0;
+    setActivePocketIndex((idx) => (idx !== null && idx >= pocketCount ? null : idx));
+  }, [selected?.dividers.length, selected?.pockets.length]);
 
   const heightState = useMemo(() => computeHeightState(selectedBoxes, selectedHeightMm), [selectedBoxes, selectedHeightMm]);
 
@@ -196,6 +210,10 @@ export function PlannerClient({
             wallThicknessMm={activeVariant.wallThicknessMm}
             innerFloorRadiusMm={activeVariant.innerFloorRadiusMm}
             outerClearanceMm={activeVariant.outerClearanceMm}
+            activeDividerIndex={activeDividerIndex}
+            activePocketIndex={activePocketIndex}
+            onDividerActivate={setActiveDividerIndex}
+            onPocketActivate={setActivePocketIndex}
           />
         </div>
       </section>
@@ -391,6 +409,8 @@ export function PlannerClient({
                     wallThicknessMm={activeVariant.wallThicknessMm}
                     dividers={selected.dividers}
                     onChange={(next) => setBoxDividers(selected.id, next)}
+                    activeIndex={activeDividerIndex}
+                    onActiveIndexChange={setActiveDividerIndex}
                   />
                 </CollapsibleSection>
               </div>
@@ -413,6 +433,8 @@ export function PlannerClient({
                     onChange={(next) => setBoxPockets(selected.id, next)}
                     fillOuter={selected.pocketsFillOuter}
                     onFillOuterChange={(v) => setBoxPocketsFillOuter(selected.id, v)}
+                    activeIndex={activePocketIndex}
+                    onActiveIndexChange={setActivePocketIndex}
                   />
                 </CollapsibleSection>
               </div>

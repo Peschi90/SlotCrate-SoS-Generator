@@ -16,12 +16,20 @@ export function Layout3DView({
   gridPitchMm = SYSTEM.gridPitchMm,
   wallThicknessMm = SYSTEM.wallThicknessMm,
   innerFloorRadiusMm = 2.5,
-  outerClearanceMm = 0
+  outerClearanceMm = 0,
+  activeDividerIndex = null,
+  activePocketIndex = null,
+  onDividerActivate,
+  onPocketActivate
 }: {
   gridPitchMm?: number;
   wallThicknessMm?: number;
   innerFloorRadiusMm?: number;
   outerClearanceMm?: number;
+  activeDividerIndex?: number | null;
+  activePocketIndex?: number | null;
+  onDividerActivate?: (index: number) => void;
+  onPocketActivate?: (index: number) => void;
 }) {
   const boxes = useLayoutStore((s) => s.boxes);
   const selectedId = useLayoutStore((s) => s.selectedId);
@@ -114,8 +122,12 @@ export function Layout3DView({
               dividers={b.dividers}
               pockets={b.pockets}
               pocketsFillOuter={b.pocketsFillOuter}
+              activeDividerIndex={isSel ? activeDividerIndex : null}
+              activePocketIndex={isSel ? activePocketIndex : null}
               onDividerChange={(idx, patch) => updateBoxDividerLive(b.id, idx, patch)}
               onPocketChange={(idx, patch) => updateBoxPocketLive(b.id, idx, patch)}
+              onDividerActivate={onDividerActivate}
+              onPocketActivate={onPocketActivate}
               onDragStart={() => {
                 select(b.id);
                 beginLiveEdit();

@@ -15,6 +15,8 @@ interface Props {
   onChange(next: Pocket[]): void;
   fillOuter: boolean;
   onFillOuterChange(value: boolean): void;
+  activeIndex?: number | null;
+  onActiveIndexChange?: (index: number | null) => void;
 }
 
 /**
@@ -30,7 +32,9 @@ export function PocketEditor({
   pockets,
   onChange,
   fillOuter,
-  onFillOuterChange
+  onFillOuterChange,
+  activeIndex = null,
+  onActiveIndexChange
 }: Props) {
   const t = useTranslations();
   const innerW = Math.max(0, widthCells * gridPitchMm - 2 * wallThicknessMm);
@@ -64,6 +68,7 @@ export function PocketEditor({
         heightMm: round(clampedDefaultHeight, 2)
       }
     ]);
+    onActiveIndexChange?.(pockets.length);
   }
 
   function autoFill() {
@@ -90,10 +95,12 @@ export function PocketEditor({
       }
     }
     onChange(next);
+    onActiveIndexChange?.(null);
   }
 
   function clear() {
     onChange([]);
+    onActiveIndexChange?.(null);
   }
 
   function update(index: number, patch: Partial<Pocket>) {
@@ -104,6 +111,8 @@ export function PocketEditor({
 
   function remove(index: number) {
     onChange(pockets.filter((_, i) => i !== index));
+    if (activeIndex === index) onActiveIndexChange?.(null);
+    else if (activeIndex !== null && activeIndex > index) onActiveIndexChange?.(activeIndex - 1);
   }
 
   const autoGridEstimate = estimateGrid(innerW, innerD, clampedDefaultDiameter);
@@ -208,10 +217,18 @@ export function PocketEditor({
             const maxX = round(Math.max(minX, innerW - r), 3);
             const minY = round(r, 3);
             const maxY = round(Math.max(minY, innerD - r), 3);
+            const isActive = idx === activeIndex;
             return (
               <li
                 key={idx}
-                className="rounded-xl border border-neutral-800 bg-neutral-900/60 p-2 space-y-2"
+                onFocus={() => onActiveIndexChange?.(idx)}
+                onClick={() => onActiveIndexChange?.(idx)}
+                className={[
+                  "rounded-xl border p-2 space-y-2 transition",
+                  isActive
+                    ? "border-crate-box bg-crate-box/10 shadow-[0_0_0_1px_rgba(76,140,255,0.35)]"
+                    : "border-neutral-800 bg-neutral-900/60"
+                ].join(" ")}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[10px] uppercase tracking-wide text-neutral-500">
@@ -219,7 +236,10 @@ export function PocketEditor({
                   </span>
                   <button
                     type="button"
-                    onClick={() => remove(idx)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remove(idx);
+                    }}
                     className="rounded-full border border-red-800/60 bg-red-900/30 px-2 py-0.5 text-[11px] text-red-200 hover:bg-red-900/50"
                     aria-label={t("pockets.remove")}
                   >

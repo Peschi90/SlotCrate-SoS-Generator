@@ -67,6 +67,8 @@ export function GeneratorClient({
   const [dividers, setDividers] = useState<Divider[]>([]);
   const [pockets, setPockets] = useState<Pocket[]>([]);
   const [pocketsFillOuter, setPocketsFillOuter] = useState<boolean>(false);
+  const [activeDividerIndex, setActiveDividerIndex] = useState<number | null>(null);
+  const [activePocketIndex, setActivePocketIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
@@ -91,6 +93,9 @@ export function GeneratorClient({
       setDividers(sanitizedDividers);
     }
   }, [sanitizedDividers, dividers.length]);
+  useEffect(() => {
+    setActiveDividerIndex((idx) => (idx !== null && idx >= sanitizedDividers.length ? null : idx));
+  }, [sanitizedDividers.length]);
 
   const sanitizedPockets = useMemo(
     () =>
@@ -109,6 +114,9 @@ export function GeneratorClient({
       setPockets(sanitizedPockets);
     }
   }, [sanitizedPockets, pockets.length]);
+  useEffect(() => {
+    setActivePocketIndex((idx) => (idx !== null && idx >= sanitizedPockets.length ? null : idx));
+  }, [sanitizedPockets.length]);
 
   async function trackEvent(eventType: string, details?: Record<string, string | number | boolean | null>) {
     try {
@@ -376,6 +384,8 @@ export function GeneratorClient({
             wallThicknessMm={activeVariant.wallThicknessMm}
             dividers={sanitizedDividers}
             onChange={setDividers}
+            activeIndex={activeDividerIndex}
+            onActiveIndexChange={setActiveDividerIndex}
           />
         </CollapsibleSection>
 
@@ -394,6 +404,8 @@ export function GeneratorClient({
             onChange={setPockets}
             fillOuter={pocketsFillOuter}
             onFillOuterChange={setPocketsFillOuter}
+            activeIndex={activePocketIndex}
+            onActiveIndexChange={setActivePocketIndex}
           />
         </CollapsibleSection>
 
@@ -444,12 +456,16 @@ export function GeneratorClient({
           dividers={sanitizedDividers}
           pockets={sanitizedPockets}
           pocketsFillOuter={pocketsFillOuter}
+          activeDividerIndex={activeDividerIndex}
+          activePocketIndex={activePocketIndex}
           onDividerChange={(idx, patch) =>
             setDividers((prev) => prev.map((d, i) => (i === idx ? { ...d, ...patch } : d)))
           }
           onPocketChange={(idx, patch) =>
             setPockets((prev) => prev.map((p, i) => (i === idx ? { ...p, ...patch } : p)))
           }
+          onDividerActivate={setActiveDividerIndex}
+          onPocketActivate={setActivePocketIndex}
         />
       </div>
     </div>

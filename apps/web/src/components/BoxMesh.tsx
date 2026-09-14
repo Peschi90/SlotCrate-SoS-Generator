@@ -21,8 +21,12 @@ interface Props {
   dividers?: Divider[];
   pockets?: Pocket[];
   pocketsFillOuter?: boolean;
+  activeDividerIndex?: number | null;
+  activePocketIndex?: number | null;
   onDividerChange?: (index: number, patch: Partial<Divider>) => void;
   onPocketChange?: (index: number, patch: Partial<Pocket>) => void;
+  onDividerActivate?: (index: number) => void;
+  onPocketActivate?: (index: number) => void;
   onDragStart?: () => void;
   onDragEnd?: () => void;
 }
@@ -47,8 +51,12 @@ export function BoxMesh({
   dividers = [],
   pockets = [],
   pocketsFillOuter = false,
+  activeDividerIndex = null,
+  activePocketIndex = null,
   onDividerChange,
   onPocketChange,
+  onDividerActivate,
+  onPocketActivate,
   onDragStart,
   onDragEnd
 }: Props) {
@@ -105,9 +113,11 @@ export function BoxMesh({
       beginDragPlane();
       dragStateRef.current = { kind, index };
       if (controls) controls.enabled = false;
+      if (kind === "divider") onDividerActivate?.(index);
+      else onPocketActivate?.(index);
       onDragStart?.();
     },
-    [beginDragPlane, controls, onDragStart]
+    [beginDragPlane, controls, onDragStart, onDividerActivate, onPocketActivate]
   );
 
   const moveDrag = useCallback(
@@ -242,23 +252,34 @@ export function BoxMesh({
         const cx = isX ? wall + d.offsetMm : wall + innerW / 2;
         const cy = isX ? wall + innerD / 2 : wall + d.offsetMm;
         const cz = pickupTop + floorT + eff / 2;
+        const isActive = idx === activeDividerIndex;
         return (
-          <mesh
-            key={`div-${idx}`}
-            position={[cx, cy, cz]}
-            onPointerDown={(e) => startDrag("divider", idx, e)}
-            onPointerMove={moveDrag}
-            onPointerUp={endDrag}
-          >
-            <boxGeometry args={[dimX, dimY, eff]} />
-            <meshStandardMaterial
-              color={color}
-              metalness={0.15}
-              roughness={0.6}
-              transparent={opacity < 1}
-              opacity={opacity}
-            />
-          </mesh>
+          <group key={`div-${idx}`}>
+            <mesh
+              position={[cx, cy, cz]}
+              onPointerDown={(e) => startDrag("divider", idx, e)}
+              onPointerMove={moveDrag}
+              onPointerUp={endDrag}
+            >
+              <boxGeometry args={[dimX, dimY, eff]} />
+              <meshStandardMaterial
+                color={isActive ? "#ffb020" : color}
+                emissive={isActive ? "#7a4a00" : "#000000"}
+                metalness={0.15}
+                roughness={0.6}
+                transparent={opacity < 1}
+                opacity={opacity}
+              />
+            </mesh>
+            {isActive && (
+              <lineSegments position={[cx, cy, cz]} renderOrder={3}>
+                <edgesGeometry
+                  args={[new THREE.BoxGeometry(dimX + 0.3, dimY + 0.3, eff + 0.3)]}
+                />
+                <lineBasicMaterial color="#ffb020" />
+              </lineSegments>
+            )}
+          </group>
         );
       })}
       {pocketsFillOuter && pockets.length > 0 ? (
@@ -280,10 +301,21 @@ export function BoxMesh({
             wall={wall}
             cavityH={cavityH}
             baseZ={pickupTop + floorT}
-            color={color}
+            color={idx === activePocketIndex ? "#ffb020" : color}
             opacity={opacity}
           />
         ))
+      )}
+      {activePocketIndex !== null && pockets[activePocketIndex] && (
+        <PocketHighlightRing
+          pocket={pockets[activePocketIndex]!}
+          wall={wall}
+          topZ={
+            pocketsFillOuter
+              ? pickupTop + floorT + Math.min(cavityH, pocketsMaxHeight)
+              : pickupTop + floorT + Math.min(Math.max(0, pockets[activePocketIndex]!.heightMm), cavityH)
+          }
+        />
       )}
       {pockets.map((p, idx) => {
         // Voller Deckel-Kreis als Klickziel: deckt Ring UND Innenfläche ab,
@@ -307,6 +339,25 @@ export function BoxMesh({
         );
       })}
     </group>
+  );
+}
+
+interface PocketHighlightRingProps {
+  pocket: Pocket;
+  wall: number;
+  topZ: number;
+}
+
+function PocketHighlightRing({ pocket, wall, topZ }: PocketHighlightRingProps) {
+  const outerR = pocket.diameterMm / 2;
+  return (
+    <mesh
+      position={[wall + pocket.centerXMm, wall + pocket.centerYMm, topZ + 0.08]}
+      renderOrder={3}
+    >
+      <ringGeometry args={[outerR * 0.9, outerR * 1.2, 32]} />
+      <meshBasicMaterial color="#ffb020" side={THREE.DoubleSide} transparent opacity={0.9} />
+    </mesh>
   );
 }
 
