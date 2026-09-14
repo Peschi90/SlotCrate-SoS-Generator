@@ -218,7 +218,8 @@
         "editor": {
             "shelfPlan": "Shelf Top View",
             "dragHint": "Click and drag a cutout directly on the shelf plan or use the controls on the right.",
-            "marginHint": "Minimum edge margin: 2.6 mm",
+            "marginHint": "Minimum clearance: 2.6 mm to edges & between cutouts",
+            "collisionWarning": "Minimum clearance of 2.6 mm between cutouts is violated.",
             "cutoutsList": "Cutouts on this level",
             "addCutout": "Add Cutout",
             "editCutout": "Edit Cutout",

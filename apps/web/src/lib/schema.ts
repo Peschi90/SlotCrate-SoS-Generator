@@ -200,10 +200,34 @@ export const inlayRequestSchema = z
         if (c.centerYMm - r < minY2 - 1e-4 || c.centerYMm + r > maxY2 + 1e-4) return false;
       }
 
+      // Check minimum hole-to-hole spacing on Level 1 (>= 2.6 mm)
+      for (let i = 0; i < data.level1Cutouts.length; i++) {
+        for (let j = i + 1; j < data.level1Cutouts.length; j++) {
+          const c1 = data.level1Cutouts[i]!;
+          const c2 = data.level1Cutouts[j]!;
+          const r1 = c1.diameterMm / 2.0;
+          const r2 = c2.diameterMm / 2.0;
+          const dist = Math.hypot(c1.centerXMm - c2.centerXMm, c1.centerYMm - c2.centerYMm);
+          if (dist < r1 + r2 + SYSTEM.inlayMinHoleSpacingMm - 1e-4) return false;
+        }
+      }
+
+      // Check minimum hole-to-hole spacing on Level 2 (>= 2.6 mm)
+      for (let i = 0; i < data.level2Cutouts.length; i++) {
+        for (let j = i + 1; j < data.level2Cutouts.length; j++) {
+          const c1 = data.level2Cutouts[i]!;
+          const c2 = data.level2Cutouts[j]!;
+          const r1 = c1.diameterMm / 2.0;
+          const r2 = c2.diameterMm / 2.0;
+          const dist = Math.hypot(c1.centerXMm - c2.centerXMm, c1.centerYMm - c2.centerYMm);
+          if (dist < r1 + r2 + SYSTEM.inlayMinHoleSpacingMm - 1e-4) return false;
+        }
+      }
+
       return true;
     },
     {
-      message: `Aussparungen müssen die ebenenspezifischen Maximalgrößen und den Mindestabstand von ${SYSTEM.inlayMinMarginMm} mm einhalten`
+      message: `Aussparungen müssen die ebenenspezifischen Maximalgrößen, Randabstände und den Mindestabstand von ${SYSTEM.inlayMinHoleSpacingMm} mm zueinander einhalten`
     }
   );
 

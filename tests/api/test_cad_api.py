@@ -155,10 +155,22 @@ def test_inlay_stl_rejects_invalid_diameter(client: TestClient) -> None:
 
 
 def test_inlay_stl_rejects_violating_shelf_margin(client: TestClient) -> None:
-    # A 36mm hole at X=15 leaves (15 - 18) = -3mm, violating margin of 2.6mm to shelf edge at X=8.0
+    # A 36mm hole at X=15 leaves (15 - 18) = -3mm, violating margin of 2.6mm to shelf edge
     payload = {
         "level1Cutouts": [
-            {"diameterMm": 36.0, "centerXMm": 15.0, "centerYMm": 50.0},
+            {"diameterMm": 36.0, "centerXMm": 5.0, "centerYMm": 50.0},
+        ],
+    }
+    r = client.post("/v1/inlay/stl", json=payload)
+    assert r.status_code == 422
+
+
+def test_inlay_stl_rejects_violating_hole_spacing(client: TestClient) -> None:
+    # Two 20mm holes (r=10) with centers at Y=30 and Y=51 -> distance is 21mm -> gap is 1.0mm (< 2.6mm)
+    payload = {
+        "level1Cutouts": [
+            {"diameterMm": 20.0, "centerXMm": 28.7, "centerYMm": 30.0},
+            {"diameterMm": 20.0, "centerXMm": 28.7, "centerYMm": 51.0},
         ],
     }
     r = client.post("/v1/inlay/stl", json=payload)

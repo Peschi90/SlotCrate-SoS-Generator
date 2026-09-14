@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SYSTEM } from "@/lib/system";
 import type { InlayCutout } from "@/lib/schema";
@@ -199,17 +199,36 @@ export function InlayShelfEditor({
   const applyVialsZigzagPreset = useCallback(() => {
     const next: InlayCutout[] = [
       { diameterMm: 25, centerXMm: 23.7, centerYMm: 25 },
-      { diameterMm: 25, centerXMm: 33.7, centerYMm: 50 },
-      { diameterMm: 25, centerXMm: 23.7, centerYMm: 75 },
-      { diameterMm: 25, centerXMm: 33.7, centerYMm: 100 },
-      { diameterMm: 25, centerXMm: 23.7, centerYMm: 125 },
-      { diameterMm: 25, centerXMm: 33.7, centerYMm: 150 },
-      { diameterMm: 25, centerXMm: 23.7, centerYMm: 175 },
-      { diameterMm: 25, centerXMm: 33.7, centerYMm: 200 }
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 51 },
+      { diameterMm: 25, centerXMm: 23.7, centerYMm: 77 },
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 103 },
+      { diameterMm: 25, centerXMm: 23.7, centerYMm: 129 },
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 155 },
+      { diameterMm: 25, centerXMm: 23.7, centerYMm: 181 },
+      { diameterMm: 25, centerXMm: 33.7, centerYMm: 207 }
     ];
     onChange(next);
     onActiveIndexChange(null);
   }, [onChange, onActiveIndexChange]);
+
+  // Collisions between cutouts (minimum spacing 2.6 mm)
+  const collidingIndices = useMemo(() => {
+    const set = new Set<number>();
+    for (let i = 0; i < cutouts.length; i++) {
+      for (let j = i + 1; j < cutouts.length; j++) {
+        const c1 = cutouts[i]!;
+        const c2 = cutouts[j]!;
+        const r1 = c1.diameterMm / 2.0;
+        const r2 = c2.diameterMm / 2.0;
+        const dist = Math.hypot(c1.centerXMm - c2.centerXMm, c1.centerYMm - c2.centerYMm);
+        if (dist < r1 + r2 + MIN_MARGIN - 1e-4) {
+          set.add(i);
+          set.add(j);
+        }
+      }
+    }
+    return set;
+  }, [cutouts]);
 
   // SVG Drag & Drop
   const getSvgMmCoords = (e: React.PointerEvent<SVGSVGElement>): { x: number; y: number } | null => {
@@ -400,7 +419,14 @@ export function InlayShelfEditor({
               {/* Cutouts */}
               {cutouts.map((cutout, idx) => {
                 const isActive = activeIndex === idx;
+                const isColliding = collidingIndices.has(idx);
                 const r = cutout.diameterMm / 2;
+                const strokeColor = isColliding ? "#e2483b" : isActive ? "#7ed321" : "#58a6ff";
+                const fillColor = isColliding
+                  ? "rgba(226, 72, 59, 0.35)"
+                  : isActive
+                  ? "rgba(126, 211, 33, 0.35)"
+                  : "rgba(88, 166, 255, 0.25)";
                 return (
                   <g
                     key={idx}
@@ -412,9 +438,9 @@ export function InlayShelfEditor({
                       cx={cutout.centerXMm}
                       cy={cutout.centerYMm}
                       r={r}
-                      fill={isActive ? "rgba(126, 211, 33, 0.35)" : "rgba(88, 166, 255, 0.25)"}
-                      stroke={isActive ? "#7ed321" : "#58a6ff"}
-                      strokeWidth={isActive ? "1.4" : "0.8"}
+                      fill={fillColor}
+                      stroke={strokeColor}
+                      strokeWidth={isActive || isColliding ? "1.4" : "0.8"}
                       className="transition-colors duration-150"
                     />
                     {/* Center crosshair */}
@@ -423,7 +449,7 @@ export function InlayShelfEditor({
                       y1={cutout.centerYMm}
                       x2={cutout.centerXMm + 2}
                       y2={cutout.centerYMm}
-                      stroke={isActive ? "#7ed321" : "#ffffff"}
+                      stroke={strokeColor}
                       strokeWidth="0.5"
                     />
                     <line
@@ -431,7 +457,7 @@ export function InlayShelfEditor({
                       y1={cutout.centerYMm - 2}
                       x2={cutout.centerXMm}
                       y2={cutout.centerYMm + 2}
-                      stroke={isActive ? "#7ed321" : "#ffffff"}
+                      stroke={strokeColor}
                       strokeWidth="0.5"
                     />
                     {/* Label diameter */}
@@ -454,6 +480,12 @@ export function InlayShelfEditor({
           <p className="text-[11px] text-white/50 mt-2 text-center">
             {t("inlay.editor.dragHint")} ({t("inlay.editor.marginHint")})
           </p>
+          {collidingIndices.size > 0 && (
+            <div className="mt-2 w-full p-2.5 rounded-xl border border-red-500/30 bg-red-950/40 text-xs text-red-300 flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{t("inlay.editor.collisionWarning")}</span>
+            </div>
+          )}
         </div>
 
         {/* Cutout List & Controls */}

@@ -35,6 +35,7 @@ from slotcrate.geometry.constants import (
     INLAY_MAX_CUTOUT_DIAMETER_MM,
     INLAY_MAX_CUTOUTS_PER_LEVEL,
     INLAY_MIN_CUTOUT_DIAMETER_MM,
+    INLAY_MIN_HOLE_SPACING_MM,
     INLAY_MIN_MARGIN_MM,
     INLAY_WIDTH_MM,
     INLAY_DEPTH_MM,
@@ -336,6 +337,40 @@ class InlayRequest(BaseModel):
                 raise ValueError(
                     f"Ebene 2: Aussparung ø{c.diameterMm} mm bei Y={c.centerYMm} unterschreitet Mindestrand von {INLAY_MIN_MARGIN_MM} mm"
                 )
+
+        # Prüfe Mindestabstand zwischen Aussparungen auf Ebene 1 (mindestens 2,6 mm)
+        for i in range(len(self.level1Cutouts)):
+            for j in range(i + 1, len(self.level1Cutouts)):
+                c1 = self.level1Cutouts[i]
+                c2 = self.level1Cutouts[j]
+                r1 = c1.diameterMm / 2.0
+                r2 = c2.diameterMm / 2.0
+                dist_centers = ((c1.centerXMm - c2.centerXMm) ** 2 + (c1.centerYMm - c2.centerYMm) ** 2) ** 0.5
+                min_center_dist = r1 + r2 + INLAY_MIN_HOLE_SPACING_MM
+                if dist_centers < min_center_dist - 1e-4:
+                    spacing = dist_centers - (r1 + r2)
+                    raise ValueError(
+                        f"Ebene 1: Abstand zwischen Aussparung #{i+1} (ø{c1.diameterMm} mm) und "
+                        f"#{j+1} (ø{c2.diameterMm} mm) beträgt {spacing:.2f} mm und unterschreitet den "
+                        f"Mindestabstand von {INLAY_MIN_HOLE_SPACING_MM} mm"
+                    )
+
+        # Prüfe Mindestabstand zwischen Aussparungen auf Ebene 2 (mindestens 2,6 mm)
+        for i in range(len(self.level2Cutouts)):
+            for j in range(i + 1, len(self.level2Cutouts)):
+                c1 = self.level2Cutouts[i]
+                c2 = self.level2Cutouts[j]
+                r1 = c1.diameterMm / 2.0
+                r2 = c2.diameterMm / 2.0
+                dist_centers = ((c1.centerXMm - c2.centerXMm) ** 2 + (c1.centerYMm - c2.centerYMm) ** 2) ** 0.5
+                min_center_dist = r1 + r2 + INLAY_MIN_HOLE_SPACING_MM
+                if dist_centers < min_center_dist - 1e-4:
+                    spacing = dist_centers - (r1 + r2)
+                    raise ValueError(
+                        f"Ebene 2: Abstand zwischen Aussparung #{i+1} (ø{c1.diameterMm} mm) und "
+                        f"#{j+1} (ø{c2.diameterMm} mm) beträgt {spacing:.2f} mm und unterschreitet den "
+                        f"Mindestabstand von {INLAY_MIN_HOLE_SPACING_MM} mm"
+                    )
 
         return self
 

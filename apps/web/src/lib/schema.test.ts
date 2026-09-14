@@ -176,10 +176,22 @@ describe("inlayRequestSchema", () => {
   });
 
   it("rejects cutout violating 2.6mm edge margin", () => {
-    // 36mm cutout at X=15 leaves (15 - 18) = -3mm, violating margin of 2.6mm to shelf edge at X=8.0
+    // 36mm cutout at X=5 leaves (5 - 18) = -13mm, violating margin of 2.6mm to shelf edge
     expect(() =>
       inlayRequestSchema.parse({
-        level1Cutouts: [{ diameterMm: 36, centerXMm: 15.0, centerYMm: 50 }]
+        level1Cutouts: [{ diameterMm: 36, centerXMm: 5.0, centerYMm: 50 }]
+      })
+    ).toThrow();
+  });
+
+  it("rejects cutouts with less than 2.6mm spacing between them", () => {
+    // Two 20mm cutouts (r=10) at centers Y=30 and Y=51 -> distance 21mm -> gap 1.0mm < 2.6mm
+    expect(() =>
+      inlayRequestSchema.parse({
+        level1Cutouts: [
+          { diameterMm: 20, centerXMm: 28.7, centerYMm: 30 },
+          { diameterMm: 20, centerXMm: 28.7, centerYMm: 51 }
+        ]
       })
     ).toThrow();
   });

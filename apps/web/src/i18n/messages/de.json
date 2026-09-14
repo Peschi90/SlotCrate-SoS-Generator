@@ -218,7 +218,8 @@
         "editor": {
             "shelfPlan": "Draufsicht Regalboden",
             "dragHint": "Klicke auf eine Aussparung und ziehe sie direkt im Plan oder nutze die Regler rechts.",
-            "marginHint": "Mindestabstand zum Rand: 2,6 mm",
+            "marginHint": "Mindestabstand: 2,6 mm zum Rand & zwischen Teilen",
+            "collisionWarning": "Mindestabstand von 2,6 mm zwischen zwei Aussparungen unterschritten.",
             "cutoutsList": "Aussparungen auf dieser Ebene",
             "addCutout": "Aussparung hinzufügen",
             "editCutout": "Aussparung bearbeiten",

@@ -34,6 +34,7 @@ export const SYSTEM = {
   inlayHeightMm: 215.4,
   inlayCenterXMm: 28.7,
   inlayMinMarginMm: 2.6,
+  inlayMinHoleSpacingMm: 2.6,
   inlayMinCutoutDiameterMm: 5.0,
   inlayMaxCutoutDiameterMm: 42.0,
   inlayMaxCutoutsPerLevel: 50,

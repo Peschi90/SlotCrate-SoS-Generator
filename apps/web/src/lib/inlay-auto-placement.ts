@@ -39,7 +39,7 @@ const L2_BOUND_Y_MAX = SYSTEM.inlayLevel2ShelfYMaxMm - MIN_MARGIN; // 221.7 - 2.
 const L2_MAX_DIA = SYSTEM.inlayLevel2MaxCutoutDiameterMm; // 36.2 mm
 const L2_USABLE_Y_LENGTH = L2_BOUND_Y_MAX - L2_BOUND_Y_MIN; // 212.0 mm
 
-const MIN_HOLE_SPACING_MM = 2.0;
+const MIN_HOLE_SPACING_MM = SYSTEM.inlayMinHoleSpacingMm; // 2.6 mm
 
 function round(val: number, decimals: number = 1): number {
   const f = Math.pow(10, decimals);

@@ -61,8 +61,28 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
     setActiveCutoutIndex(null);
   };
 
+  const checkCollisions = (cutouts: InlayCutout[]): boolean => {
+    for (let i = 0; i < cutouts.length; i++) {
+      for (let j = i + 1; j < cutouts.length; j++) {
+        const c1 = cutouts[i]!;
+        const c2 = cutouts[j]!;
+        const r1 = c1.diameterMm / 2.0;
+        const r2 = c2.diameterMm / 2.0;
+        const dist = Math.hypot(c1.centerXMm - c2.centerXMm, c1.centerYMm - c2.centerYMm);
+        if (dist < r1 + r2 + SYSTEM.inlayMinHoleSpacingMm - 1e-4) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
   const handleDownloadStl = async () => {
     setError(null);
+    if (checkCollisions(level1Cutouts) || checkCollisions(level2Cutouts)) {
+      setError(t("inlay.editor.collisionWarning"));
+      return;
+    }
     setDownloading(true);
     try {
       const res = await fetch("/api/inlay/stl", {
