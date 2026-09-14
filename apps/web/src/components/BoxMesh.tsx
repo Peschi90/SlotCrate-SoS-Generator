@@ -196,6 +196,11 @@ export function BoxMesh({
     return positions;
   }, [widthCells, depthCells, pitchMm]);
 
+  const pocketsMaxHeight = useMemo(
+    () => pockets.reduce((m, p) => Math.max(m, p.heightMm), 0),
+    [pockets]
+  );
+
   return (
     <group ref={groupRef}>
       <mesh position={[0, 0, pickupTop - zEps]} geometry={floorGeometry}>
@@ -277,12 +282,30 @@ export function BoxMesh({
             baseZ={pickupTop + floorT}
             color={color}
             opacity={opacity}
-            onPointerDown={(e) => startDrag("pocket", idx, e)}
-            onPointerMove={moveDrag}
-            onPointerUp={endDrag}
           />
         ))
       )}
+      {pockets.map((p, idx) => {
+        // Voller Deckel-Kreis als Klickziel: deckt Ring UND Innenfläche ab,
+        // unabhängig vom Rahmen-/Fill-Modus (dort ist die Deckhöhe einheitlich).
+        const topZ = pocketsFillOuter
+          ? pickupTop + floorT + Math.min(cavityH, pocketsMaxHeight)
+          : pickupTop + floorT + Math.min(Math.max(0, p.heightMm), cavityH);
+        if (topZ <= pickupTop + floorT) return null;
+        return (
+          <mesh
+            key={`pockethit-${idx}`}
+            visible={false}
+            position={[wall + p.centerXMm, wall + p.centerYMm, topZ + 0.05]}
+            onPointerDown={(e) => startDrag("pocket", idx, e)}
+            onPointerMove={moveDrag}
+            onPointerUp={endDrag}
+          >
+            <circleGeometry args={[p.diameterMm / 2, 24]} />
+            <meshBasicMaterial />
+          </mesh>
+        );
+      })}
     </group>
   );
 }
@@ -294,22 +317,9 @@ interface PocketMeshProps {
   baseZ: number;
   color: string;
   opacity: number;
-  onPointerDown?: (event: ThreeEvent<PointerEvent>) => void;
-  onPointerMove?: (event: ThreeEvent<PointerEvent>) => void;
-  onPointerUp?: (event: ThreeEvent<PointerEvent>) => void;
 }
 
-function PocketMesh({
-  pocket,
-  wall,
-  cavityH,
-  baseZ,
-  color,
-  opacity,
-  onPointerDown,
-  onPointerMove,
-  onPointerUp
-}: PocketMeshProps) {
+function PocketMesh({ pocket, wall, cavityH, baseZ, color, opacity }: PocketMeshProps) {
   const eff = Math.min(Math.max(0, pocket.heightMm), cavityH);
   const geometry = useMemo(() => {
     const outerR = pocket.diameterMm / 2;
@@ -329,13 +339,7 @@ function PocketMesh({
   }, [pocket.diameterMm, wall, eff]);
   if (eff <= 0) return null;
   return (
-    <mesh
-      position={[wall + pocket.centerXMm, wall + pocket.centerYMm, baseZ]}
-      geometry={geometry}
-      onPointerDown={onPointerDown}
-      onPointerMove={onPointerMove}
-      onPointerUp={onPointerUp}
-    >
+    <mesh position={[wall + pocket.centerXMm, wall + pocket.centerYMm, baseZ]} geometry={geometry}>
       <meshStandardMaterial
         color={color}
         metalness={0.15}
