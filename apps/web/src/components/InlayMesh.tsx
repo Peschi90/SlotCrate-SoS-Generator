@@ -1,10 +1,9 @@
 "use client";
 
-import { useMemo, Suspense } from "react";
-import { useLoader } from "@react-three/fiber";
-import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
+import { useMemo } from "react";
 import * as THREE from "three";
 import { SYSTEM } from "@/lib/system";
+import { getInlayBasePositions } from "@/lib/inlay-geometry-data";
 import type { InlayCutout } from "@/lib/schema";
 
 interface Props {
@@ -20,7 +19,13 @@ const L1_FLOOR_Z = 8.5;
 const L2_FLOOR_Z = 96.5;
 
 function InlayBaseMesh() {
-  const geom = useLoader(STLLoader, "/models/inlay-base.stl");
+  const geometry = useMemo(() => {
+    const geom = new THREE.BufferGeometry();
+    const positions = getInlayBasePositions();
+    geom.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geom.computeVertexNormals();
+    return geom;
+  }, []);
 
   const material = useMemo(
     () =>
@@ -32,7 +37,7 @@ function InlayBaseMesh() {
     []
   );
 
-  return <mesh geometry={geom} material={material} castShadow receiveShadow />;
+  return <mesh geometry={geometry} material={material} castShadow receiveShadow />;
 }
 
 export function InlayMesh({
@@ -87,10 +92,8 @@ export function InlayMesh({
 
   return (
     <group>
-      {/* Authentic Real CAD Geometry from reference STEP */}
-      <Suspense fallback={null}>
-        <InlayBaseMesh />
-      </Suspense>
+      {/* Authentic Real CAD Geometry directly from reference STEP */}
+      <InlayBaseMesh />
 
       {/* --- LEVEL 1 (LOWER SHELF) INDICATORS & BOTTLES --- */}
       {level1Cutouts.map((cutout, idx) => {

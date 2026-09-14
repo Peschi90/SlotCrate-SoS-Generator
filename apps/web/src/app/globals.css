@@ -186,7 +186,9 @@ body {
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
+
 /* Form inputs: Dark theme styling preventing white-on-white text */
+
 input,
 select,
 textarea {
