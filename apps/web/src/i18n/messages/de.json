@@ -208,11 +208,13 @@
         "presets": {
             "title": "Schnellvorlagen",
             "reference": "Referenz-Standard",
+            "bottles41": "4x 41mm Flaschen (Ebene 1)",
             "bottles36": "4x 36mm Flaschen",
             "bottles32": "5x 32mm Flaschen",
             "vialsZigzag": "8x 25mm Fläschchen (Zick-Zack)",
             "clear": "Ebene leeren"
         },
+        "levelLabel": "Ebene {level}",
         "editor": {
             "shelfPlan": "Draufsicht Regalboden",
             "dragHint": "Klicke auf eine Aussparung und ziehe sie direkt im Plan oder nutze die Regler rechts.",
@@ -232,23 +234,23 @@
         },
         "wizard": {
             "button": "Bestückungs-Assistent",
-            "title": "Automatischer Bestückungs-Assistent",
-            "subtitle": "Wähle deine Gefäß- und Flaschendurchmesser für Ebene {level}. Der Assistent berechnet die platzoptimierte Anordnung und prüft die Kapazität.",
+            "title": "Automatischer 2-Ebenen Bestückungs-Assistent",
+            "subtitle": "Gib deine gewünschten Gefäß- und Flaschendurchmesser ein. Der Assistent verteilt und ordnet sie automatisch optimal auf Ebene 1 (bis 42 mm) und Ebene 2 (bis 36,2 mm) an.",
             "modeLabel": "Modus",
-            "modeReplace": "Ebene neu belegen",
+            "modeReplace": "Ebenen neu belegen",
             "modeAppend": "An bestehende anhängen",
             "itemsTitle": "Benötigte Gefäße & Fläschchen",
             "addItem": "Größe hinzufügen",
             "noItemsHint": "Noch keine Gefäße hinzugefügt. Klicke auf „+ Größe hinzufügen“.",
             "count": "Anzahl",
-            "capacityTitle": "Regal-Kapazität",
+            "capacityTitle": "Regal-Kapazität (beide Ebenen)",
             "occupied": "belegt",
-            "enterItemsPrompt": "Gib gewünschte Durchmesser und Mengen ein, um die Belegung zu prüfen.",
-            "fitsAllSuccess": "Alle {count} Gefäße passen auf die Regalebene!",
+            "enterItemsPrompt": "Gib gewünschte Durchmesser und Mengen ein, um die automatische Verteilung zu berechnen.",
+            "fitsAllSuccess": "Alle {count} Gefäße passen perfekt auf die beiden Regalebenen!",
             "overflowWarning": "Platz reicht nicht aus ({unplaced} {unplaced, plural, one {Gefäß passt} other {Gefäße passen}} nicht mehr)",
             "overflowDetail": "Es konnten nur {placed} von {total} Gefäßen untergebracht werden.",
             "cancel": "Abbrechen",
-            "apply": "Aussparungen übernehmen"
+            "apply": "Aussparungen auf Ebenen übernehmen"
         }
     },
     "admin": {

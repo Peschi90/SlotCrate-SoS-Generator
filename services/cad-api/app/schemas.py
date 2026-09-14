@@ -22,14 +22,20 @@ from slotcrate.geometry.constants import (
     GRID_COLUMNS,
     GRID_PITCH_MM,
     GRID_ROWS,
+    INLAY_LEVEL1_MAX_CUTOUT_DIAMETER_MM,
+    INLAY_LEVEL1_SHELF_X_MAX_MM,
+    INLAY_LEVEL1_SHELF_X_MIN_MM,
+    INLAY_LEVEL1_SHELF_Y_MAX_MM,
+    INLAY_LEVEL1_SHELF_Y_MIN_MM,
+    INLAY_LEVEL2_MAX_CUTOUT_DIAMETER_MM,
+    INLAY_LEVEL2_SHELF_X_MAX_MM,
+    INLAY_LEVEL2_SHELF_X_MIN_MM,
+    INLAY_LEVEL2_SHELF_Y_MAX_MM,
+    INLAY_LEVEL2_SHELF_Y_MIN_MM,
     INLAY_MAX_CUTOUT_DIAMETER_MM,
     INLAY_MAX_CUTOUTS_PER_LEVEL,
     INLAY_MIN_CUTOUT_DIAMETER_MM,
     INLAY_MIN_MARGIN_MM,
-    INLAY_SHELF_USABLE_X_MAX_MM,
-    INLAY_SHELF_USABLE_X_MIN_MM,
-    INLAY_SHELF_USABLE_Y_MAX_MM,
-    INLAY_SHELF_USABLE_Y_MIN_MM,
     INLAY_WIDTH_MM,
     INLAY_DEPTH_MM,
     MAX_DIVIDERS_PER_BOX,
@@ -263,26 +269,6 @@ class InlayCutoutSpec(BaseModel):
     centerXMm: Annotated[float, Field(ge=0.0, le=INLAY_WIDTH_MM)]
     centerYMm: Annotated[float, Field(ge=0.0, le=INLAY_DEPTH_MM)]
 
-    @model_validator(mode="after")
-    def _validate_shelf_margin(self) -> "InlayCutoutSpec":
-        radius = self.diameterMm / 2.0
-        min_x = INLAY_SHELF_USABLE_X_MIN_MM + INLAY_MIN_MARGIN_MM
-        max_x = INLAY_SHELF_USABLE_X_MAX_MM - INLAY_MIN_MARGIN_MM
-        min_y = INLAY_SHELF_USABLE_Y_MIN_MM + INLAY_MIN_MARGIN_MM
-        max_y = INLAY_SHELF_USABLE_Y_MAX_MM - INLAY_MIN_MARGIN_MM
-
-        if self.centerXMm - radius < min_x - 1e-4 or self.centerXMm + radius > max_x + 1e-4:
-            raise ValueError(
-                f"Aussparung (ø{self.diameterMm} mm bei X={self.centerXMm}) unterschreitet "
-                f"den Mindestabstand von {INLAY_MIN_MARGIN_MM} mm zum Regalrand (X=[{min_x:.2f}, {max_x:.2f}])"
-            )
-        if self.centerYMm - radius < min_y - 1e-4 or self.centerYMm + radius > max_y + 1e-4:
-            raise ValueError(
-                f"Aussparung (ø{self.diameterMm} mm bei Y={self.centerYMm}) unterschreitet "
-                f"den Mindestabstand von {INLAY_MIN_MARGIN_MM} mm zum Regalrand (Y=[{min_y:.2f}, {max_y:.2f}])"
-            )
-        return self
-
 
 class InlayRequest(BaseModel):
     """Payload für die STL-Generierung des Maintenance-Modul Einschubs."""
@@ -305,8 +291,51 @@ class InlayRequest(BaseModel):
     ] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _validate_variant(self) -> "InlayRequest":
+    def _validate_inlay(self) -> "InlayRequest":
         if not re.fullmatch(r"^[a-z0-9-]+$", self.suitcaseVariantId):
             raise ValueError("suitcaseVariantId hat ein ungültiges Format")
+
+        # Validiere Ebene 1 (unten, breiter: max. 42 mm)
+        min_x1 = INLAY_LEVEL1_SHELF_X_MIN_MM + INLAY_MIN_MARGIN_MM
+        max_x1 = INLAY_LEVEL1_SHELF_X_MAX_MM - INLAY_MIN_MARGIN_MM
+        min_y1 = INLAY_LEVEL1_SHELF_Y_MIN_MM + INLAY_MIN_MARGIN_MM
+        max_y1 = INLAY_LEVEL1_SHELF_Y_MAX_MM - INLAY_MIN_MARGIN_MM
+
+        for c in self.level1Cutouts:
+            if c.diameterMm > INLAY_LEVEL1_MAX_CUTOUT_DIAMETER_MM + 1e-4:
+                raise ValueError(
+                    f"Ebene 1: Aussparung ø{c.diameterMm} mm überschreitet Maximum von {INLAY_LEVEL1_MAX_CUTOUT_DIAMETER_MM} mm"
+                )
+            r = c.diameterMm / 2.0
+            if c.centerXMm - r < min_x1 - 1e-4 or c.centerXMm + r > max_x1 + 1e-4:
+                raise ValueError(
+                    f"Ebene 1: Aussparung ø{c.diameterMm} mm bei X={c.centerXMm} unterschreitet Mindestrand von {INLAY_MIN_MARGIN_MM} mm"
+                )
+            if c.centerYMm - r < min_y1 - 1e-4 or c.centerYMm + r > max_y1 + 1e-4:
+                raise ValueError(
+                    f"Ebene 1: Aussparung ø{c.diameterMm} mm bei Y={c.centerYMm} unterschreitet Mindestrand von {INLAY_MIN_MARGIN_MM} mm"
+                )
+
+        # Validiere Ebene 2 (oben: max. 36.2 mm)
+        min_x2 = INLAY_LEVEL2_SHELF_X_MIN_MM + INLAY_MIN_MARGIN_MM
+        max_x2 = INLAY_LEVEL2_SHELF_X_MAX_MM - INLAY_MIN_MARGIN_MM
+        min_y2 = INLAY_LEVEL2_SHELF_Y_MIN_MM + INLAY_MIN_MARGIN_MM
+        max_y2 = INLAY_LEVEL2_SHELF_Y_MAX_MM - INLAY_MIN_MARGIN_MM
+
+        for c in self.level2Cutouts:
+            if c.diameterMm > INLAY_LEVEL2_MAX_CUTOUT_DIAMETER_MM + 1e-4:
+                raise ValueError(
+                    f"Ebene 2: Aussparung ø{c.diameterMm} mm überschreitet Maximum von {INLAY_LEVEL2_MAX_CUTOUT_DIAMETER_MM} mm"
+                )
+            r = c.diameterMm / 2.0
+            if c.centerXMm - r < min_x2 - 1e-4 or c.centerXMm + r > max_x2 + 1e-4:
+                raise ValueError(
+                    f"Ebene 2: Aussparung ø{c.diameterMm} mm bei X={c.centerXMm} unterschreitet Mindestrand von {INLAY_MIN_MARGIN_MM} mm"
+                )
+            if c.centerYMm - r < min_y2 - 1e-4 or c.centerYMm + r > max_y2 + 1e-4:
+                raise ValueError(
+                    f"Ebene 2: Aussparung ø{c.diameterMm} mm bei Y={c.centerYMm} unterschreitet Mindestrand von {INLAY_MIN_MARGIN_MM} mm"
+                )
+
         return self
 

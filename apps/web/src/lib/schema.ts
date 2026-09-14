@@ -135,42 +135,23 @@ export const layoutRequestSchema = z.object({
 
 export type LayoutRequest = z.infer<typeof layoutRequestSchema>;
 
-export const inlayCutoutSchema = z
-  .object({
-    id: z.string().optional(),
-    diameterMm: z
-      .number()
-      .min(SYSTEM.inlayMinCutoutDiameterMm)
-      .max(SYSTEM.inlayMaxCutoutDiameterMm),
-    centerXMm: z.number().min(0).max(SYSTEM.inlayWidthMm),
-    centerYMm: z.number().min(0).max(SYSTEM.inlayDepthMm)
-  })
-  .refine(
-    (c) => {
-      const radius = c.diameterMm / 2.0;
-      const minX = SYSTEM.inlayShelfUsableXMinMm + SYSTEM.inlayMinMarginMm;
-      const maxX = SYSTEM.inlayShelfUsableXMaxMm - SYSTEM.inlayMinMarginMm;
-      const minY = SYSTEM.inlayShelfUsableYMinMm + SYSTEM.inlayMinMarginMm;
-      const maxY = SYSTEM.inlayShelfUsableYMaxMm - SYSTEM.inlayMinMarginMm;
-      return (
-        c.centerXMm - radius >= minX - 1e-4 &&
-        c.centerXMm + radius <= maxX + 1e-4 &&
-        c.centerYMm - radius >= minY - 1e-4 &&
-        c.centerYMm + radius <= maxY + 1e-4
-      );
-    },
-    {
-      message: `Aussparung unterschreitet den Mindestabstand von ${SYSTEM.inlayMinMarginMm} mm zum Regalrand`
-    }
-  );
+export const inlayCutoutSchema = z.object({
+  id: z.string().optional(),
+  diameterMm: z
+    .number()
+    .min(SYSTEM.inlayMinCutoutDiameterMm)
+    .max(SYSTEM.inlayMaxCutoutDiameterMm),
+  centerXMm: z.number().min(0).max(SYSTEM.inlayWidthMm),
+  centerYMm: z.number().min(0).max(SYSTEM.inlayDepthMm)
+});
 
 export type InlayCutout = z.infer<typeof inlayCutoutSchema>;
 
 export const DEFAULT_INLAY_LEVEL1_CUTOUTS: InlayCutout[] = [
-  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 30.0 },
-  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 76.0 },
-  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 122.0 },
-  { diameterMm: 36.0, centerXMm: 28.7, centerYMm: 168.0 }
+  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 30.0 },
+  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 76.0 },
+  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 122.0 },
+  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 168.0 }
 ];
 
 export const DEFAULT_INLAY_LEVEL2_CUTOUTS: InlayCutout[] = [
@@ -182,14 +163,49 @@ export const DEFAULT_INLAY_LEVEL2_CUTOUTS: InlayCutout[] = [
   { diameterMm: 32.0, centerXMm: 28.7, centerYMm: 189.7 }
 ];
 
-export const inlayRequestSchema = z.object({
-  suitcaseVariantId: z.string().min(1).max(32).regex(/^[a-z0-9-]+$/).default("sc-124-v2"),
-  settingsVersion: z.number().int().min(1).default(1),
-  stlTessellationLinearMm: z.number().min(0.005).max(0.5).default(0.05),
-  stlTessellationAngularRad: z.number().min(0.05).max(1.0).default(0.5),
-  level1Cutouts: z.array(inlayCutoutSchema).max(SYSTEM.inlayMaxCutoutsPerLevel).default([]),
-  level2Cutouts: z.array(inlayCutoutSchema).max(SYSTEM.inlayMaxCutoutsPerLevel).default([])
-});
+export const inlayRequestSchema = z
+  .object({
+    suitcaseVariantId: z.string().min(1).max(32).regex(/^[a-z0-9-]+$/).default("sc-124-v2"),
+    settingsVersion: z.number().int().min(1).default(1),
+    stlTessellationLinearMm: z.number().min(0.005).max(0.5).default(0.05),
+    stlTessellationAngularRad: z.number().min(0.05).max(1.0).default(0.5),
+    level1Cutouts: z.array(inlayCutoutSchema).max(SYSTEM.inlayMaxCutoutsPerLevel).default([]),
+    level2Cutouts: z.array(inlayCutoutSchema).max(SYSTEM.inlayMaxCutoutsPerLevel).default([])
+  })
+  .refine(
+    (data) => {
+      // Validate Level 1 (X=[3.7, 53.7], Y=[4.5, 224.6], maxDia=42.0)
+      const minX1 = SYSTEM.inlayLevel1ShelfXMinMm + SYSTEM.inlayMinMarginMm;
+      const maxX1 = SYSTEM.inlayLevel1ShelfXMaxMm - SYSTEM.inlayMinMarginMm;
+      const minY1 = SYSTEM.inlayLevel1ShelfYMinMm + SYSTEM.inlayMinMarginMm;
+      const maxY1 = SYSTEM.inlayLevel1ShelfYMaxMm - SYSTEM.inlayMinMarginMm;
+
+      for (const c of data.level1Cutouts) {
+        if (c.diameterMm > SYSTEM.inlayLevel1MaxCutoutDiameterMm + 1e-4) return false;
+        const r = c.diameterMm / 2.0;
+        if (c.centerXMm - r < minX1 - 1e-4 || c.centerXMm + r > maxX1 + 1e-4) return false;
+        if (c.centerYMm - r < minY1 - 1e-4 || c.centerYMm + r > maxY1 + 1e-4) return false;
+      }
+
+      // Validate Level 2 (X=[8.0, 49.4], Y=[4.5, 221.7], maxDia=36.2)
+      const minX2 = SYSTEM.inlayLevel2ShelfXMinMm + SYSTEM.inlayMinMarginMm;
+      const maxX2 = SYSTEM.inlayLevel2ShelfXMaxMm - SYSTEM.inlayMinMarginMm;
+      const minY2 = SYSTEM.inlayLevel2ShelfYMinMm + SYSTEM.inlayMinMarginMm;
+      const maxY2 = SYSTEM.inlayLevel2ShelfYMaxMm - SYSTEM.inlayMinMarginMm;
+
+      for (const c of data.level2Cutouts) {
+        if (c.diameterMm > SYSTEM.inlayLevel2MaxCutoutDiameterMm + 1e-4) return false;
+        const r = c.diameterMm / 2.0;
+        if (c.centerXMm - r < minX2 - 1e-4 || c.centerXMm + r > maxX2 + 1e-4) return false;
+        if (c.centerYMm - r < minY2 - 1e-4 || c.centerYMm + r > maxY2 + 1e-4) return false;
+      }
+
+      return true;
+    },
+    {
+      message: `Aussparungen müssen die ebenenspezifischen Maximalgrößen und den Mindestabstand von ${SYSTEM.inlayMinMarginMm} mm einhalten`
+    }
+  );
 
 export type InlayRequest = z.infer<typeof inlayRequestSchema>;
 

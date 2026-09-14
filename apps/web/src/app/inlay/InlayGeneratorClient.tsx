@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Inlay3DPreview } from "@/components/Inlay3DPreview";
 import { InlayShelfEditor } from "@/components/InlayShelfEditor";
+import { InlayAutoPlacementWizard } from "@/components/InlayAutoPlacementWizard";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 import {
   DEFAULT_INLAY_LEVEL1_CUTOUTS,
@@ -47,6 +48,7 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
   const [level2Cutouts, setLevel2Cutouts] = useState<InlayCutout[]>(DEFAULT_INLAY_LEVEL2_CUTOUTS);
   const [activeLevel, setActiveLevel] = useState<1 | 2>(1);
   const [activeCutoutIndex, setActiveCutoutIndex] = useState<number | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -257,6 +259,7 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
                 onChange={setLevel1Cutouts}
                 activeIndex={activeCutoutIndex}
                 onActiveIndexChange={setActiveCutoutIndex}
+                onOpenGlobalWizard={() => setWizardOpen(true)}
               />
             ) : (
               <InlayShelfEditor
@@ -266,11 +269,25 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
                 onChange={setLevel2Cutouts}
                 activeIndex={activeCutoutIndex}
                 onActiveIndexChange={setActiveCutoutIndex}
+                onOpenGlobalWizard={() => setWizardOpen(true)}
               />
             )}
           </div>
         </div>
       </div>
+
+      {/* Global Dual-Level Placement Wizard Dialog */}
+      <InlayAutoPlacementWizard
+        open={wizardOpen}
+        existingLevel1Cutouts={level1Cutouts}
+        existingLevel2Cutouts={level2Cutouts}
+        onApply={(newL1, newL2) => {
+          setLevel1Cutouts(newL1);
+          setLevel2Cutouts(newL2);
+          setActiveCutoutIndex(null);
+        }}
+        onClose={() => setWizardOpen(false)}
+      />
     </div>
   );
 }
