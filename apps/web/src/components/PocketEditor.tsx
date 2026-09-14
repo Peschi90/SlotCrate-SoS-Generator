@@ -42,7 +42,7 @@ export function PocketEditor({
   const cavityH = Math.max(0, heightMm - SYSTEM.pickupTopZMm - SYSTEM.floorThicknessMm);
   const maxDiameter = Math.max(
     SYSTEM.minPocketDiameterMm,
-    Math.min(SYSTEM.maxPocketDiameterMm, Math.min(innerW, innerD))
+    Math.min(SYSTEM.maxPocketDiameterMm, Math.min(innerW, innerD) - 2 * wallThicknessMm)
   );
 
   const [defaultDiameter, setDefaultDiameter] = useState<number>(
@@ -57,8 +57,8 @@ export function PocketEditor({
 
   function add() {
     if (atMax) return;
-    const r = clampedDefaultDiameter / 2;
-    if (r > innerW / 2 || r > innerD / 2) return;
+    const margin = clampedDefaultDiameter / 2 + wallThicknessMm;
+    if (margin > innerW / 2 || margin > innerD / 2) return;
     onChange([
       ...pockets,
       {
@@ -75,20 +75,21 @@ export function PocketEditor({
     const diameter = clampedDefaultDiameter;
     const height = clampedDefaultHeight;
     const r = diameter / 2;
-    if (r <= 0 || innerW < diameter || innerD < diameter) return;
-    // Quadratraster mit Kontakt-Spacing = diameter; Ränder werden zentriert.
-    const nx = Math.floor(innerW / diameter);
-    const ny = Math.floor(innerD / diameter);
+    const outerDiameter = diameter + 2 * wallThicknessMm;
+    if (r <= 0 || innerW < outerDiameter || innerD < outerDiameter) return;
+    // Quadratraster; Spacing = Außendurchmesser (Innendurchmesser + 2x Wandstärke), damit Becher sich nicht überschneiden.
+    const nx = Math.floor(innerW / outerDiameter);
+    const ny = Math.floor(innerD / outerDiameter);
     if (nx * ny <= 0) return;
     if (nx * ny > SYSTEM.maxPocketsPerBox) return;
-    const marginX = (innerW - nx * diameter) / 2;
-    const marginY = (innerD - ny * diameter) / 2;
+    const marginX = (innerW - nx * outerDiameter) / 2;
+    const marginY = (innerD - ny * outerDiameter) / 2;
     const next: Pocket[] = [];
     for (let iy = 0; iy < ny; iy++) {
       for (let ix = 0; ix < nx; ix++) {
         next.push({
-          centerXMm: round(marginX + r + ix * diameter, 2),
-          centerYMm: round(marginY + r + iy * diameter, 2),
+          centerXMm: round(marginX + r + wallThicknessMm + ix * outerDiameter, 2),
+          centerYMm: round(marginY + r + wallThicknessMm + iy * outerDiameter, 2),
           diameterMm: round(diameter, 2),
           heightMm: round(height, 2)
         });
@@ -115,7 +116,7 @@ export function PocketEditor({
     else if (activeIndex !== null && activeIndex > index) onActiveIndexChange?.(activeIndex - 1);
   }
 
-  const autoGridEstimate = estimateGrid(innerW, innerD, clampedDefaultDiameter);
+  const autoGridEstimate = estimateGrid(innerW, innerD, clampedDefaultDiameter, wallThicknessMm);
   const autoFillDisabled = autoGridEstimate.count <= 0 || autoGridEstimate.count > SYSTEM.maxPocketsPerBox;
 
   return (
@@ -162,7 +163,11 @@ export function PocketEditor({
           <button
             type="button"
             onClick={add}
-            disabled={atMax || clampedDefaultDiameter > innerW || clampedDefaultDiameter > innerD}
+            disabled={
+              atMax ||
+              clampedDefaultDiameter + 2 * wallThicknessMm > innerW ||
+              clampedDefaultDiameter + 2 * wallThicknessMm > innerD
+            }
             className="rounded-lg border border-neutral-700 bg-neutral-900/80 px-2 py-1 text-[11px] font-medium text-neutral-200 transition hover:border-neutral-500 disabled:opacity-50"
           >
             + {t("pockets.addOne")}
@@ -213,10 +218,11 @@ export function PocketEditor({
         <ul className="space-y-2 max-h-72 overflow-auto pr-1">
           {pockets.map((p, idx) => {
             const r = p.diameterMm / 2;
-            const minX = round(r, 3);
-            const maxX = round(Math.max(minX, innerW - r), 3);
-            const minY = round(r, 3);
-            const maxY = round(Math.max(minY, innerD - r), 3);
+            const margin = r + wallThicknessMm;
+            const minX = round(margin, 3);
+            const maxX = round(Math.max(minX, innerW - margin), 3);
+            const minY = round(margin, 3);
+            const maxY = round(Math.max(minY, innerD - margin), 3);
             const isActive = idx === activeIndex;
             return (
               <li
@@ -252,7 +258,7 @@ export function PocketEditor({
                     label={t("pockets.diameter")}
                     value={p.diameterMm}
                     min={SYSTEM.minPocketDiameterMm}
-                    max={Math.min(innerW, innerD)}
+                    max={Math.min(innerW, innerD) - 2 * wallThicknessMm}
                     step={0.5}
                     unit="mm"
                     onChange={(v) => update(idx, { diameterMm: round(v, 2) })}
@@ -332,10 +338,18 @@ function SliderRow({ label, value, min, max, step, unit, onChange }: SliderRowPr
   );
 }
 
-function estimateGrid(innerW: number, innerD: number, diameter: number): { count: number; nx: number; ny: number } {
-  if (diameter <= 0 || innerW < diameter || innerD < diameter) return { count: 0, nx: 0, ny: 0 };
-  const nx = Math.floor(innerW / diameter);
-  const ny = Math.floor(innerD / diameter);
+function estimateGrid(
+  innerW: number,
+  innerD: number,
+  diameter: number,
+  wallThicknessMm: number
+): { count: number; nx: number; ny: number } {
+  const outerDiameter = diameter + 2 * wallThicknessMm;
+  if (outerDiameter <= 0 || innerW < outerDiameter || innerD < outerDiameter) {
+    return { count: 0, nx: 0, ny: 0 };
+  }
+  const nx = Math.floor(innerW / outerDiameter);
+  const ny = Math.floor(innerD / outerDiameter);
   return { count: nx * ny, nx, ny };
 }
 

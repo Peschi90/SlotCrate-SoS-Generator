@@ -144,7 +144,7 @@
     "pockets": {
         "title": "Round pockets",
         "empty": "No pockets — cavity is open.",
-        "diameter": "Diameter",
+        "diameter": "Inner diameter",
         "height": "Height",
         "addOne": "Pocket centered",
         "autoFill": "Fill all ({count})",
@@ -152,7 +152,7 @@
         "remove": "Remove",
         "itemHeading": "Pocket {index}",
         "tooManyWarning": "Square grid would produce {count} pockets — exceeds limit ({max}). Choose a larger diameter.",
-        "hint": "Wall thickness {thickness} mm (= box wall thickness). The cup sits on the cavity floor; height = cup wall height.",
+        "hint": "Wall thickness {thickness} mm (= box wall thickness). The diameter is the inner diameter (usable space) — the outer diameter equals inner diameter + 2× wall thickness. The cup sits on the cavity floor; height = cup wall height.",
         "fillOuter": "Fill outer area with solid material",
         "fillOuterHintOff": "Frame mode (default): each pocket is a standalone cup.",
         "fillOuterHintOn": "Fill mode: the cavity is filled up to the tallest pocket height and pockets are drilled into that slab as wells.",

@@ -75,6 +75,8 @@ class PocketSpec(BaseModel):
 
     Der Becher steht auf dem Innenboden. Wandstärke = ``wallThicknessMm``,
     Innenboden = Kastenboden. ``heightMm`` = Wandhöhe des Bechers.
+    ``diameterMm`` ist der **Innendurchmesser** (nutzbarer Raum); der
+    tatsächliche Außendurchmesser ergibt sich aus ``diameterMm + 2*wallThicknessMm``.
     ``centerXMm`` und ``centerYMm`` werden vom Innenraum-Ursprung gemessen.
     """
 

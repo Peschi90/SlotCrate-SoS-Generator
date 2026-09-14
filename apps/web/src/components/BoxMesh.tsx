@@ -333,7 +333,7 @@ export function BoxMesh({
             onPointerMove={moveDrag}
             onPointerUp={endDrag}
           >
-            <circleGeometry args={[p.diameterMm / 2, 24]} />
+            <circleGeometry args={[p.diameterMm / 2 + wall, 24]} />
             <meshBasicMaterial />
           </mesh>
         );
@@ -349,7 +349,7 @@ interface PocketHighlightRingProps {
 }
 
 function PocketHighlightRing({ pocket, wall, topZ }: PocketHighlightRingProps) {
-  const outerR = pocket.diameterMm / 2;
+  const outerR = pocket.diameterMm / 2 + wall;
   return (
     <mesh
       position={[wall + pocket.centerXMm, wall + pocket.centerYMm, topZ + 0.08]}
@@ -373,8 +373,8 @@ interface PocketMeshProps {
 function PocketMesh({ pocket, wall, cavityH, baseZ, color, opacity }: PocketMeshProps) {
   const eff = Math.min(Math.max(0, pocket.heightMm), cavityH);
   const geometry = useMemo(() => {
-    const outerR = pocket.diameterMm / 2;
-    const innerR = Math.max(0.1, outerR - wall);
+    const innerR = pocket.diameterMm / 2;
+    const outerR = innerR + wall;
     const shape = new THREE.Shape();
     shape.absarc(0, 0, outerR, 0, Math.PI * 2, false);
     const hole = new THREE.Path();
@@ -435,7 +435,7 @@ function PocketSlabMesh({
     shape.lineTo(0, innerD);
     shape.lineTo(0, 0);
     for (const p of pockets) {
-      const innerR = Math.max(0.1, p.diameterMm / 2 - wall);
+      const innerR = p.diameterMm / 2;
       const hole = new THREE.Path();
       hole.absarc(p.centerXMm, p.centerYMm, innerR, 0, Math.PI * 2, true);
       shape.holes.push(hole);

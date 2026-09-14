@@ -54,8 +54,11 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
     ZIP-Export dedupliziert baugleiche Kästen inkl. Stegen.
   - Optional pro Kasten: **Runde Taschen** als Becher/Rundwand
     (Wanddicke = Wandstärke, Innenboden = Kastenboden, Höhe = Wandhöhe des
-    Bechers). Freie Positionierung in mm oder Auto-Fill mit Quadratraster für
-    den gesamten Innenraum. Limit `SYSTEM.maxPocketsPerBox`. Optional pro
+    Bechers). Der eingegebene Durchmesser ist der **Innendurchmesser**
+    (nutzbarer Raum); der Außendurchmesser ergibt sich aus
+    Innendurchmesser + 2× Wandstärke. Freie Positionierung in mm oder
+    Auto-Fill mit Quadratraster für den gesamten Innenraum. Limit
+    `SYSTEM.maxPocketsPerBox`. Optional pro
     Kasten der Toggle **„Außenbereich massiv füllen"**: statt einzelner Becher
     wird der Innenraum bis zur höchsten Taschenhöhe zu einer massiven Platte,
     in die die Taschen als Wells eingebohrt werden (Rahmen-Modus bleibt

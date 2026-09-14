@@ -346,12 +346,10 @@ def _build_pocket_solids(
             raise ValueError(
                 f"pocket.heightMm={height_mm} unter Minimum {MIN_POCKET_HEIGHT_MM}"
             )
-        radius = diameter / 2.0
-        inner_radius = radius - wall_thickness_mm
-        if inner_radius < 0.3:
-            raise ValueError(
-                f"pocket.diameterMm={diameter} zu klein für Wandstärke {wall_thickness_mm}"
-            )
+        # diameterMm ist der Innendurchmesser (nutzbarer Raum); der Becher
+        # wächst nach außen um die Wandstärke.
+        inner_radius = diameter / 2.0
+        radius = inner_radius + wall_thickness_mm
         if cx < radius or cx > inner_w - radius:
             raise ValueError(
                 f"pocket.centerXMm={cx} außerhalb Innenbreite [{radius}, {inner_w - radius}]"
@@ -388,12 +386,9 @@ def _apply_pockets_fill_mode(
     max_h = min(max(p[3] for p in pockets), cavity_h)
     inner_solids: list[cq.Solid] = []
     for cx, cy, diameter, _height in pockets:
-        radius = diameter / 2.0
-        inner_radius = radius - wall_thickness_mm
-        if inner_radius < 0.3:
-            raise ValueError(
-                f"pocket.diameterMm={diameter} zu klein für Wandstärke {wall_thickness_mm}"
-            )
+        # diameterMm ist der Innendurchmesser; Fußabdruck reicht bis zur Wandstärke nach außen.
+        inner_radius = diameter / 2.0
+        radius = inner_radius + wall_thickness_mm
         if cx < radius or cx > inner_w - radius:
             raise ValueError(
                 f"pocket.centerXMm={cx} außerhalb Innenbreite [{radius}, {inner_w - radius}]"

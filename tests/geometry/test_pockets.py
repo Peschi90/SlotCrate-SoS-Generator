@@ -40,15 +40,32 @@ def test_pocket_center_out_of_range_rejected() -> None:
         build_box_parametric(2, 2, pockets=[(inner + 5.0, inner / 2.0, 8.0, 10.0)])
 
 
-def test_pocket_diameter_too_small_for_wall_rejected() -> None:
-    # Innenradius wird negativ → muss abgelehnt werden.
+def test_pocket_diameter_unaffected_by_wall_thickness() -> None:
+    """diameterMm ist der Innendurchmesser: bleibt gültig auch bei dicker Wand,
+    die mit alten (Außendurchmesser-)Semantiken hier fehlgeschlagen wäre."""
+    inner = _inner_span(3)
+    box = build_box_parametric(
+        3,
+        3,
+        wall_thickness_mm=4.0,
+        pockets=[(inner / 2.0, inner / 2.0, 6.0, 10.0)],
+    )
+    assert is_valid_solid(box)
+
+
+def test_pocket_position_respects_outer_footprint_margin() -> None:
+    inner = _inner_span(2)
+    wall = DEFAULT_WALL_THICKNESS_MM
+    diameter = 10.0  # Innendurchmesser
+    outer_radius = diameter / 2.0 + wall
+    # Zu nah am Rand: Außenfuß (Innenradius + Wandstärke) würde den Kasten verlassen.
     with pytest.raises(ValueError):
-        build_box_parametric(
-            2,
-            2,
-            wall_thickness_mm=1.2,
-            pockets=[(10.0, 10.0, 2.0, 10.0)],
-        )
+        build_box_parametric(2, 2, pockets=[(outer_radius - 1.0, inner / 2.0, diameter, 10.0)])
+    # Mit ausreichend Abstand ist dieselbe Tasche gültig.
+    box = build_box_parametric(
+        2, 2, pockets=[(round(outer_radius, 4), inner / 2.0, diameter, 10.0)]
+    )
+    assert is_valid_solid(box)
 
 
 def test_pocket_height_clamped_to_cavity() -> None:

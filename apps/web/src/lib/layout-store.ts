@@ -193,11 +193,11 @@ export function clampPockets(
   const cavityH = Math.max(0, heightMm - SYSTEM.pickupTopZMm - SYSTEM.floorThicknessMm);
   const out: Pocket[] = [];
   for (const p of pockets) {
-    const r = p.diameterMm / 2;
-    if (r < SYSTEM.minPocketDiameterMm / 2) continue;
-    if (p.diameterMm - 2 * wallThicknessMm < 0.6) continue; // Innenradius zu klein
-    if (p.centerXMm < r || p.centerXMm > innerW - r) continue;
-    if (p.centerYMm < r || p.centerYMm > innerD - r) continue;
+    const innerR = p.diameterMm / 2;
+    if (innerR < SYSTEM.minPocketDiameterMm / 2) continue;
+    const margin = innerR + wallThicknessMm;
+    if (p.centerXMm < margin || p.centerXMm > innerW - margin) continue;
+    if (p.centerYMm < margin || p.centerYMm > innerD - margin) continue;
     const clampedH = Math.min(Math.max(SYSTEM.minPocketHeightMm, p.heightMm), cavityH);
     if (clampedH < SYSTEM.minPocketHeightMm) continue;
     out.push({
