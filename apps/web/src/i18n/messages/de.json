@@ -1,5 +1,6 @@
 {
     "brand": "SlotCrate Sorting System",
+    "inDevelopmentBadge": "In Entwicklung",
     "meta": {
         "title": "SlotCrate Sorting System Konfigurator",
         "description": "Modulare SlotCrate-Sortierkästen konfigurieren und exportieren.",
@@ -184,6 +185,7 @@
     "inlay": {
         "badge": "Maintenance-Modul Einschub",
         "variant": "Koffervariante",
+        "devNotice": "Dieser Generator befindet sich derzeit in aktiver Entwicklung (Beta/Preview).",
         "title": "Apothekerschrank 2-Ebenen Inlay Generator",
         "description": "Platziere und konfiguriere zylindrische Aussparungen für Gefäße, Flaschen und Fläschchen auf zwei Ebenen völlig frei.",
         "level1Tab": "Ebene 1 (Unten)",

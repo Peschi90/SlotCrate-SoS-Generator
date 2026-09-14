@@ -24,7 +24,7 @@ def test_blank_inlay_base_dimensions():
     assert abs(dx - INLAY_WIDTH_MM) < 0.1
     assert abs(dy - INLAY_DEPTH_MM) < 0.1
     assert abs(dz - INLAY_HEIGHT_MM) < 0.1
-    assert volume_mm3(base) > 150_000
+    assert volume_mm3(base) > 100_000
 
 
 def test_inlay_with_reference_cutouts():

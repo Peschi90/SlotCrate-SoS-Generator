@@ -1,5 +1,6 @@
 {
     "brand": "SlotCrate Sorting System",
+    "inDevelopmentBadge": "In Development",
     "meta": {
         "title": "SlotCrate Sorting System Configurator",
         "description": "Configure and export modular SlotCrate sorting bins.",
@@ -184,6 +185,7 @@
     "inlay": {
         "badge": "Maintenance Module Inlay",
         "variant": "Suitcase variant",
+        "devNotice": "This generator is currently in active development (Beta/Preview).",
         "title": "Apothecary 2-Tier Inlay Generator",
         "description": "Freely place and configure cylindrical cutouts for bottles, vials, and jars across two shelf levels.",
         "level1Tab": "Level 1 (Lower)",

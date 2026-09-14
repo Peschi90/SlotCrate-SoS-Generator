@@ -97,9 +97,12 @@ export function InlayGeneratorClient({ suitcaseVariants }: Props) {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-white/10 pb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-xs uppercase tracking-widest text-amber-400 font-mono">
               {t("inlay.badge")}
+            </span>
+            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-mono">
+              🚧 {t("inDevelopmentBadge")}
             </span>
             <span className="text-white/40">·</span>
             <span className="text-xs text-white/60 font-mono">

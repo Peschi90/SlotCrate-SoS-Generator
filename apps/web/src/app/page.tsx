@@ -28,8 +28,11 @@ export default async function HomePage() {
             <Link className="slotcrate-button-secondary" href="/planner">
               {t("home.planner.cta")}
             </Link>
-            <Link className="slotcrate-button-secondary" href="/inlay">
-              {t("home.inlay.cta")}
+            <Link className="slotcrate-button-secondary flex items-center gap-2" href="/inlay">
+              <span>{t("home.inlay.cta")}</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                {t("inDevelopmentBadge")}
+              </span>
             </Link>
             <a
               href={slotcrateHref}
@@ -60,7 +63,12 @@ export default async function HomePage() {
           </article>
 
           <article className="slotcrate-card">
-            <h2 className="text-lg font-semibold mb-1">{t("home.inlay.title")}</h2>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-lg font-semibold">{t("home.inlay.title")}</h2>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                {t("inDevelopmentBadge")}
+              </span>
+            </div>
             <p className="text-white/70 text-sm mb-4">{t("home.inlay.description")}</p>
             <Link className="slotcrate-inline-link" href="/inlay">
               {t("home.inlay.cta")}

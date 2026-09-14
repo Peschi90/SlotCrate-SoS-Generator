@@ -111,8 +111,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       <Link href="/planner" className="slotcrate-navlink text-center">
                         {t("nav.planner")}
                       </Link>
-                      <Link href="/inlay" className="slotcrate-navlink text-center">
-                        {t("nav.inlay")}
+                      <Link href="/inlay" className="slotcrate-navlink text-center flex items-center justify-center gap-1.5">
+                        <span>{t("nav.inlay")}</span>
+                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          {t("inDevelopmentBadge")}
+                        </span>
                       </Link>
                       <a
                         href={slotcrateHref}
@@ -137,8 +140,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/planner" className="slotcrate-navlink">
                   {t("nav.planner")}
                 </Link>
-                <Link href="/inlay" className="slotcrate-navlink">
-                  {t("nav.inlay")}
+                <Link href="/inlay" className="slotcrate-navlink flex items-center gap-1.5">
+                  <span>{t("nav.inlay")}</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    {t("inDevelopmentBadge")}
+                  </span>
                 </Link>
                 <a
                   href={slotcrateHref}

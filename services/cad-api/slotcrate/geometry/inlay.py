@@ -44,31 +44,39 @@ REFERENCE_HOLES_LEVEL2: Tuple[Tuple[float, float, float], ...] = (
 def load_blank_inlay_base() -> cq.Shape:
     """Erzeugt und cached den ungelochten Rohling des Maintenance-Modul Einschubs.
 
-    Verschließt die 11 Referenzbohrungen auf den beiden Regalböden.
+    Verschließt die 11 Referenzbohrungen planbündig auf den beiden Regalböden,
+    sodass die ursprüngliche Plattenstärke (Ebene 1: 2,10 mm, Ebene 2: 1,60 mm)
+    vollständig ohne Kragen oder Überstände erhalten bleibt.
     """
     step_path = REFERENCE_DIR / INLAY_STEP_FILE
     inlay_norm = _normalize_z_up(_load_step(step_path))
 
-    cylinders_to_fill = [
-        # Level 1 (Z ~ 28.60)
-        (20.5, 28.70, 105.10, INLAY_LEVEL1_SHELF_Z_MM),
-        (20.5, 28.70, 150.10, INLAY_LEVEL1_SHELF_Z_MM),
-        (16.0, 28.70, 61.10, INLAY_LEVEL1_SHELF_Z_MM),
-        (20.5, 28.70, 195.10, INLAY_LEVEL1_SHELF_Z_MM),
-        (12.5, 28.70, 26.10, INLAY_LEVEL1_SHELF_Z_MM),
-        # Level 2 (Z ~ 128.90)
-        (12.5, 23.70, 84.70, INLAY_LEVEL2_SHELF_Z_MM),
-        (16.0, 28.70, 189.70, INLAY_LEVEL2_SHELF_Z_MM),
-        (12.5, 33.70, 56.70, INLAY_LEVEL2_SHELF_Z_MM),
-        (16.0, 28.70, 119.70, INLAY_LEVEL2_SHELF_Z_MM),
-        (16.0, 28.70, 154.70, INLAY_LEVEL2_SHELF_Z_MM),
-        (12.5, 23.70, 28.70, INLAY_LEVEL2_SHELF_Z_MM),
+    # Ebene 1: Regalboden von Z=26.50 bis Z=28.60 (Höhe 2.10 mm)
+    cylinders_level1 = [
+        (20.5, 28.70, 105.10),
+        (20.5, 28.70, 150.10),
+        (16.0, 28.70, 61.10),
+        (20.5, 28.70, 195.10),
+        (12.5, 28.70, 26.10),
+    ]
+
+    # Ebene 2: Regalboden von Z=127.30 bis Z=128.90 (Höhe 1.60 mm)
+    cylinders_level2 = [
+        (12.5, 23.70, 84.70),
+        (16.0, 28.70, 189.70),
+        (12.5, 33.70, 56.70),
+        (16.0, 28.70, 119.70),
+        (16.0, 28.70, 154.70),
+        (12.5, 23.70, 28.70),
     ]
 
     wp = cq.Workplane("XY").add(inlay_norm)
-    for r, x, y, z in cylinders_to_fill:
-        # Zylinder durch die Regalplatte (Höhe 10mm zentriert um Z)
-        plug = cq.Solid.makeCylinder(r + 0.05, 10.0, cq.Vector(x, y, z - 5.0), cq.Vector(0, 0, 1))
+    for r, x, y in cylinders_level1:
+        plug = cq.Solid.makeCylinder(r + 0.01, 2.10, cq.Vector(x, y, 26.50), cq.Vector(0, 0, 1))
+        wp = wp.union(cq.Workplane("XY").add(plug))
+
+    for r, x, y in cylinders_level2:
+        plug = cq.Solid.makeCylinder(r + 0.01, 1.60, cq.Vector(x, y, 127.30), cq.Vector(0, 0, 1))
         wp = wp.union(cq.Workplane("XY").add(plug))
 
     return wp.val()
@@ -82,6 +90,7 @@ def build_inlay_shape(
 
     ``level1_cutouts`` und ``level2_cutouts`` sind Sequenzen von
     ``(diameter_mm, center_x_mm, center_y_mm)``.
+    Die Bohrungen sind glatte Durchgangslöcher ohne Kragen.
     """
     base = load_blank_inlay_base()
     if not level1_cutouts and not level2_cutouts:
@@ -89,19 +98,19 @@ def build_inlay_shape(
 
     wp = cq.Workplane("XY").add(base)
 
-    # Ebene 1: Aussparungen durch Z = 15..35 mm
+    # Ebene 1: Aussparungen durch Z = 26.50..28.60
     for dia_mm, cx_mm, cy_mm in level1_cutouts:
         radius = dia_mm / 2.0
         cutter = cq.Solid.makeCylinder(
-            radius, 20.0, cq.Vector(cx_mm, cy_mm, INLAY_LEVEL1_SHELF_Z_MM - 10.0), cq.Vector(0, 0, 1)
+            radius, 4.0, cq.Vector(cx_mm, cy_mm, 25.50), cq.Vector(0, 0, 1)
         )
         wp = wp.cut(cq.Workplane("XY").add(cutter))
 
-    # Ebene 2: Aussparungen durch Z = 115..135 mm
+    # Ebene 2: Aussparungen durch Z = 127.30..128.90
     for dia_mm, cx_mm, cy_mm in level2_cutouts:
         radius = dia_mm / 2.0
         cutter = cq.Solid.makeCylinder(
-            radius, 20.0, cq.Vector(cx_mm, cy_mm, INLAY_LEVEL2_SHELF_Z_MM - 10.0), cq.Vector(0, 0, 1)
+            radius, 4.0, cq.Vector(cx_mm, cy_mm, 126.50), cq.Vector(0, 0, 1)
         )
         wp = wp.cut(cq.Workplane("XY").add(cutter))
 

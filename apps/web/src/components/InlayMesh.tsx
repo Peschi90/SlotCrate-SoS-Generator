@@ -70,22 +70,20 @@ export function InlayMesh({
     []
   );
 
-  const ringMaterial = useMemo(
+  const holeMaterial = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
-        color: 0x58a6ff,
-        metalness: 0.6,
-        roughness: 0.3
+      new THREE.MeshBasicMaterial({
+        color: 0x0e1116,
+        depthWrite: false
       }),
     []
   );
 
-  const activeRingMaterial = useMemo(
+  const activeHoleOutlineMaterial = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshBasicMaterial({
         color: 0xff7b00,
-        metalness: 0.7,
-        roughness: 0.2
+        wireframe: true
       }),
     []
   );
@@ -95,53 +93,53 @@ export function InlayMesh({
       {/* Authentic Real CAD Geometry directly from reference STEP */}
       <InlayBaseMesh />
 
-      {/* --- LEVEL 1 (LOWER SHELF) INDICATORS & BOTTLES --- */}
+      {/* --- LEVEL 1 (LOWER SHELF) HOLES & BOTTLES --- */}
       {level1Cutouts.map((cutout, idx) => {
         const isActive = activeLevel === 1 && activeCutoutIndex === idx;
         const radius = cutout.diameterMm / 2;
         const bottleHeight = Math.min(65, L2_FLOOR_Z - L1_FLOOR_Z - 4);
         return (
           <group key={`l1-${idx}`}>
-            {/* Cutout Ring on shelf plate */}
+            {/* Flush hole opening on shelf plate (no collar/rim) */}
             <mesh
-              position={[cutout.centerXMm, cutout.centerYMm, L1_Z + 0.3]}
-              material={isActive ? activeRingMaterial : ringMaterial}
+              position={[cutout.centerXMm, cutout.centerYMm, L1_Z + 0.05]}
+              material={isActive ? activeHoleOutlineMaterial : holeMaterial}
             >
-              <ringGeometry args={[radius * 0.92, radius * 1.05, 32]} />
+              <circleGeometry args={[radius, 32]} />
             </mesh>
-            {/* 3D Bottle standing in the rack */}
+            {/* 3D Bottle standing in the rack through the hole */}
             <mesh
               position={[cutout.centerXMm, cutout.centerYMm, L1_FLOOR_Z + 1 + bottleHeight / 2]}
               rotation={[Math.PI / 2, 0, 0]}
               material={isActive ? activeBottleMaterial : bottleMaterial}
             >
-              <cylinderGeometry args={[radius * 0.96, radius * 0.96, bottleHeight, 32]} />
+              <cylinderGeometry args={[radius * 0.98, radius * 0.98, bottleHeight, 32]} />
             </mesh>
           </group>
         );
       })}
 
-      {/* --- LEVEL 2 (UPPER SHELF) INDICATORS & BOTTLES --- */}
+      {/* --- LEVEL 2 (UPPER SHELF) HOLES & BOTTLES --- */}
       {level2Cutouts.map((cutout, idx) => {
         const isActive = activeLevel === 2 && activeCutoutIndex === idx;
         const radius = cutout.diameterMm / 2;
         const bottleHeight = Math.min(80, SYSTEM.inlayHeightMm - L2_FLOOR_Z - 10);
         return (
           <group key={`l2-${idx}`}>
-            {/* Cutout Ring on shelf plate */}
+            {/* Flush hole opening on shelf plate (no collar/rim) */}
             <mesh
-              position={[cutout.centerXMm, cutout.centerYMm, L2_Z + 0.3]}
-              material={isActive ? activeRingMaterial : ringMaterial}
+              position={[cutout.centerXMm, cutout.centerYMm, L2_Z + 0.05]}
+              material={isActive ? activeHoleOutlineMaterial : holeMaterial}
             >
-              <ringGeometry args={[radius * 0.92, radius * 1.05, 32]} />
+              <circleGeometry args={[radius, 32]} />
             </mesh>
-            {/* 3D Bottle standing in the rack */}
+            {/* 3D Bottle standing in the rack through the hole */}
             <mesh
               position={[cutout.centerXMm, cutout.centerYMm, L2_FLOOR_Z + 1 + bottleHeight / 2]}
               rotation={[Math.PI / 2, 0, 0]}
               material={isActive ? activeBottleMaterial : bottleMaterial}
             >
-              <cylinderGeometry args={[radius * 0.96, radius * 0.96, bottleHeight, 32]} />
+              <cylinderGeometry args={[radius * 0.98, radius * 0.98, bottleHeight, 32]} />
             </mesh>
           </group>
         );
