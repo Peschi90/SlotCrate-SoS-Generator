@@ -9,6 +9,7 @@
         "home": "Startseite",
         "generator": "Einzelkasten",
         "planner": "Layout-Planer",
+        "inlay": "Maintenance-Einschub",
         "website": "SlotCrate Website",
         "menu": "Menü",
         "imprint": "Impressum",
@@ -26,6 +27,11 @@
             "title": "Layout-Planer",
             "description": "Mehrere Kästen auf der 10x10-Rasterplatte platzieren und gemeinsam exportieren.",
             "cta": "Planer öffnen"
+        },
+        "inlay": {
+            "title": "Maintenance-Modul Einschub",
+            "description": "2-Ebenen Apothekerschrank-Einschub mit frei konfigurierbaren runden Aussparungen für Fläschchen und Gefäße.",
+            "cta": "Einschub anpassen"
         },
         "website": {
             "title": "Zur SlotCrate-Hauptseite",
@@ -174,6 +180,52 @@
         "mismatchMessage": "Der neue Rinnendurchmesser passt nicht mehr zur aktuellen Rinnenanzahl und würde eine seitliche Lücke hinterlassen. Anzahl auf {count} anpassen, damit der Innenraum wieder lückenlos ausgefüllt wird?",
         "mismatchConfirm": "Anpassen",
         "mismatchCancel": "Abbrechen"
+    },
+    "inlay": {
+        "badge": "Maintenance-Modul Einschub",
+        "title": "Apothekerschrank 2-Ebenen Inlay Generator",
+        "description": "Platziere und konfiguriere zylindrische Aussparungen für Gefäße, Flaschen und Fläschchen auf zwei Ebenen völlig frei.",
+        "level1Tab": "Ebene 1 (Unten)",
+        "level2Tab": "Ebene 2 (Oben)",
+        "downloadStl": "Inlay-STL herunterladen",
+        "generatingStl": "Erzeuge Inlay-STL …",
+        "downloadError": "Fehler beim Erzeugen des Inlays.",
+        "meta": {
+            "title": "Maintenance-Modul Einschub-Generator | SlotCrate SoS",
+            "description": "Erstelle individuelle 2-Ebenen Inlays für Flaschen und Gefäße passend zum SlotCrate Maintenance-Modul."
+        },
+        "specs": {
+            "title": "Spezifikationen & Kennzahlen",
+            "level1Cutouts": "Ebene 1 Aussparungen:",
+            "level2Cutouts": "Ebene 2 Aussparungen:",
+            "level1Height": "Ebene 1 Regalhöhe:",
+            "level2Height": "Ebene 2 Regalhöhe:",
+            "pieces": "Stk."
+        },
+        "presets": {
+            "title": "Schnellvorlagen",
+            "reference": "Referenz-Standard",
+            "bottles41": "4x 41mm Flaschen",
+            "bottles32": "5x 32mm Flaschen",
+            "vialsZigzag": "8x 25mm Fläschchen (Zick-Zack)",
+            "clear": "Ebene leeren"
+        },
+        "editor": {
+            "shelfPlan": "Draufsicht Regalboden",
+            "dragHint": "Klicke auf eine Aussparung und ziehe sie direkt im Plan oder nutze die Regler rechts.",
+            "cutoutsList": "Aussparungen auf dieser Ebene",
+            "addCutout": "Aussparung hinzufügen",
+            "editCutout": "Aussparung bearbeiten",
+            "duplicate": "Duplizieren",
+            "delete": "Löschen",
+            "diameter": "Durchmesser",
+            "commonSizes": "Häufige Größen",
+            "width": "Breite",
+            "depth": "Tiefe",
+            "center": "Zentrieren",
+            "noSelectionHint": "Klicke auf eine Aussparung im Plan oder in der Liste, um ihre Maße und Position anzupassen.",
+            "emptyLevel": "Keine Aussparungen auf dieser Ebene. Klicke auf „+ Aussparung hinzufügen“ oder wähle eine Schnellvorlage."
+        }
     },
     "admin": {
         "title": "Admin-Panel",

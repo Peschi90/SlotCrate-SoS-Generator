@@ -9,6 +9,7 @@
         "home": "Home",
         "generator": "Single Box",
         "planner": "Layout Planner",
+        "inlay": "Maintenance Inlay",
         "website": "SlotCrate Website",
         "menu": "Menu",
         "imprint": "Imprint",
@@ -26,6 +27,11 @@
             "title": "Layout Planner",
             "description": "Place multiple boxes on the 10x10 grid plate and export them together.",
             "cta": "Open Planner"
+        },
+        "inlay": {
+            "title": "Maintenance Module Inlay",
+            "description": "2-tier apothecary rack insert with fully customizable round cutouts for bottles, vials, and jars.",
+            "cta": "Customize Inlay"
         },
         "website": {
             "title": "Go to the SlotCrate main site",
@@ -174,6 +180,52 @@
         "mismatchMessage": "The new groove diameter no longer matches the current groove count and would leave a gap on the side. Adjust the count to {count} so the cavity is filled without a gap again?",
         "mismatchConfirm": "Adjust",
         "mismatchCancel": "Cancel"
+    },
+    "inlay": {
+        "badge": "Maintenance Module Inlay",
+        "title": "Apothecary 2-Tier Inlay Generator",
+        "description": "Freely place and configure cylindrical cutouts for bottles, vials, and jars across two shelf levels.",
+        "level1Tab": "Level 1 (Lower)",
+        "level2Tab": "Level 2 (Upper)",
+        "downloadStl": "Download Inlay STL",
+        "generatingStl": "Generating Inlay STL …",
+        "downloadError": "Failed to generate inlay.",
+        "meta": {
+            "title": "Maintenance Module Inlay Generator | SlotCrate SoS",
+            "description": "Generate custom 2-tier inlays for bottles and vials for the SlotCrate Maintenance Module."
+        },
+        "specs": {
+            "title": "Specifications & Metrics",
+            "level1Cutouts": "Level 1 Cutouts:",
+            "level2Cutouts": "Level 2 Cutouts:",
+            "level1Height": "Level 1 Shelf Height:",
+            "level2Height": "Level 2 Shelf Height:",
+            "pieces": "pcs"
+        },
+        "presets": {
+            "title": "Quick Presets",
+            "reference": "Reference Default",
+            "bottles41": "4x 41mm Bottles",
+            "bottles32": "5x 32mm Bottles",
+            "vialsZigzag": "8x 25mm Vials (Zig-Zag)",
+            "clear": "Clear Level"
+        },
+        "editor": {
+            "shelfPlan": "Shelf Top View",
+            "dragHint": "Click and drag a cutout directly on the shelf plan or use the controls on the right.",
+            "cutoutsList": "Cutouts on this level",
+            "addCutout": "Add Cutout",
+            "editCutout": "Edit Cutout",
+            "duplicate": "Duplicate",
+            "delete": "Delete",
+            "diameter": "Diameter",
+            "commonSizes": "Common sizes",
+            "width": "Width",
+            "depth": "Depth",
+            "center": "Center",
+            "noSelectionHint": "Click a cutout on the shelf plan or list to adjust its size and position.",
+            "emptyLevel": "No cutouts on this level. Click '+ Add Cutout' or choose a quick preset."
+        }
     },
     "admin": {
         "title": "Admin panel",

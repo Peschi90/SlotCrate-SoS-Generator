@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { boxRequestSchema, layoutRequestSchema } from "@/lib/schema";
+import { boxRequestSchema, inlayRequestSchema, layoutRequestSchema } from "@/lib/schema";
 
 describe("boxRequestSchema", () => {
   it("accepts valid input", () => {
@@ -144,6 +144,31 @@ describe("layoutRequestSchema", () => {
       layoutRequestSchema.parse({
         boxes: [],
         grid: { columns: 10, rows: 10, pitch: 20 }
+      })
+    ).toThrow();
+  });
+});
+
+describe("inlayRequestSchema", () => {
+  it("accepts valid empty or populated cutout lists", () => {
+    const res = inlayRequestSchema.parse({
+      level1Cutouts: [{ diameterMm: 25, centerXMm: 28.7, centerYMm: 30 }],
+      level2Cutouts: [{ diameterMm: 32, centerXMm: 28.7, centerYMm: 60 }]
+    });
+    expect(res.level1Cutouts).toHaveLength(1);
+    expect(res.level2Cutouts).toHaveLength(1);
+    expect(res.settingsVersion).toBe(1);
+  });
+
+  it("rejects cutout diameter out of bounds", () => {
+    expect(() =>
+      inlayRequestSchema.parse({
+        level1Cutouts: [{ diameterMm: 2, centerXMm: 28.7, centerYMm: 30 }]
+      })
+    ).toThrow();
+    expect(() =>
+      inlayRequestSchema.parse({
+        level1Cutouts: [{ diameterMm: 60, centerXMm: 28.7, centerYMm: 30 }]
       })
     ).toThrow();
   });

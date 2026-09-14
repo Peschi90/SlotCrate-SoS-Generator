@@ -134,3 +134,43 @@ export const layoutRequestSchema = z.object({
 });
 
 export type LayoutRequest = z.infer<typeof layoutRequestSchema>;
+
+export const inlayCutoutSchema = z.object({
+  id: z.string().optional(),
+  diameterMm: z
+    .number()
+    .min(SYSTEM.inlayMinCutoutDiameterMm)
+    .max(SYSTEM.inlayMaxCutoutDiameterMm),
+  centerXMm: z.number().min(0).max(SYSTEM.inlayWidthMm),
+  centerYMm: z.number().min(0).max(SYSTEM.inlayDepthMm)
+});
+
+export type InlayCutout = z.infer<typeof inlayCutoutSchema>;
+
+export const DEFAULT_INLAY_LEVEL1_CUTOUTS: InlayCutout[] = [
+  { diameterMm: 25.0, centerXMm: 28.7, centerYMm: 26.1 },
+  { diameterMm: 32.0, centerXMm: 28.7, centerYMm: 61.1 },
+  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 105.1 },
+  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 150.1 },
+  { diameterMm: 41.0, centerXMm: 28.7, centerYMm: 195.1 }
+];
+
+export const DEFAULT_INLAY_LEVEL2_CUTOUTS: InlayCutout[] = [
+  { diameterMm: 25.0, centerXMm: 23.7, centerYMm: 28.7 },
+  { diameterMm: 25.0, centerXMm: 33.7, centerYMm: 56.7 },
+  { diameterMm: 25.0, centerXMm: 23.7, centerYMm: 84.7 },
+  { diameterMm: 32.0, centerXMm: 28.7, centerYMm: 119.7 },
+  { diameterMm: 32.0, centerXMm: 28.7, centerYMm: 154.7 },
+  { diameterMm: 32.0, centerXMm: 28.7, centerYMm: 189.7 }
+];
+
+export const inlayRequestSchema = z.object({
+  settingsVersion: z.number().int().min(1).default(1),
+  stlTessellationLinearMm: z.number().min(0.005).max(0.5).default(0.05),
+  stlTessellationAngularRad: z.number().min(0.05).max(1.0).default(0.5),
+  level1Cutouts: z.array(inlayCutoutSchema).max(SYSTEM.inlayMaxCutoutsPerLevel).default([]),
+  level2Cutouts: z.array(inlayCutoutSchema).max(SYSTEM.inlayMaxCutoutsPerLevel).default([])
+});
+
+export type InlayRequest = z.infer<typeof inlayRequestSchema>;
+

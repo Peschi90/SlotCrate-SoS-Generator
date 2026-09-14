@@ -89,6 +89,35 @@ def plate_cache_key(
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def _inlay_cutouts_key_part(
+    cutouts: Sequence[Tuple[float, float, float]] | None,
+) -> str:
+    if not cutouts:
+        return "-"
+    return ";".join(
+        f"{round(dia, 4)}:{round(cx, 4)}:{round(cy, 4)}"
+        for dia, cx, cy in sorted(cutouts)
+    )
+
+
+def inlay_cache_key(
+    level1_cutouts: Sequence[Tuple[float, float, float]] | None,
+    level2_cutouts: Sequence[Tuple[float, float, float]] | None,
+    settings_version: int,
+    stl_tessellation_linear_mm: float,
+    stl_tessellation_angular_rad: float,
+    geometry_version: str = GEOMETRY_VERSION,
+) -> str:
+    payload = (
+        f"inlay|{settings_version}|"
+        f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
+        f"{_inlay_cutouts_key_part(level1_cutouts)}|"
+        f"{_inlay_cutouts_key_part(level2_cutouts)}|"
+        f"{geometry_version}"
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 class StlCache:
     def __init__(self, root: Path) -> None:
         self.root = root

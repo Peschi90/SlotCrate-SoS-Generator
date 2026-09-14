@@ -72,6 +72,11 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
     `SYSTEM.maxWaveInsertsPerBox`. Verfügbar im Einzelkasten-Generator und
     pro ausgewähltem Kasten im Planer; ZIP-Export dedupliziert baugleiche
     Kästen inkl. Wannen-Einsätzen.
+  - **Maintenance-Modul Einschub-Generator** (`/inlay`): 2-Ebenen Inlay
+    (Apothekerschrank-Einschub) basierend auf `SC_MM_Inlay.step`.
+    Frei konfigurierbare zylindrische Aussparungen für Gefäße und Flaschen
+    auf Ebene 1 (unten) und Ebene 2 (oben) mit 2D-Regalplan-Editor,
+    Drag & Drop, Presets, 3D-Live-Vorschau und direktem STL-Download (`/api/inlay/stl`).
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,
@@ -105,13 +110,17 @@ apps/web/                Next.js 14 (App Router)
   src/app/               Pages + API-Routen
     api/box/stl/         Proxy zur CAD-API (Einzelkasten)
     api/layout/zip/      Proxy zur CAD-API (Layout-ZIP)
+    api/plate/stl/       Proxy zur CAD-API (Rasterplatte)
+    api/inlay/stl/       Proxy zur CAD-API (Maintenance-Inlay)
     api/auth/{login,logout,csrf}/
     api/admin/{settings,analytics}/
     api/analytics/event/
     admin/               Admin-UI (Server-Component + Forms)
     generator/           Einzelkasten-UI
     planner/             Layout-Planer-UI
+    inlay/               Maintenance-Einschub-UI
   src/components/        R3F/UI: BoxMesh, BoxPreview, CadCanvas,
+                         InlayMesh, Inlay3DPreview, InlayShelfEditor,
                          Layout3DView, LayoutGrid, LanguageSwitcher
   src/i18n/              request.ts, actions.ts, messages/{de,en}.json
   src/lib/               db, auth, session, csrf, rate-limit,
@@ -123,11 +132,11 @@ apps/web/                Next.js 14 (App Router)
   prisma/migrations/     versionierte Prisma-Migrationen
 services/cad-api/
   app/main.py            FastAPI-App: /health, /v1/settings/active,
-                         /v1/box/stl, /v1/layout/zip
+                         /v1/box/stl, /v1/layout/zip, /v1/plate/stl, /v1/inlay/stl
   app/{cache,exporter,schemas,security,settings}.py
   slotcrate/geometry/    Reine Geometrie-Bibliothek (BREP → STL/ZIP)
-    constants.py         GRID_PITCH_MM=21.09, GRID=10x10, GEOMETRY_VERSION
-    box.py, features.py, reference.py, export.py
+    constants.py         GRID_PITCH_MM=21.09, GRID=10x10, INLAY_*, GEOMETRY_VERSION
+    box.py, features.py, inlay.py, reference.py, export.py
 tests/
   geometry/              pytest — CAD-Referenzvergleiche NxM
   api/                   pytest — FastAPI-Contract-Tests

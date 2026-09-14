@@ -122,6 +122,37 @@ def test_layout_zip_rejects_overlap(client: TestClient) -> None:
     r = client.post("/v1/layout/zip", json={"boxes": boxes})
     assert r.status_code == 422
 
+def test_inlay_stl_endpoint(client: TestClient) -> None:
+    payload = {
+        "level1Cutouts": [
+            {"diameterMm": 25.0, "centerXMm": 28.7, "centerYMm": 30.0},
+        ],
+        "level2Cutouts": [
+            {"diameterMm": 32.0, "centerXMm": 28.7, "centerYMm": 60.0},
+        ],
+    }
+    r1 = client.post("/v1/inlay/stl", json=payload)
+    assert r1.status_code == 200
+    assert r1.headers["content-type"] == "model/stl"
+    assert len(r1.content) > 1024
+    key1 = r1.headers["x-slotcrate-cache-key"]
+
+    # Cache hit
+    r2 = client.post("/v1/inlay/stl", json=payload)
+    assert r2.status_code == 200
+    assert r2.content == r1.content
+    assert r2.headers["x-slotcrate-cache-key"] == key1
+
+
+def test_inlay_stl_rejects_invalid_diameter(client: TestClient) -> None:
+    payload = {
+        "level1Cutouts": [
+            {"diameterMm": 2.0, "centerXMm": 28.7, "centerYMm": 30.0},  # < 5.0
+        ],
+    }
+    r = client.post("/v1/inlay/stl", json=payload)
+    assert r.status_code == 422
+
 
 def test_layout_zip_rejects_out_of_grid(client: TestClient) -> None:
     boxes = [

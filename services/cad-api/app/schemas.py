@@ -22,6 +22,11 @@ from slotcrate.geometry.constants import (
     GRID_COLUMNS,
     GRID_PITCH_MM,
     GRID_ROWS,
+    INLAY_MAX_CUTOUT_DIAMETER_MM,
+    INLAY_MAX_CUTOUTS_PER_LEVEL,
+    INLAY_MIN_CUTOUT_DIAMETER_MM,
+    INLAY_WIDTH_MM,
+    INLAY_DEPTH_MM,
     MAX_DIVIDERS_PER_BOX,
     MAX_POCKET_DIAMETER_MM,
     MAX_POCKETS_PER_BOX,
@@ -239,3 +244,37 @@ class ActiveSettingsResponse(BaseModel):
     box: Dict[str, float]
     limits: Dict[str, float]
     filenamePrefix: str
+
+
+class InlayCutoutSpec(BaseModel):
+    """Spezifikation einer zylindrischen Aussparung im Maintenance-Modul Einschub."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    diameterMm: Annotated[
+        float,
+        Field(ge=INLAY_MIN_CUTOUT_DIAMETER_MM, le=INLAY_MAX_CUTOUT_DIAMETER_MM),
+    ]
+    centerXMm: Annotated[float, Field(ge=0.0, le=INLAY_WIDTH_MM)]
+    centerYMm: Annotated[float, Field(ge=0.0, le=INLAY_DEPTH_MM)]
+
+
+class InlayRequest(BaseModel):
+    """Payload für die STL-Generierung des Maintenance-Modul Einschubs."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    settingsVersion: Annotated[int, Field(ge=1)] = 1
+    stlTessellationLinearMm: Annotated[
+        float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)
+    ] = 0.05
+    stlTessellationAngularRad: Annotated[
+        float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)
+    ] = 0.5
+    level1Cutouts: Annotated[
+        List[InlayCutoutSpec], Field(max_length=INLAY_MAX_CUTOUTS_PER_LEVEL)
+    ] = Field(default_factory=list)
+    level2Cutouts: Annotated[
+        List[InlayCutoutSpec], Field(max_length=INLAY_MAX_CUTOUTS_PER_LEVEL)
+    ] = Field(default_factory=list)
+

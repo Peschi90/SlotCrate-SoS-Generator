@@ -111,6 +111,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       <Link href="/planner" className="slotcrate-navlink text-center">
                         {t("nav.planner")}
                       </Link>
+                      <Link href="/inlay" className="slotcrate-navlink text-center">
+                        {t("nav.inlay")}
+                      </Link>
                       <a
                         href={slotcrateHref}
                         target="_blank"
@@ -133,6 +136,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 </Link>
                 <Link href="/planner" className="slotcrate-navlink">
                   {t("nav.planner")}
+                </Link>
+                <Link href="/inlay" className="slotcrate-navlink">
+                  {t("nav.inlay")}
                 </Link>
                 <a
                   href={slotcrateHref}

@@ -4,19 +4,23 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { sessionCookieName } from "./session";
 
-export type AnalyticsGenerator = "single-box" | "layout-planner";
+export type AnalyticsGenerator = "single-box" | "layout-planner" | "maintenance-inlay";
 export type AnalyticsEventType =
   | "generator.open"
   | "planner.open"
+  | "inlay.open"
   | "generator.variant.change"
   | "planner.variant.change"
   | "generator.download.click"
   | "planner.download.click"
+  | "inlay.download.click"
   | "box.download"
   | "box.download.failed"
   | "plate.download.click"
   | "plate.download"
   | "plate.download.failed"
+  | "inlay.download"
+  | "inlay.download.failed"
   | "layout.download"
   | "layout.download.failed";
 

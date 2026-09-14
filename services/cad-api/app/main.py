@@ -19,12 +19,14 @@ from slotcrate.geometry.constants import (
     PICKUP_TOP_Z_MM,
 )
 from slotcrate.geometry.reference import load_normalized_plate_from_step_file
+from slotcrate.geometry.inlay import stl_bytes_for_inlay
 
-from .cache import StlCache, cache_key, plate_cache_key
+from .cache import StlCache, cache_key, plate_cache_key, inlay_cache_key
 from .exporter import build_layout_zip, stl_bytes_for_box, stl_bytes_for_shape
 from .schemas import (
     ActiveSettingsResponse,
     BoxRequest,
+    InlayRequest,
     LayoutGrid,
     LayoutRequest,
     MAX_CELLS,
@@ -202,6 +204,59 @@ def create_app() -> FastAPI:
             data = cached.read_bytes()
         plate_stem = Path(payload.plateStepFile).stem
         filename = f"{payload.suitcaseVariantId}_Rasterplatte_{plate_stem}.stl"
+        return Response(
+            content=data,
+            media_type="model/stl",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "X-SlotCrate-Cache-Key": key,
+            },
+        )
+
+    @app.post(
+        "/v1/inlay/stl",
+        dependencies=[Depends(require_bearer)],
+        responses={200: {"content": {"model/stl": {}}}},
+    )
+    def inlay_stl(payload: InlayRequest, request: Request) -> Response:
+        rate_limiter.check(
+            "inlay_stl", client_key(request), settings.rate_limit_inlay_stl_per_minute
+        )
+        level1_tuples = tuple(
+            (
+                round(float(c.diameterMm), 4),
+                round(float(c.centerXMm), 4),
+                round(float(c.centerYMm), 4),
+            )
+            for c in payload.level1Cutouts
+        )
+        level2_tuples = tuple(
+            (
+                round(float(c.diameterMm), 4),
+                round(float(c.centerXMm), 4),
+                round(float(c.centerYMm), 4),
+            )
+            for c in payload.level2Cutouts
+        )
+        key = inlay_cache_key(
+            level1_tuples,
+            level2_tuples,
+            payload.settingsVersion,
+            payload.stlTessellationLinearMm,
+            payload.stlTessellationAngularRad,
+        )
+        cached = cache.get(key)
+        if cached is None:
+            data = stl_bytes_for_inlay(
+                level1_cutouts=level1_tuples,
+                level2_cutouts=level2_tuples,
+                stl_tessellation_linear_mm=payload.stlTessellationLinearMm,
+                stl_tessellation_angular_rad=payload.stlTessellationAngularRad,
+            )
+            cache.store_bytes(key, data)
+        else:
+            data = cached.read_bytes()
+        filename = "SlotCrate_MM_Inlay.stl"
         return Response(
             content=data,
             media_type="model/stl",

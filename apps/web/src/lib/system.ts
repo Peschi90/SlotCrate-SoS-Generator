@@ -29,6 +29,19 @@ export const SYSTEM = {
   minWaveGrooveCount: 1,
   maxWaveGrooveCount: 20,
   maxWaveInsertsPerBox: 16,
+  inlayWidthMm: 57.4,
+  inlayDepthMm: 224.6,
+  inlayHeightMm: 215.4,
+  inlayShelfUsableXMinMm: 8.0,
+  inlayShelfUsableXMaxMm: 49.4,
+  inlayShelfUsableYMinMm: 10.0,
+  inlayShelfUsableYMaxMm: 215.0,
+  inlayCenterXMm: 28.7,
+  inlayMinCutoutDiameterMm: 5.0,
+  inlayMaxCutoutDiameterMm: 45.0,
+  inlayMaxCutoutsPerLevel: 50,
+  inlayLevel1ShelfZMm: 28.6,
+  inlayLevel2ShelfZMm: 128.9,
   geometryVersion: "slotcrate-v1"
 } as const;
 
