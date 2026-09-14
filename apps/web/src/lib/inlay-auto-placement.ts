@@ -89,46 +89,58 @@ function tryPlaceOnShelf(
   const canStagger = maxX - minX >= 5.0 && dia <= 26.0;
 
   let targetX: number = CENTER_X;
+  if (canStagger) {
+    targetX = staggerLeftState.value ? minX : maxX;
+  }
+
   let targetY: number = shelf.boundYMin + r;
 
-  if (existing.length === 0) {
-    if (canStagger) {
-      targetX = staggerLeftState.value ? minX : maxX;
-      staggerLeftState.value = !staggerLeftState.value;
-    } else {
-      targetX = CENTER_X;
-    }
-    targetY = shelf.boundYMin + r;
-  } else {
-    const prev = existing[existing.length - 1]!;
+  // Ensure minimum clearance (2.6mm) against ALL already placed cutouts
+  for (const prev of existing) {
     const prevR = prev.diameterMm / 2.0;
-    const minDistance = r + prevR + MIN_HOLE_SPACING_MM;
-
-    if (canStagger && prev.diameterMm <= 26.0) {
-      targetX = staggerLeftState.value ? minX : maxX;
-      staggerLeftState.value = !staggerLeftState.value;
-      const dx = Math.abs(targetX - prev.centerXMm);
-      if (minDistance > dx) {
-        const dy = Math.sqrt(Math.max(0, minDistance * minDistance - dx * dx));
-        targetY = prev.centerYMm + dy;
-      } else {
-        targetY = prev.centerYMm + minDistance;
-      }
+    const reqDist = r + prevR + MIN_HOLE_SPACING_MM;
+    const dx = Math.abs(targetX - prev.centerXMm);
+    if (reqDist > dx) {
+      const minDy = Math.sqrt(Math.max(0, reqDist * reqDist - dx * dx));
+      targetY = Math.max(targetY, prev.centerYMm + minDy);
     } else {
-      targetX = CENTER_X;
-      targetY = prev.centerYMm + minDistance;
+      targetY = Math.max(targetY, prev.centerYMm + reqDist);
     }
   }
 
-  if (targetY + r > shelf.boundYMax + 1e-4) {
-    return { cutout: { diameterMm: dia, centerXMm: CENTER_X, centerYMm: targetY }, fits: false };
+  // Ceiling to 1 decimal place prevents floating point rounding from falling below 2.6mm clearance
+  targetY = Math.ceil(targetY * 10) / 10;
+  targetX = round(targetX, 1);
+
+  // Strictly verify clearance against all existing cutouts
+  for (const prev of existing) {
+    const prevR = prev.diameterMm / 2.0;
+    const dist = Math.hypot(targetX - prev.centerXMm, targetY - prev.centerYMm);
+    if (dist < r + prevR + MIN_HOLE_SPACING_MM - 1e-4) {
+      // If still violating after rounding, push up by 0.1mm
+      targetY = Math.round((targetY + 0.1) * 10) / 10;
+    }
+  }
+
+  // Check boundary constraints (shelf limits and 2.6mm edge margin)
+  if (
+    targetX - r < shelf.boundXMin - 1e-4 ||
+    targetX + r > shelf.boundXMax + 1e-4 ||
+    targetY - r < shelf.boundYMin - 1e-4 ||
+    targetY + r > shelf.boundYMax + 1e-4
+  ) {
+    return { cutout: { diameterMm: dia, centerXMm: targetX, centerYMm: targetY }, fits: false };
+  }
+
+  if (canStagger) {
+    staggerLeftState.value = !staggerLeftState.value;
   }
 
   return {
     cutout: {
       diameterMm: round(dia, 1),
-      centerXMm: round(targetX, 1),
-      centerYMm: round(targetY, 1)
+      centerXMm: targetX,
+      centerYMm: targetY
     },
     fits: true
   };
