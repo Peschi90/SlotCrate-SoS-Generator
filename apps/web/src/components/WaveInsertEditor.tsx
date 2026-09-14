@@ -99,6 +99,35 @@ export function WaveInsertEditor({
     onChange(waveInserts.map((w, i) => (i === index ? { ...w, ...patch } : w)));
   }
 
+  /** Achse wechseln und Rinnenanzahl/-durchmesser/Position an die neue
+   * (ggf. andere) Spannweite anpassen, statt den Einsatz beim Sanitizing
+   * lautlos zu verlieren, wenn Kasten nicht quadratisch ist. */
+  function toggleAxis(index: number) {
+    const w = waveInserts[index];
+    if (!w) return;
+    const newAxis: "x" | "y" = w.axis === "x" ? "y" : "x";
+    const newSpan = perpSpan(newAxis);
+    let diameter = w.grooveDiameterMm;
+    let count = w.grooveCount;
+    if (count * diameter > newSpan || count <= 0 || diameter <= 0) {
+      count = fillingCount(newSpan, diameter);
+      diameter = clamp(
+        fillingDiameter(newSpan, count),
+        SYSTEM.minWaveGrooveDiameterMm,
+        SYSTEM.maxWaveGrooveDiameterMm
+      );
+    }
+    const halfSpan = (count * diameter) / 2;
+    const offsetMm = clamp(w.offsetMm, halfSpan, Math.max(halfSpan, newSpan - halfSpan));
+    update(index, {
+      axis: newAxis,
+      grooveCount: count,
+      grooveDiameterMm: round(diameter, 2),
+      offsetMm: round(offsetMm, 2),
+      grooveDepthMm: Math.min(w.grooveDepthMm, diameter / 2)
+    });
+  }
+
   function remove(index: number) {
     onChange(waveInserts.filter((_, i) => i !== index));
     if (activeIndex === index) onActiveIndexChange?.(null);
@@ -216,7 +245,7 @@ export function WaveInsertEditor({
                     </span>
                     <button
                       type="button"
-                      onClick={() => update(idx, { axis: w.axis === "x" ? "y" : "x" })}
+                      onClick={() => toggleAxis(idx)}
                       className="rounded border border-neutral-700 px-1.5 py-0.5 text-[10px] text-neutral-300 hover:border-neutral-500"
                       aria-label={t("dividers.toggleAxis")}
                     >

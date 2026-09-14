@@ -1,12 +1,7 @@
 "use client";
 
 import { Canvas, useThree } from "@react-three/fiber";
-import {
-  OrbitControls,
-  GizmoHelper,
-  GizmoViewport,
-  Grid
-} from "@react-three/drei";
+import { OrbitControls, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import * as THREE from "three";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -22,19 +17,17 @@ export type ViewPreset =
 interface Props {
   center?: [number, number, number];
   radius: number;
-  showGrid?: boolean;
   children: React.ReactNode;
 }
 
 /**
- * CAD-artiges 3D-Viewport: Z-Up, Axis-Gizmo, XY-Grid, Ansichts­presets,
+ * CAD-artiges 3D-Viewport: Z-Up, Axis-Gizmo, Ansichts­presets,
  * Perspektive mit OrbitControls. Der Inhalt wird zentriert um
  * `center` betrachtet und mit `radius` als Abstandsmaßstab platziert.
  */
 export function CadCanvas({
   center = [0, 0, 0],
   radius,
-  showGrid = true,
   children
 }: Props) {
   const [preset, setPreset] = useState<ViewPreset>("iso");
@@ -68,21 +61,6 @@ export function CadCanvas({
           position={[radius * 1.5, -radius * 1.5, radius * 2]}
           intensity={0.9}
         />
-        {showGrid && (
-          <Grid
-            args={[radius * 6, radius * 6]}
-            cellSize={SYSTEM_PITCH_MM}
-            cellThickness={0.6}
-            cellColor="#2a2f38"
-            sectionSize={SYSTEM_PITCH_MM * 5}
-            sectionThickness={1.2}
-            sectionColor="#3b4252"
-            fadeDistance={radius * 12}
-            fadeStrength={1.2}
-            infiniteGrid
-            rotation={[Math.PI / 2, 0, 0]}
-          />
-        )}
         {children}
         <OrbitControls makeDefault target={centerVec.toArray()} enableDamping />
         <GizmoHelper alignment="bottom-right" margin={[72, 72]}>
@@ -98,11 +76,6 @@ export function CadCanvas({
     </div>
   );
 }
-
-// Rasterkonstante hier duplizieren, damit die Datei nicht auf den Store
-// zurückgreifen muss (der Server-Component-Baum importiert sie sonst
-// versehentlich mit).
-const SYSTEM_PITCH_MM = 21.09;
 
 const BUTTONS: readonly (readonly [ViewPreset, string])[] = [
   ["iso", "Iso"],
