@@ -109,18 +109,24 @@ COVER_MIN_FONT_SIZE_MM: float = 6.0
 COVER_MAX_FONT_SIZE_MM: float = 60.0
 COVER_MAX_TEXT_LENGTH: int = 24
 COVER_FONTS: tuple[str, ...] = (
-	"DejaVu Sans",
-	"DejaVu Serif",
-	"DejaVu Sans Mono",
-	"Liberation Sans",
-	"Liberation Serif",
-	"Liberation Mono",
-	"DejaVu Sans Condensed",
-	"DejaVu Serif Condensed",
-	"Liberation Sans Narrow",
-	"FreeSans",
-	"FreeSerif",
-	"FreeMono",
+	"Roboto Condensed",
+	"Barlow Condensed",
+	"Oswald",
+	"Rajdhani",
+	"Chakra Petch",
+	"Saira Condensed",
+	"Archivo Black",
+	"Bebas Neue",
+	"Anton",
+	"Russo One",
+	"Teko",
+	"Black Ops One",
+	"Audiowide",
+	"Orbitron",
+	"Michroma",
+	"Exo 2",
+	"Righteous",
+	"Arial",
 )
 
 # Toleranzen für Geometrietests

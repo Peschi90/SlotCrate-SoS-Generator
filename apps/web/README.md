@@ -41,3 +41,19 @@ Die 3D-Ansicht und Front-Draufsicht verwenden dieselbe an die Coverbreite
 angepasste Vorschaugröße; der STL-Export behält die gewählte Originalgröße.
 Die Vorschau spiegelt die X-/Y-Koordinaten der 3D-Szene gegenüber der
 SVG-Draufsicht korrekt.
+
+Die Webfonts werden über `next/font/google` beim Build lokal eingebettet.
+Für die CAD-API müssen dieselben Fontfamilien zusätzlich auf dem Linux-Server
+installiert und der Font-Cache aktualisiert werden:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y fonts-roboto fonts-urw-base35
+fc-cache -f -v
+fc-list | grep -E 'Roboto Condensed|Oswald|Arial'
+```
+
+Für die übrigen Google-Fonts aus der Cover-Auswahl müssen die jeweiligen
+statischen TTF-Dateien aus Google Fonts unter `/usr/local/share/fonts/slotcrate`
+abgelegt und anschließend mit `fc-cache -f -v` registriert werden. Variable
+Fontdateien werden für CadQuery nicht vorausgesetzt.

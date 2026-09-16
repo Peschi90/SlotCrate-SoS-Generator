@@ -59,18 +59,24 @@ export const SYSTEM = {
   coverMinFontSizeMm: 6,
   coverMaxFontSizeMm: 60,
   coverFonts: [
-    { value: "DejaVu Sans", label: "DejaVu Sans" },
-    { value: "DejaVu Serif", label: "DejaVu Serif" },
-    { value: "DejaVu Sans Mono", label: "DejaVu Sans Mono" },
-    { value: "Liberation Sans", label: "Liberation Sans" },
-    { value: "Liberation Serif", label: "Liberation Serif" },
-    { value: "Liberation Mono", label: "Liberation Mono" },
-    { value: "DejaVu Sans Condensed", label: "DejaVu Sans Condensed" },
-    { value: "DejaVu Serif Condensed", label: "DejaVu Serif Condensed" },
-    { value: "Liberation Sans Narrow", label: "Liberation Sans Narrow" },
-    { value: "FreeSans", label: "FreeSans" },
-    { value: "FreeSerif", label: "FreeSerif" },
-    { value: "FreeMono", label: "FreeMono" }
+    { value: "Roboto Condensed", label: "Roboto Condensed" },
+    { value: "Barlow Condensed", label: "Barlow Condensed" },
+    { value: "Oswald", label: "Oswald" },
+    { value: "Rajdhani", label: "Rajdhani" },
+    { value: "Chakra Petch", label: "Chakra Petch" },
+    { value: "Saira Condensed", label: "Saira Condensed" },
+    { value: "Archivo Black", label: "Archivo Black" },
+    { value: "Bebas Neue", label: "Bebas Neue" },
+    { value: "Anton", label: "Anton" },
+    { value: "Russo One", label: "Russo One" },
+    { value: "Teko", label: "Teko" },
+    { value: "Black Ops One", label: "Black Ops One" },
+    { value: "Audiowide", label: "Audiowide" },
+    { value: "Orbitron", label: "Orbitron" },
+    { value: "Michroma", label: "Michroma" },
+    { value: "Exo 2", label: "Exo 2" },
+    { value: "Righteous", label: "Righteous" },
+    { value: "Arial", label: "Arial" }
   ],
   coverVariantId: "sc-124-v2",
   coverMaxTextLength: 24,
@@ -84,24 +90,35 @@ export const SYSTEM = {
 
 export function previewFontFamily(fontName: string): string {
   switch (fontName) {
-    case "DejaVu Serif":
-    case "Liberation Serif":
-    case "DejaVu Serif Condensed":
-    case "FreeSerif":
-      return "Georgia, serif";
-    case "DejaVu Sans Mono":
-    case "Liberation Mono":
-    case "FreeMono":
-      return "ui-monospace, SFMono-Regular, Menlo, monospace";
-    case "Liberation Sans":
-    case "Liberation Sans Narrow":
-    case "FreeSans":
+    case "Arial":
       return "Arial, sans-serif";
-    case "DejaVu Sans":
-    case "DejaVu Sans Condensed":
+    case "Roboto Condensed": return "var(--font-roboto-condensed)";
+    case "Barlow Condensed": return "var(--font-barlow-condensed)";
+    case "Oswald": return "var(--font-oswald)";
+    case "Rajdhani": return "var(--font-rajdhani)";
+    case "Chakra Petch": return "var(--font-chakra-petch)";
+    case "Saira Condensed": return "var(--font-saira-condensed)";
+    case "Archivo Black": return "var(--font-archivo-black)";
+    case "Bebas Neue": return "var(--font-bebas-neue)";
+    case "Anton": return "var(--font-anton)";
+    case "Russo One": return "var(--font-russo-one)";
+    case "Teko": return "var(--font-teko)";
+    case "Black Ops One": return "var(--font-black-ops-one)";
+    case "Audiowide": return "var(--font-audiowide)";
+    case "Orbitron": return "var(--font-orbitron)";
+    case "Michroma": return "var(--font-michroma)";
+    case "Exo 2": return "var(--font-exo-2)";
+    case "Righteous": return "var(--font-righteous)";
     default:
-      return "Inter, sans-serif";
+      return `"${fontName}", sans-serif`;
   }
+}
+
+export function resolvePreviewFontFamily(fontName: string): string {
+  const family = previewFontFamily(fontName);
+  if (!family.startsWith("var(")) return family;
+  const variableName = family.slice(4, -1).trim();
+  return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim() || "sans-serif";
 }
 
 export type SystemConstants = typeof SYSTEM;
