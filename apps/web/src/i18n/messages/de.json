@@ -11,6 +11,7 @@
         "generator": "Einzelkasten",
         "planner": "Layout-Planer",
         "inlay": "Maintenance-Einschub",
+        "cover": "Cover-Gravur",
         "website": "SlotCrate Website",
         "menu": "Menü",
         "imprint": "Impressum",
@@ -33,6 +34,11 @@
             "title": "Maintenance-Modul Einschub",
             "description": "2-Ebenen Apothekerschrank-Einschub mit frei konfigurierbaren runden Aussparungen für Fläschchen und Gefäße.",
             "cta": "Einschub anpassen"
+        },
+        "cover": {
+            "title": "Slotcar-Modul Cover",
+            "description": "Text auf der glatten Vorderseite platzieren und als umlaufende 0,2-mm-Gravur exportieren.",
+            "cta": "Cover personalisieren"
         },
         "website": {
             "title": "Zur SlotCrate-Hauptseite",
@@ -252,6 +258,27 @@
             "overflowDetail": "Es konnten nur {placed} von {total} Gefäßen untergebracht werden.",
             "cancel": "Abbrechen",
             "apply": "Aussparungen auf Ebenen übernehmen"
+        }
+    },
+    "cover": {
+        "badge": "Slotcar-Modul Cover",
+        "title": "Cover-Gravur Generator",
+        "description": "Platziere deinen Text direkt auf der glatten Vorderseite. Um jeden Buchstaben entsteht eine 0,2 mm tiefe und 0,8 mm breite Vertiefung.",
+        "textLabel": "Text",
+        "textHint": "Bis zu {count} Zeichen",
+        "fontSize": "Schriftgröße",
+        "positionX": "Position X",
+        "positionY": "Position Y",
+        "rotation": "Drehung",
+        "coverSize": "Cover-Maß",
+        "groove": "Gravur: Tiefe / Breite",
+        "dragHint": "Text ziehen · Shift + ziehen dreht",
+        "download": "Cover-STL herunterladen",
+        "generating": "Erzeuge Cover-STL …",
+        "downloadError": "Fehler beim Erzeugen des Covers.",
+        "meta": {
+            "title": "Slotcar-Modul Cover Generator | SlotCrate SoS",
+            "description": "Personalisiere das SlotCrate Slotcar-Modul Cover mit einer präzisen Textgravur."
         }
     },
     "admin": {

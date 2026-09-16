@@ -118,6 +118,26 @@ def inlay_cache_key(
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+def cover_cache_key(
+    text: str,
+    font_size_mm: float,
+    center_x_mm: float,
+    center_y_mm: float,
+    rotation_deg: float,
+    settings_version: int,
+    stl_tessellation_linear_mm: float,
+    stl_tessellation_angular_rad: float,
+    geometry_version: str = GEOMETRY_VERSION,
+) -> str:
+    payload = (
+        f"cover|{text}|{round(font_size_mm, 4)}|{round(center_x_mm, 4)}|"
+        f"{round(center_y_mm, 4)}|{round(rotation_deg, 4)}|{settings_version}|"
+        f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
+        f"{geometry_version}"
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 class StlCache:
     def __init__(self, root: Path) -> None:
         self.root = root

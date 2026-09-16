@@ -20,12 +20,14 @@ from slotcrate.geometry.constants import (
 )
 from slotcrate.geometry.reference import load_normalized_plate_from_step_file
 from slotcrate.geometry.inlay import stl_bytes_for_inlay
+from slotcrate.geometry.cover import stl_bytes_for_cover
 
-from .cache import StlCache, cache_key, plate_cache_key, inlay_cache_key
+from .cache import StlCache, cache_key, cover_cache_key, plate_cache_key, inlay_cache_key
 from .exporter import build_layout_zip, stl_bytes_for_box, stl_bytes_for_shape
 from .schemas import (
     ActiveSettingsResponse,
     BoxRequest,
+    CoverRequest,
     InlayRequest,
     LayoutGrid,
     LayoutRequest,
@@ -262,6 +264,48 @@ def create_app() -> FastAPI:
             media_type="model/stl",
             headers={
                 "Content-Disposition": f'attachment; filename="{filename}"',
+                "X-SlotCrate-Cache-Key": key,
+            },
+        )
+
+    @app.post(
+        "/v1/cover/stl",
+        dependencies=[Depends(require_bearer)],
+        responses={200: {"content": {"model/stl": {}}}},
+    )
+    def cover_stl(payload: CoverRequest, request: Request) -> Response:
+        rate_limiter.check(
+            "cover_stl", client_key(request), settings.rate_limit_cover_stl_per_minute
+        )
+        key = cover_cache_key(
+            payload.text,
+            payload.fontSizeMm,
+            payload.centerXMm,
+            payload.centerYMm,
+            payload.rotationDeg,
+            payload.settingsVersion,
+            payload.stlTessellationLinearMm,
+            payload.stlTessellationAngularRad,
+        )
+        cached = cache.get(key)
+        if cached is None:
+            data = stl_bytes_for_cover(
+                text=payload.text,
+                font_size_mm=payload.fontSizeMm,
+                center_x_mm=payload.centerXMm,
+                center_y_mm=payload.centerYMm,
+                rotation_deg=payload.rotationDeg,
+                stl_tessellation_linear_mm=payload.stlTessellationLinearMm,
+                stl_tessellation_angular_rad=payload.stlTessellationAngularRad,
+            )
+            cache.store_bytes(key, data)
+        else:
+            data = cached.read_bytes()
+        return Response(
+            content=data,
+            media_type="model/stl",
+            headers={
+                "Content-Disposition": 'attachment; filename="SlotCrate_SM_Cover.stl"',
                 "X-SlotCrate-Cache-Key": key,
             },
         )

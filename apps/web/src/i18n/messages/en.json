@@ -11,6 +11,7 @@
         "generator": "Single Box",
         "planner": "Layout Planner",
         "inlay": "Maintenance Inlay",
+        "cover": "Cover Engraving",
         "website": "SlotCrate Website",
         "menu": "Menu",
         "imprint": "Imprint",
@@ -33,6 +34,11 @@
             "title": "Maintenance Module Inlay",
             "description": "2-tier apothecary rack insert with fully customizable round cutouts for bottles, vials, and jars.",
             "cta": "Customize Inlay"
+        },
+        "cover": {
+            "title": "Slotcar Module Cover",
+            "description": "Place text on the smooth front and export it as a surrounding 0.2 mm engraving.",
+            "cta": "Customize Cover"
         },
         "website": {
             "title": "Go to the SlotCrate main site",
@@ -252,6 +258,27 @@
             "overflowDetail": "Only {placed} of {total} bottles could be placed.",
             "cancel": "Cancel",
             "apply": "Apply Cutouts to Levels"
+        }
+    },
+    "cover": {
+        "badge": "Slotcar Module Cover",
+        "title": "Cover Engraving Generator",
+        "description": "Place your text directly on the smooth front. Each letter receives a 0.2 mm deep, 0.8 mm wide recessed outline.",
+        "textLabel": "Text",
+        "textHint": "Up to {count} characters",
+        "fontSize": "Font size",
+        "positionX": "Position X",
+        "positionY": "Position Y",
+        "rotation": "Rotation",
+        "coverSize": "Cover size",
+        "groove": "Engraving: depth / width",
+        "dragHint": "Drag text · Shift + drag rotates",
+        "download": "Download cover STL",
+        "generating": "Generating cover STL …",
+        "downloadError": "Failed to generate the cover.",
+        "meta": {
+            "title": "Slotcar Module Cover Generator | SlotCrate SoS",
+            "description": "Personalize the SlotCrate Slotcar Module cover with a precise text engraving."
         }
     },
     "admin": {

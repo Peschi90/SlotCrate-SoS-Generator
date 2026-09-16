@@ -233,3 +233,19 @@ export const inlayRequestSchema = z
 
 export type InlayRequest = z.infer<typeof inlayRequestSchema>;
 
+export const coverRequestSchema = z.object({
+  text: z.string().min(1).max(SYSTEM.coverMaxTextLength).refine(
+    (value) => value === value.trim() && [...value].every((character) => character >= " " && character !== "\u007f"),
+    "Text darf keine äußeren Leerzeichen oder Steuerzeichen enthalten"
+  ),
+  fontSizeMm: z.number().min(SYSTEM.coverMinFontSizeMm).max(SYSTEM.coverMaxFontSizeMm).default(18),
+  centerXMm: z.number().min(SYSTEM.coverEdgeMarginMm).max(SYSTEM.coverWidthMm - SYSTEM.coverEdgeMarginMm).default(SYSTEM.coverWidthMm / 2),
+  centerYMm: z.number().min(SYSTEM.coverEdgeMarginMm).max(SYSTEM.coverDepthMm - SYSTEM.coverEdgeMarginMm).default(SYSTEM.coverDepthMm / 2),
+  rotationDeg: z.number().min(-180).max(180).default(0),
+  settingsVersion: z.number().int().min(1).default(1),
+  stlTessellationLinearMm,
+  stlTessellationAngularRad
+});
+
+export type CoverRequest = z.infer<typeof coverRequestSchema>;
+

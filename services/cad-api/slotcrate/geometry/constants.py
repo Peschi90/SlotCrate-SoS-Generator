@@ -96,6 +96,18 @@ INLAY_MAX_CUTOUTS_PER_LEVEL: int = 50
 INLAY_LEVEL1_SHELF_Z_MM: float = 28.60
 INLAY_LEVEL2_SHELF_Z_MM: float = 128.90
 
+# Slotcar-Modul Cover (SC_SM_Cover)
+COVER_STEP_FILE: str = "SC_SM_Cover.step"
+COVER_WIDTH_MM: float = 116.0
+COVER_DEPTH_MM: float = 216.0
+COVER_HEIGHT_MM: float = 3.0
+COVER_GROOVE_DEPTH_MM: float = 0.2
+COVER_GROOVE_WIDTH_MM: float = 0.8
+COVER_EDGE_MARGIN_MM: float = 8.0
+COVER_MIN_FONT_SIZE_MM: float = 6.0
+COVER_MAX_FONT_SIZE_MM: float = 30.0
+COVER_MAX_TEXT_LENGTH: int = 24
+
 # Toleranzen für Geometrietests
 BBOX_TOLERANCE_MM: float = 0.02
 VOLUME_TOLERANCE_PCT: float = 0.5

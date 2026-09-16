@@ -34,6 +34,9 @@ export default async function HomePage() {
                 {t("inDevelopmentBadge")}
               </span>
             </Link>
+            <Link className="slotcrate-button-secondary" href="/cover">
+              {t("home.cover.cta")}
+            </Link>
             <a
               href={slotcrateHref}
               target="_blank"
@@ -51,6 +54,14 @@ export default async function HomePage() {
             <p className="text-white/70 text-sm mb-4">{t("home.generator.description")}</p>
             <Link className="slotcrate-inline-link" href="/generator">
               {t("home.generator.cta")}
+            </Link>
+          </article>
+
+          <article className="slotcrate-card">
+            <h2 className="text-lg font-semibold mb-1">{t("home.cover.title")}</h2>
+            <p className="text-white/70 text-sm mb-4">{t("home.cover.description")}</p>
+            <Link className="slotcrate-inline-link" href="/cover">
+              {t("home.cover.cta")}
             </Link>
           </article>
 

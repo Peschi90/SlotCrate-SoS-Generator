@@ -20,3 +20,8 @@ Umgebungsvariablen (siehe `.env.example`):
 
 Der interne Token wird niemals ins Bundle geliefert; alle CAD-Aufrufe
 laufen über `/app/api/*`-Route-Handler.
+
+Der Cover-Generator ist unter `/cover` erreichbar. Die Vorschau verwendet
+die Cover-Abmessungen und übergibt Text, Position, Drehung und Schriftgröße
+an `/api/cover/stl`; die verbindliche BREP-Gravur wird serverseitig aus
+`reference/SC_SM_Cover.step` erzeugt.

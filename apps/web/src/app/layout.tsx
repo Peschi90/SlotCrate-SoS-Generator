@@ -117,6 +117,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                           {t("inDevelopmentBadge")}
                         </span>
                       </Link>
+                      <Link href="/cover" className="slotcrate-navlink text-center">
+                        {t("nav.cover")}
+                      </Link>
                       <a
                         href={slotcrateHref}
                         target="_blank"
@@ -145,6 +148,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
                     {t("inDevelopmentBadge")}
                   </span>
+                </Link>
+                <Link href="/cover" className="slotcrate-navlink">
+                  {t("nav.cover")}
                 </Link>
                 <a
                   href={slotcrateHref}

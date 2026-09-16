@@ -177,6 +177,34 @@ def test_inlay_stl_rejects_violating_hole_spacing(client: TestClient) -> None:
     assert r.status_code == 422
 
 
+def test_cover_stl_endpoint_returns_binary_and_hits_cache(client: TestClient) -> None:
+    payload = {
+        "text": "SlotCrate",
+        "fontSizeMm": 18.0,
+        "centerXMm": 58.0,
+        "centerYMm": 108.0,
+        "rotationDeg": 10.0,
+    }
+    r1 = client.post("/v1/cover/stl", json=payload)
+    assert r1.status_code == 200, r1.text
+    assert r1.headers["content-type"] == "model/stl"
+    assert len(r1.content) > 1024
+    assert "SlotCrate_SM_Cover.stl" in r1.headers["content-disposition"]
+
+    r2 = client.post("/v1/cover/stl", json=payload)
+    assert r2.status_code == 200
+    assert r2.content == r1.content
+    assert r2.headers["x-slotcrate-cache-key"] == r1.headers["x-slotcrate-cache-key"]
+
+
+def test_cover_stl_rejects_invalid_text_and_position(client: TestClient) -> None:
+    assert client.post("/v1/cover/stl", json={"text": ""}).status_code == 422
+    assert client.post("/v1/cover/stl", json={"text": " Name "}).status_code == 422
+    assert client.post(
+        "/v1/cover/stl", json={"text": "Name", "centerXMm": 2.0}
+    ).status_code == 422
+
+
 def test_layout_zip_rejects_out_of_grid(client: TestClient) -> None:
     boxes = [
         {"id": str(uuid4()), "x": 9, "y": 0, "widthCells": 2, "depthCells": 1},

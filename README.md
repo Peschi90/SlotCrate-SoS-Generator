@@ -77,6 +77,11 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
     Frei konfigurierbare zylindrische Aussparungen für Gefäße und Flaschen
     auf Ebene 1 (unten) und Ebene 2 (oben) mit 2D-Regalplan-Editor,
     Drag & Drop, Presets, 3D-Live-Vorschau und direktem STL-Download (`/api/inlay/stl`).
+  - **Slotcar-Modul Cover-Generator** (`/cover`): Text auf der glatten
+    Vorderseite des `SC_SM_Cover.step` platzieren, per 3D-Drag verschieben
+    oder mit Shift drehen und als 0,2 mm tiefe, 0,8 mm breite Konturgravur
+    exportieren (`/api/cover/stl`). Die runden Vertiefungen bleiben auf der
+    Rückseite des Referenzteils unverändert.
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,
@@ -112,6 +117,7 @@ apps/web/                Next.js 14 (App Router)
     api/layout/zip/      Proxy zur CAD-API (Layout-ZIP)
     api/plate/stl/       Proxy zur CAD-API (Rasterplatte)
     api/inlay/stl/       Proxy zur CAD-API (Maintenance-Inlay)
+    api/cover/stl/       Proxy zur CAD-API (Cover-Gravur)
     api/auth/{login,logout,csrf}/
     api/admin/{settings,analytics}/
     api/analytics/event/
@@ -119,8 +125,10 @@ apps/web/                Next.js 14 (App Router)
     generator/           Einzelkasten-UI
     planner/             Layout-Planer-UI
     inlay/               Maintenance-Einschub-UI
+    cover/               Cover-Gravur-UI
   src/components/        R3F/UI: BoxMesh, BoxPreview, CadCanvas,
                          InlayMesh, Inlay3DPreview, InlayShelfEditor,
+                         Cover3DPreview,
                          Layout3DView, LayoutGrid, LanguageSwitcher
   src/i18n/              request.ts, actions.ts, messages/{de,en}.json
   src/lib/               db, auth, session, csrf, rate-limit,
@@ -132,7 +140,8 @@ apps/web/                Next.js 14 (App Router)
   prisma/migrations/     versionierte Prisma-Migrationen
 services/cad-api/
   app/main.py            FastAPI-App: /health, /v1/settings/active,
-                         /v1/box/stl, /v1/layout/zip, /v1/plate/stl, /v1/inlay/stl
+                         /v1/box/stl, /v1/layout/zip, /v1/plate/stl, /v1/inlay/stl,
+                         /v1/cover/stl
   app/{cache,exporter,schemas,security,settings}.py
   slotcrate/geometry/    Reine Geometrie-Bibliothek (BREP → STL/ZIP)
     constants.py         GRID_PITCH_MM=21.09, GRID=10x10, INLAY_*, GEOMETRY_VERSION

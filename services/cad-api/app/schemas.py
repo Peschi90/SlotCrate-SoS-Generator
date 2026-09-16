@@ -18,6 +18,12 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from slotcrate.geometry.constants import (
     DEFAULT_BOX_HEIGHT_MM,
+    COVER_DEPTH_MM,
+    COVER_EDGE_MARGIN_MM,
+    COVER_MAX_FONT_SIZE_MM,
+    COVER_MAX_TEXT_LENGTH,
+    COVER_MIN_FONT_SIZE_MM,
+    COVER_WIDTH_MM,
     GEOMETRY_VERSION,
     GRID_COLUMNS,
     GRID_PITCH_MM,
@@ -372,5 +378,36 @@ class InlayRequest(BaseModel):
                         f"Mindestabstand von {INLAY_MIN_HOLE_SPACING_MM} mm"
                     )
 
+        return self
+
+
+class CoverRequest(BaseModel):
+    """Payload für die Textpersonalisierung des Slotcar-Modul Covers."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    text: Annotated[str, Field(min_length=1, max_length=COVER_MAX_TEXT_LENGTH)]
+    fontSizeMm: Annotated[
+        float, Field(ge=COVER_MIN_FONT_SIZE_MM, le=COVER_MAX_FONT_SIZE_MM)
+    ] = 18.0
+    centerXMm: Annotated[
+        float, Field(ge=COVER_EDGE_MARGIN_MM, le=COVER_WIDTH_MM - COVER_EDGE_MARGIN_MM)
+    ] = COVER_WIDTH_MM / 2.0
+    centerYMm: Annotated[
+        float, Field(ge=COVER_EDGE_MARGIN_MM, le=COVER_DEPTH_MM - COVER_EDGE_MARGIN_MM)
+    ] = COVER_DEPTH_MM / 2.0
+    rotationDeg: Annotated[float, Field(ge=-180.0, le=180.0)] = 0.0
+    settingsVersion: Annotated[int, Field(ge=1)] = 1
+    stlTessellationLinearMm: Annotated[
+        float, Field(ge=MIN_STL_LINEAR_MM, le=MAX_STL_LINEAR_MM)
+    ] = 0.05
+    stlTessellationAngularRad: Annotated[
+        float, Field(ge=MIN_STL_ANGULAR_RAD, le=MAX_STL_ANGULAR_RAD)
+    ] = 0.5
+
+    @model_validator(mode="after")
+    def _validate_text(self) -> "CoverRequest":
+        if self.text != self.text.strip() or not self.text.isprintable():
+            raise ValueError("text darf keine äußeren Leerzeichen oder Steuerzeichen enthalten")
         return self
 

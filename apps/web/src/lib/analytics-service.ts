@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "./db";
 import { sessionCookieName } from "./session";
 
-export type AnalyticsGenerator = "single-box" | "layout-planner" | "maintenance-inlay";
+export type AnalyticsGenerator = "single-box" | "layout-planner" | "maintenance-inlay" | "cover-generator";
 export type AnalyticsEventType =
   | "generator.open"
   | "planner.open"
@@ -21,6 +21,8 @@ export type AnalyticsEventType =
   | "plate.download.failed"
   | "inlay.download"
   | "inlay.download.failed"
+  | "cover.download"
+  | "cover.download.failed"
   | "layout.download"
   | "layout.download.failed";
 
