@@ -44,24 +44,22 @@ const rajdhani = Rajdhani({
   variable: "--font-rajdhani"
 });
 
-const coverFonts = [
-  Roboto_Condensed({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-roboto-condensed" }),
-  Barlow_Condensed({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-barlow-condensed" }),
-  Oswald({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-oswald" }),
-  Chakra_Petch({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-chakra-petch" }),
-  Saira_Condensed({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-saira-condensed" }),
-  Archivo_Black({ weight: "400", subsets: ["latin"], variable: "--font-archivo-black" }),
-  Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas-neue" }),
-  Anton({ weight: "400", subsets: ["latin"], variable: "--font-anton" }),
-  Russo_One({ weight: "400", subsets: ["latin"], variable: "--font-russo-one" }),
-  Teko({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-teko" }),
-  Black_Ops_One({ weight: "400", subsets: ["latin"], variable: "--font-black-ops-one" }),
-  Audiowide({ weight: "400", subsets: ["latin"], variable: "--font-audiowide" }),
-  Orbitron({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-orbitron" }),
-  Michroma({ weight: "400", subsets: ["latin"], variable: "--font-michroma" }),
-  Exo_2({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-exo-2" }),
-  Righteous({ weight: "400", subsets: ["latin"], variable: "--font-righteous" })
-];
+const robotoCondensed = Roboto_Condensed({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-roboto-condensed" });
+const barlowCondensed = Barlow_Condensed({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-barlow-condensed" });
+const oswald = Oswald({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-oswald" });
+const chakraPetch = Chakra_Petch({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-chakra-petch" });
+const sairaCondensed = Saira_Condensed({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-saira-condensed" });
+const archivoBlack = Archivo_Black({ weight: "400", subsets: ["latin"], variable: "--font-archivo-black" });
+const bebasNeue = Bebas_Neue({ weight: "400", subsets: ["latin"], variable: "--font-bebas-neue" });
+const anton = Anton({ weight: "400", subsets: ["latin"], variable: "--font-anton" });
+const russoOne = Russo_One({ weight: "400", subsets: ["latin"], variable: "--font-russo-one" });
+const teko = Teko({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-teko" });
+const blackOpsOne = Black_Ops_One({ weight: "400", subsets: ["latin"], variable: "--font-black-ops-one" });
+const audiowide = Audiowide({ weight: "400", subsets: ["latin"], variable: "--font-audiowide" });
+const orbitron = Orbitron({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-orbitron" });
+const michroma = Michroma({ weight: "400", subsets: ["latin"], variable: "--font-michroma" });
+const exo2 = Exo_2({ weight: ["400", "700"], subsets: ["latin"], variable: "--font-exo-2" });
+const righteous = Righteous({ weight: "400", subsets: ["latin"], variable: "--font-righteous" });
 
 export const dynamic = "force-dynamic";
 
@@ -114,7 +112,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const t = await getTranslations();
   const slotcrateHref = locale === "en" ? "https://slotcrate.i3ull3t.de/en/" : "https://slotcrate.i3ull3t.de/";
   return (
-    <html lang={locale} className={`${inter.variable} ${rajdhani.variable} ${coverFonts.map((font) => font.variable).join(" ")}`}>
+    <html lang={locale} className={`${inter.variable} ${rajdhani.variable} ${robotoCondensed.variable} ${barlowCondensed.variable} ${oswald.variable} ${chakraPetch.variable} ${sairaCondensed.variable} ${archivoBlack.variable} ${bebasNeue.variable} ${anton.variable} ${russoOne.variable} ${teko.variable} ${blackOpsOne.variable} ${audiowide.variable} ${orbitron.variable} ${michroma.variable} ${exo2.variable} ${righteous.variable}`}>
       <body className="slotcrate-theme">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <div className="slotcrate-bg" aria-hidden="true" />
