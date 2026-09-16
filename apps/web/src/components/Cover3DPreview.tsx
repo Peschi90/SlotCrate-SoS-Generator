@@ -1,7 +1,6 @@
 "use client";
 
-import { Text } from "@react-three/drei";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { CadCanvas } from "./CadCanvas";
 import { SYSTEM } from "@/lib/system";
@@ -36,12 +35,9 @@ function CoverScene({
 }: Props) {
   const [dragging, setDragging] = useState(false);
   const start = useRef({ x: 0, y: 0, centerX: 0, centerY: 0, rotation: 0, rotate: false });
+  const textTexture = useCoverTextTexture(text || "Text", fontSizeMm);
   const coverMaterial = useMemo(
     () => new THREE.MeshStandardMaterial({ color: 0x3d4450, roughness: 0.42, metalness: 0.28 }),
-    []
-  );
-  const textMaterial = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: 0x151a21, roughness: 0.7, metalness: 0.05 }),
     []
   );
 
@@ -87,32 +83,64 @@ function CoverScene({
         }}
         onPointerOut={() => setDragging(false)}
       >
-        <Text
-          fontSize={fontSizeMm}
-          anchorX="center"
-          anchorY="middle"
-          color="#121820"
-          material={textMaterial}
-          maxWidth={SYSTEM.coverWidthMm - SYSTEM.coverEdgeMarginMm * 2}
-          overflowWrap="break-word"
-        >
-          {text || "Text"}
-        </Text>
-        <Text
-          fontSize={fontSizeMm}
-          anchorX="center"
-          anchorY="middle"
-          color="#1a2029"
-          outlineColor="#f0b35b"
-          outlineWidth={SYSTEM.coverGrooveWidthMm}
-          outlineOpacity={0.9}
-          maxWidth={SYSTEM.coverWidthMm - SYSTEM.coverEdgeMarginMm * 2}
-          overflowWrap="break-word"
-          position={[0, 0, -0.02]}
-        >
-          {text || "Text"}
-        </Text>
+        {textTexture && (
+          <mesh position={[0, 0, 0.01]}>
+            <planeGeometry args={[textTexture.widthMm, textTexture.heightMm]} />
+            <meshStandardMaterial
+              map={textTexture.texture}
+              transparent
+              roughness={0.7}
+              metalness={0.05}
+            />
+          </mesh>
+        )}
       </group>
     </group>
   );
+}
+
+function useCoverTextTexture(text: string, fontSizeMm: number) {
+  const [result, setResult] = useState<{
+    texture: THREE.CanvasTexture;
+    widthMm: number;
+    heightMm: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return;
+
+    const fontPx = 160;
+    const paddingPx = 32;
+    context.font = `600 ${fontPx}px Rajdhani, sans-serif`;
+    const measuredWidth = Math.ceil(context.measureText(text).width);
+    canvas.width = Math.max(256, measuredWidth + paddingPx * 2);
+    canvas.height = 240;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = `600 ${fontPx}px Rajdhani, sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.lineJoin = "round";
+    context.lineWidth = Math.max(5, fontPx * (SYSTEM.coverGrooveWidthMm / (fontSizeMm * 2)));
+    context.strokeStyle = "#f0b35b";
+    context.strokeText(text, canvas.width / 2, canvas.height / 2);
+    context.fillStyle = "#121820";
+    context.fillText(text, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 4;
+    const mmPerPixel = fontSizeMm / fontPx;
+    const maxWidthMm = SYSTEM.coverWidthMm - SYSTEM.coverEdgeMarginMm * 2;
+    const naturalWidthMm = canvas.width * mmPerPixel;
+    const widthMm = Math.min(maxWidthMm, naturalWidthMm);
+    const heightMm = canvas.height * mmPerPixel * (widthMm / naturalWidthMm);
+    setResult({ texture, widthMm, heightMm });
+
+    return () => texture.dispose();
+  }, [fontSizeMm, text]);
+
+  return result;
 }

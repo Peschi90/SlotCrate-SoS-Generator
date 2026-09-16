@@ -17,10 +17,7 @@ const csp = [
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
     "style-src 'self' 'unsafe-inline'",
-    // troika-three-text (used by drei/Text) initializes its worker via
-    // importScripts(blob:...). Chrome evaluates that worker module against
-    // script-src as well as worker-src.
-    `script-src 'self' 'unsafe-inline' blob:${isProd ? "" : " 'unsafe-eval'"}`,
+    `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
     `connect-src 'self'${isProd ? "" : " ws: http://localhost:*"}`,
     "worker-src 'self' blob:",
     "child-src 'self' blob:",

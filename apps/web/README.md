@@ -26,6 +26,6 @@ die Cover-Abmessungen und übergibt Text, Position, Drehung und Schriftgröße
 an `/api/cover/stl`; die verbindliche BREP-Gravur wird serverseitig aus
 `reference/SC_SM_Cover.step` erzeugt.
 
-Die CSP erlaubt zusätzlich `blob:` in `script-src`, weil `@react-three/drei`
-beziehungsweise `troika-three-text` den Text-Worker über `importScripts` aus
-einer Blob-URL initialisiert. Netzwerkquellen bleiben auf `'self'` begrenzt.
+Die Cover-Vorschau rendert den Text als lokale Canvas-Textur und benötigt
+keinen externen Font-Resolver oder CDN-Zugriff. Netzwerkquellen bleiben auf
+`'self'` begrenzt.
