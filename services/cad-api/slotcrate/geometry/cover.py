@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from functools import lru_cache
+import shutil
+import subprocess
 
 import cadquery as cq
 
@@ -15,6 +17,26 @@ from slotcrate.geometry.export import shape_to_stl_bytes
 from slotcrate.geometry.reference import REFERENCE_DIR, _load_step, tight_bbox
 
 _CUTTER_OVERLAP_MM = 0.05
+
+
+def _require_font_available(font_name: str) -> None:
+    """Prevent fontconfig from silently substituting another family."""
+    fc_match = shutil.which("fc-match")
+    if not fc_match:
+        return
+    result = subprocess.run(
+        [fc_match, "-f", "%{family}", font_name],
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=2,
+    )
+    families = {entry.strip() for entry in result.stdout.split(",") if entry.strip()}
+    if font_name not in families:
+        raise ValueError(
+            f"cover font '{font_name}' is not installed on the CAD server; "
+            "install the selected TTF/OTF font and run fc-cache"
+        )
 
 
 @lru_cache(maxsize=1)
@@ -71,20 +93,28 @@ def build_cover_shape(
 
     if font_name not in COVER_FONTS:
         raise ValueError(f"unsupported cover font: {font_name}")
+    _require_font_available(font_name)
 
     inner = _text_solid(
         text, font_size_mm, center_x_mm, center_y_mm, rotation_deg, font_name, cutter_height
     )
     bottom_wires = inner.faces("<Z").wires().vals()
-    outer = (
-        cq.Workplane("XY")
-        .newObject(bottom_wires)
-        .toPending()
-        .offset2D(COVER_GROOVE_WIDTH_MM)
-        .extrude(cutter_height, combine=False)
-    )
-    groove = outer.cut(inner)
-    return base.cut(*groove.solids().vals())
+    groove_solids: list[cq.Solid] = []
+    for wire in bottom_wires:
+        offset = (
+            cq.Workplane("XY")
+            .newObject([wire])
+            .toPending()
+            .offset2D(COVER_GROOVE_WIDTH_MM)
+            .extrude(cutter_height, combine=False)
+        )
+        groove_solids.extend(offset.solids().vals())
+
+    grooves = [
+        cq.Workplane("XY").newObject([groove]).cut(inner).solids().vals()
+        for groove in groove_solids
+    ]
+    return base.cut(*(solid for group in grooves for solid in group))
 
 
 def stl_bytes_for_cover(

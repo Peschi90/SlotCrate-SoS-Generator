@@ -56,4 +56,18 @@ fc-list | grep -E 'Roboto Condensed|Oswald|Arial'
 Für die übrigen Google-Fonts aus der Cover-Auswahl müssen die jeweiligen
 statischen TTF-Dateien aus Google Fonts unter `/usr/local/share/fonts/slotcrate`
 abgelegt und anschließend mit `fc-cache -f -v` registriert werden. Variable
-Fontdateien werden für CadQuery nicht vorausgesetzt.
+Fontdateien werden für CadQuery nicht vorausgesetzt. Der CAD-Service lehnt
+eine nicht installierte Familie ab, damit nicht unbemerkt eine Ersatzschrift
+in die STL gelangt.
+
+Die Dateien können reproduzierbar mit `scripts/download-cover-fonts.sh`
+(Linux) beziehungsweise `scripts/download-cover-fonts.ps1` (Windows) aus dem
+offiziellen Google-Fonts-Repository geladen werden. Danach für Linux:
+
+```bash
+sudo cp services/cad-api/fonts/*.ttf /usr/local/share/fonts/slotcrate/
+sudo fc-cache -f -v
+```
+
+Arial wird nicht automatisch heruntergeladen, da die Microsoft-Schrift separat
+lizenziert ist und als eigene Fontdatei bereitgestellt werden muss.

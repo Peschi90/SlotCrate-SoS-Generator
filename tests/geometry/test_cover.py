@@ -30,14 +30,14 @@ def test_cover_text_groove_removes_material_without_changing_outer_size() -> Non
 
 
 def test_cover_stl_export() -> None:
-    data = stl_bytes_for_cover("SOS", 16.0, 58.0, 108.0)
+    data = stl_bytes_for_cover("SOS", 16.0, 58.0, 108.0, font_name="Roboto Condensed")
     assert len(data) > 1000
     assert data.startswith(b"solid") or len(data) >= 84
 
 
 def test_cover_inner_letter_contours_and_font_choice() -> None:
     base = load_cover_base()
-    engraved = build_cover_shape("Open", 24.0, 58.0, 108.0, font_name="DejaVu Serif")
+    engraved = build_cover_shape("OeR", 24.0, 58.0, 108.0, font_name="Roboto Condensed")
 
     assert volume_mm3(engraved) < volume_mm3(base)
     assert len(engraved.Solids()) == 1
