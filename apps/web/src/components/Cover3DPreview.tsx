@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { CadCanvas } from "./CadCanvas";
-import { SYSTEM } from "@/lib/system";
+import { previewFontFamily, SYSTEM } from "@/lib/system";
 
 interface Props {
   text: string;
@@ -148,13 +148,13 @@ function useCoverTextTexture(text: string, fontSizeMm: number, fontName: string)
 
     const fontPx = 160;
     const paddingPx = 32;
-    context.font = `600 ${fontPx}px "${fontName}", sans-serif`;
+    context.font = `600 ${fontPx}px ${previewFontFamily(fontName)}`;
     const measuredWidth = Math.ceil(context.measureText(text).width);
     canvas.width = Math.max(256, measuredWidth + paddingPx * 2);
     canvas.height = 240;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.font = `600 ${fontPx}px "${fontName}", sans-serif`;
+    context.font = `600 ${fontPx}px ${previewFontFamily(fontName)}`;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.lineJoin = "round";

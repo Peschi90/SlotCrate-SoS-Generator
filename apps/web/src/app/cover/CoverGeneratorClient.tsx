@@ -5,9 +5,18 @@ import { useTranslations } from "next-intl";
 import { Cover3DPreview } from "@/components/Cover3DPreview";
 import { CoverFrontEditor } from "@/components/CoverFrontEditor";
 import { SYSTEM } from "@/lib/system";
+import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 
-export function CoverGeneratorClient() {
+type SuitcaseVariant = GeneratorSettingsPayload["suitcaseVariants"][number];
+
+interface Props {
+  suitcaseVariants?: SuitcaseVariant[];
+  supportedVariantId: string;
+}
+
+export function CoverGeneratorClient({ suitcaseVariants, supportedVariantId }: Props) {
   const t = useTranslations("cover");
+  const supportedVariant = suitcaseVariants?.find((variant) => variant.id === supportedVariantId);
   const [text, setText] = useState("SlotCrate");
   const [fontName, setFontName] = useState("DejaVu Sans");
   const [fontSizeMm, setFontSizeMm] = useState(18);
@@ -36,7 +45,7 @@ export function CoverGeneratorClient() {
       const response = await fetch("/api/cover/stl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, fontName, fontSizeMm, centerXMm, centerYMm, rotationDeg })
+        body: JSON.stringify({ coverVariantId: supportedVariantId, text, fontName, fontSizeMm, centerXMm, centerYMm, rotationDeg })
       });
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
@@ -110,6 +119,14 @@ export function CoverGeneratorClient() {
         </div>
 
         <section className="lg:col-span-5 rounded-2xl border border-white/10 bg-black/30 p-5 space-y-5">
+          <div>
+            <label htmlFor="cover-variant" className="block text-sm font-semibold text-white mb-2">{t("variant")}</label>
+            <select id="cover-variant" value={supportedVariantId} disabled className="slotcrate-select w-full text-sm py-2.5 px-3 rounded-xl border border-white/20 bg-black/60 text-white disabled:opacity-80">
+              <option value={supportedVariantId}>{supportedVariant?.label ?? t("variantDefault")}</option>
+            </select>
+            <p className="mt-1 text-xs text-white/50">{t("variantHint")}</p>
+          </div>
+
           <div>
             <label htmlFor="cover-text" className="block text-sm font-semibold text-white mb-2">{t("textLabel")}</label>
             <input

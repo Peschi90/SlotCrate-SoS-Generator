@@ -279,6 +279,7 @@ def create_app() -> FastAPI:
         )
         key = cover_cache_key(
             payload.text,
+            payload.coverVariantId,
             payload.fontName,
             payload.fontSizeMm,
             payload.centerXMm,

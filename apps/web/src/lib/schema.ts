@@ -234,6 +234,7 @@ export const inlayRequestSchema = z
 export type InlayRequest = z.infer<typeof inlayRequestSchema>;
 
 export const coverRequestSchema = z.object({
+  coverVariantId: z.literal(SYSTEM.coverVariantId).default(SYSTEM.coverVariantId),
   text: z.string().min(1).max(SYSTEM.coverMaxTextLength).refine(
     (value) => value === value.trim() && [...value].every((character) => character >= " " && character !== "\u007f"),
     "Text darf keine äußeren Leerzeichen oder Steuerzeichen enthalten"

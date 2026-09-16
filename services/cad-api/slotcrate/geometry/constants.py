@@ -98,6 +98,7 @@ INLAY_LEVEL2_SHELF_Z_MM: float = 128.90
 
 # Slotcar-Modul Cover (SC_SM_Cover)
 COVER_STEP_FILE: str = "SC_SM_Cover.step"
+COVER_VARIANT_ID: str = "sc-124-v2"
 COVER_WIDTH_MM: float = 116.0
 COVER_DEPTH_MM: float = 216.0
 COVER_HEIGHT_MM: float = 3.0

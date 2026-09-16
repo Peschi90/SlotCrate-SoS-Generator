@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { SYSTEM } from "@/lib/system";
+import { previewFontFamily, SYSTEM } from "@/lib/system";
 
 interface Props {
   text: string;
@@ -95,7 +95,7 @@ export function CoverFrontEditor(props: Props) {
               y="0"
               textAnchor="middle"
               dominantBaseline="middle"
-              fontFamily={`"${props.fontName}", sans-serif`}
+              fontFamily={previewFontFamily(props.fontName)}
               fontWeight="700"
               fontSize={props.fontSizeMm}
               fill="#111b20"

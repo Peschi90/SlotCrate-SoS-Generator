@@ -83,7 +83,9 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
     exportieren (`/api/cover/stl`). Die Gravur ist 0,4 mm breit und 0,2 mm
     tief; Innenkonturen von Buchstaben wie O, P und e werden nach innen
     versetzt. Schriftgröße bis 60 mm und eine serverseitig geprüfte Auswahl
-    verfügbarer Schriften werden unterstützt. Die runden Vertiefungen bleiben
+    verfügbarer Schriften werden unterstützt. Der aktuelle CAD-Stand ist an
+    die Koffervariante `sc-124-v2` (SC V2 124) gebunden; andere Varianten
+    werden erst nach einer eigenen Referenzgeometrie freigeschaltet. Die runden Vertiefungen bleiben
     auf der Rückseite des Referenzteils unverändert.
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).

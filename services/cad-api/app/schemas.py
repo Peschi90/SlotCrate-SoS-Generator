@@ -25,6 +25,7 @@ from slotcrate.geometry.constants import (
     COVER_MAX_TEXT_LENGTH,
     COVER_MIN_FONT_SIZE_MM,
     COVER_WIDTH_MM,
+    COVER_VARIANT_ID,
     GEOMETRY_VERSION,
     GRID_COLUMNS,
     GRID_PITCH_MM,
@@ -388,6 +389,7 @@ class CoverRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     text: Annotated[str, Field(min_length=1, max_length=COVER_MAX_TEXT_LENGTH)]
+    coverVariantId: Literal[COVER_VARIANT_ID] = COVER_VARIANT_ID
     fontName: Literal[*COVER_FONTS] = COVER_FONTS[0]
     fontSizeMm: Annotated[
         float, Field(ge=COVER_MIN_FONT_SIZE_MM, le=COVER_MAX_FONT_SIZE_MM)

@@ -66,6 +66,7 @@ export const SYSTEM = {
     { value: "Liberation Serif", label: "Liberation Serif" },
     { value: "Liberation Mono", label: "Liberation Mono" }
   ],
+  coverVariantId: "sc-124-v2",
   coverMaxTextLength: 24,
   // Fallbacks
   inlayShelfUsableXMinMm: 3.7,
@@ -74,5 +75,21 @@ export const SYSTEM = {
   inlayShelfUsableYMaxMm: 224.6,
   geometryVersion: "slotcrate-v1"
 } as const;
+
+export function previewFontFamily(fontName: string): string {
+  switch (fontName) {
+    case "DejaVu Serif":
+    case "Liberation Serif":
+      return "Georgia, serif";
+    case "DejaVu Sans Mono":
+    case "Liberation Mono":
+      return "ui-monospace, SFMono-Regular, Menlo, monospace";
+    case "Liberation Sans":
+      return "Arial, sans-serif";
+    case "DejaVu Sans":
+    default:
+      return "Inter, sans-serif";
+  }
+}
 
 export type SystemConstants = typeof SYSTEM;
