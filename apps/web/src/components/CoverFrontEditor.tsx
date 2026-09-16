@@ -23,12 +23,13 @@ export function CoverFrontEditor(props: Props) {
   const dragRef = useRef<{ mode: DragMode; startX: number; startY: number; x: number; y: number; rotation: number } | null>(null);
   const [active, setActive] = useState<DragMode | null>(null);
 
+  // Front view mirrors the 3D/STL orientation: X to the right, Y upward (CAD).
   const point = (event: React.PointerEvent<SVGElement>) => {
     const rect = svgRef.current?.getBoundingClientRect();
     if (!rect) return { x: props.centerXMm, y: props.centerYMm };
     return {
       x: ((event.clientX - rect.left) / rect.width) * SYSTEM.coverWidthMm,
-      y: ((event.clientY - rect.top) / rect.height) * SYSTEM.coverDepthMm
+      y: SYSTEM.coverDepthMm - ((event.clientY - rect.top) / rect.height) * SYSTEM.coverDepthMm
     };
   };
 
@@ -52,7 +53,7 @@ export function CoverFrontEditor(props: Props) {
       });
       return;
     }
-    const angle = Math.atan2(p.y - props.centerYMm, p.x - props.centerXMm) * (180 / Math.PI) + 90;
+    const angle = Math.atan2(-(p.x - props.centerXMm), p.y - props.centerYMm) * (180 / Math.PI);
     onTransformChange({ rotationDeg: Math.max(-180, Math.min(180, angle)) });
   };
 
@@ -87,7 +88,7 @@ export function CoverFrontEditor(props: Props) {
             strokeWidth="0.8"
           />
           <g
-            transform={`translate(${props.centerXMm} ${props.centerYMm}) rotate(${props.rotationDeg})`}
+            transform={`translate(${props.centerXMm} ${SYSTEM.coverDepthMm - props.centerYMm}) rotate(${-props.rotationDeg})`}
             onPointerDown={(event) => begin(event, "move")}
           >
             <text

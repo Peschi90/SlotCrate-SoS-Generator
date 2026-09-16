@@ -86,7 +86,7 @@ function CoverScene({
         </mesh>
       ))}
       <group
-        position={[SYSTEM.coverWidthMm - centerXMm, SYSTEM.coverDepthMm - centerYMm, SYSTEM.coverHeightMm + 0.08]}
+        position={[centerXMm, centerYMm, SYSTEM.coverHeightMm + 0.08]}
         rotation={[0, 0, (rotationDeg * Math.PI) / 180]}
         onPointerDown={(event) => {
           event.stopPropagation();
