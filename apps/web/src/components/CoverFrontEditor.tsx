@@ -96,11 +96,11 @@ export function CoverFrontEditor(props: Props) {
               textAnchor="middle"
               dominantBaseline="middle"
               fontFamily={previewFontFamily(props.fontName)}
-              fontWeight="700"
+              fontWeight="600"
               fontSize={props.fontSizeMm}
               fill="#111b20"
               stroke="#f0b35b"
-              strokeWidth={SYSTEM.coverGrooveWidthMm / 2}
+              strokeWidth={SYSTEM.coverGrooveWidthMm}
               paintOrder="stroke"
               vectorEffect="non-scaling-stroke"
               className="select-none"

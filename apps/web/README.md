@@ -37,3 +37,5 @@ Die Cover-Gravur verwendet eine Konturbreite von 0,4 mm und unterstützt
 Innenkonturen in Buchstabenprofilen. Schriftgrößen bis 60 mm und die im
 Frontend angebotenen Schriften werden serverseitig als Whitelist validiert.
 Der aktuelle Cover-Datensatz ist an `sc-124-v2` (SC V2 124) gebunden.
+Die 3D-Ansicht und Front-Draufsicht verwenden dieselbe an die Coverbreite
+angepasste Vorschaugröße; der STL-Export behält die gewählte Originalgröße.

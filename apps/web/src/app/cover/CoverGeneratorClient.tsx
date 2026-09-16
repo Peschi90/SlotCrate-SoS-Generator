@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Cover3DPreview } from "@/components/Cover3DPreview";
 import { CoverFrontEditor } from "@/components/CoverFrontEditor";
-import { SYSTEM } from "@/lib/system";
+import { previewFontFamily, SYSTEM } from "@/lib/system";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 
 type SuitcaseVariant = GeneratorSettingsPayload["suitcaseVariants"][number];
@@ -20,11 +20,25 @@ export function CoverGeneratorClient({ suitcaseVariants, supportedVariantId }: P
   const [text, setText] = useState("SlotCrate");
   const [fontName, setFontName] = useState("DejaVu Sans");
   const [fontSizeMm, setFontSizeMm] = useState(18);
+  const [previewFontSizeMm, setPreviewFontSizeMm] = useState(18);
   const [centerXMm, setCenterXMm] = useState(SYSTEM.coverWidthMm / 2);
   const [centerYMm, setCenterYMm] = useState(SYSTEM.coverDepthMm / 2);
   const [rotationDeg, setRotationDeg] = useState(0);
   const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    const fontPx = 160;
+    const paddingPx = 64;
+    context.font = `600 ${fontPx}px ${previewFontFamily(fontName)}`;
+    const naturalWidthPx = Math.ceil(context.measureText(text || "Text").width) + paddingPx;
+    const maxWidthMm = SYSTEM.coverWidthMm - SYSTEM.coverEdgeMarginMm * 2;
+    const fittedSize = (maxWidthMm * fontPx) / naturalWidthPx;
+    setPreviewFontSizeMm(Math.min(fontSizeMm, fittedSize));
+  }, [fontName, fontSizeMm, text]);
 
   const updateTransform = (change: { centerXMm?: number; centerYMm?: number; rotationDeg?: number }) => {
     if (change.centerXMm !== undefined) {
@@ -97,7 +111,7 @@ export function CoverGeneratorClient({ suitcaseVariants, supportedVariantId }: P
             <Cover3DPreview
               text={text}
               fontName={fontName}
-              fontSizeMm={fontSizeMm}
+              fontSizeMm={previewFontSizeMm}
               centerXMm={centerXMm}
               centerYMm={centerYMm}
               rotationDeg={rotationDeg}
@@ -109,7 +123,7 @@ export function CoverGeneratorClient({ suitcaseVariants, supportedVariantId }: P
             <CoverFrontEditor
               text={text}
               fontName={fontName}
-              fontSizeMm={fontSizeMm}
+              fontSizeMm={previewFontSizeMm}
               centerXMm={centerXMm}
               centerYMm={centerYMm}
               rotationDeg={rotationDeg}

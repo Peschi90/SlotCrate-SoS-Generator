@@ -158,7 +158,7 @@ function useCoverTextTexture(text: string, fontSizeMm: number, fontName: string)
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.lineJoin = "round";
-    context.lineWidth = Math.max(5, fontPx * (SYSTEM.coverGrooveWidthMm / (fontSizeMm * 2)));
+    context.lineWidth = fontPx * (SYSTEM.coverGrooveWidthMm / fontSizeMm);
     context.strokeStyle = "#f0b35b";
     context.strokeText(text, canvas.width / 2, canvas.height / 2);
     context.fillStyle = "#121820";
