@@ -456,17 +456,17 @@ export function GeneratorClient({
           <button
             type="submit"
             disabled={busy}
-            className="px-4 py-2 rounded-xl bg-crate-box text-neutral-950 font-medium hover:brightness-110 disabled:opacity-50"
+            className="slotcrate-button-primary flex items-center gap-2 text-sm py-2.5 px-6 shadow-lg hover:shadow-[#5fbb2e]/25"
           >
-            {busy ? t("generator.downloading") : t("generator.download")}
+            {busy ? <><span className="inline-block animate-spin" aria-hidden="true">⏳</span><span>{t("generator.downloading")}</span></> : <><span aria-hidden="true">⬇</span><span>{t("generator.download")}</span></>}
           </button>
           <button
             type="button"
             onClick={downloadPlate}
             disabled={plateBusy}
-            className="px-4 py-2 rounded-xl border border-neutral-700 bg-neutral-900/80 text-sm font-medium text-neutral-100 transition hover:border-neutral-500 disabled:opacity-50"
+            className="slotcrate-button-secondary flex items-center gap-2 text-sm py-2.5 px-4 disabled:opacity-50"
           >
-            {plateBusy ? t("generator.downloadingPlate") : t("generator.downloadPlate")}
+            {plateBusy ? <><span className="inline-block animate-spin" aria-hidden="true">⏳</span><span>{t("generator.downloadingPlate")}</span></> : <><span aria-hidden="true">⬇</span><span>{t("generator.downloadPlate")}</span></>}
           </button>
           {busy && (
             <button

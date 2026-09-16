@@ -238,6 +238,7 @@ export const coverRequestSchema = z.object({
     (value) => value === value.trim() && [...value].every((character) => character >= " " && character !== "\u007f"),
     "Text darf keine äußeren Leerzeichen oder Steuerzeichen enthalten"
   ),
+  fontName: z.enum(SYSTEM.coverFonts.map((font) => font.value) as [string, ...string[]]).default("DejaVu Sans"),
   fontSizeMm: z.number().min(SYSTEM.coverMinFontSizeMm).max(SYSTEM.coverMaxFontSizeMm).default(18),
   centerXMm: z.number().min(SYSTEM.coverEdgeMarginMm).max(SYSTEM.coverWidthMm - SYSTEM.coverEdgeMarginMm).default(SYSTEM.coverWidthMm / 2),
   centerYMm: z.number().min(SYSTEM.coverEdgeMarginMm).max(SYSTEM.coverDepthMm - SYSTEM.coverEdgeMarginMm).default(SYSTEM.coverDepthMm / 2),

@@ -120,6 +120,7 @@ def inlay_cache_key(
 
 def cover_cache_key(
     text: str,
+    font_name: str,
     font_size_mm: float,
     center_x_mm: float,
     center_y_mm: float,
@@ -130,7 +131,7 @@ def cover_cache_key(
     geometry_version: str = GEOMETRY_VERSION,
 ) -> str:
     payload = (
-        f"cover|{text}|{round(font_size_mm, 4)}|{round(center_x_mm, 4)}|"
+        f"cover|{text}|{font_name}|{round(font_size_mm, 4)}|{round(center_x_mm, 4)}|"
         f"{round(center_y_mm, 4)}|{round(rotation_deg, 4)}|{settings_version}|"
         f"{round(stl_tessellation_linear_mm, 4)}|{round(stl_tessellation_angular_rad, 4)}|"
         f"{geometry_version}"

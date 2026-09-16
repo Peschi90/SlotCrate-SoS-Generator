@@ -54,10 +54,18 @@ export const SYSTEM = {
   coverDepthMm: 216,
   coverHeightMm: 3,
   coverGrooveDepthMm: 0.2,
-  coverGrooveWidthMm: 0.8,
+  coverGrooveWidthMm: 0.4,
   coverEdgeMarginMm: 8,
   coverMinFontSizeMm: 6,
-  coverMaxFontSizeMm: 30,
+  coverMaxFontSizeMm: 60,
+  coverFonts: [
+    { value: "DejaVu Sans", label: "DejaVu Sans" },
+    { value: "DejaVu Serif", label: "DejaVu Serif" },
+    { value: "DejaVu Sans Mono", label: "DejaVu Sans Mono" },
+    { value: "Liberation Sans", label: "Liberation Sans" },
+    { value: "Liberation Serif", label: "Liberation Serif" },
+    { value: "Liberation Mono", label: "Liberation Mono" }
+  ],
   coverMaxTextLength: 24,
   // Fallbacks
   inlayShelfUsableXMinMm: 3.7,

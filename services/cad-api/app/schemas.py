@@ -20,6 +20,7 @@ from slotcrate.geometry.constants import (
     DEFAULT_BOX_HEIGHT_MM,
     COVER_DEPTH_MM,
     COVER_EDGE_MARGIN_MM,
+    COVER_FONTS,
     COVER_MAX_FONT_SIZE_MM,
     COVER_MAX_TEXT_LENGTH,
     COVER_MIN_FONT_SIZE_MM,
@@ -387,6 +388,7 @@ class CoverRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     text: Annotated[str, Field(min_length=1, max_length=COVER_MAX_TEXT_LENGTH)]
+    fontName: Literal[*COVER_FONTS] = COVER_FONTS[0]
     fontSizeMm: Annotated[
         float, Field(ge=COVER_MIN_FONT_SIZE_MM, le=COVER_MAX_FONT_SIZE_MM)
     ] = 18.0

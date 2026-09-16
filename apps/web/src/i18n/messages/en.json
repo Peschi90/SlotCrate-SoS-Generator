@@ -266,6 +266,7 @@
         "description": "Place your text directly on the smooth front. Each letter receives a 0.2 mm deep, 0.8 mm wide recessed outline.",
         "textLabel": "Text",
         "textHint": "Up to {count} characters",
+        "fontFamily": "Font family",
         "fontSize": "Font size",
         "positionX": "Position X",
         "positionY": "Position Y",

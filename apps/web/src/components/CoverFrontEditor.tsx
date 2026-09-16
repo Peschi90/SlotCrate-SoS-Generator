@@ -6,6 +6,7 @@ import { SYSTEM } from "@/lib/system";
 
 interface Props {
   text: string;
+  fontName: string;
   fontSizeMm: number;
   centerXMm: number;
   centerYMm: number;
@@ -94,7 +95,7 @@ export function CoverFrontEditor(props: Props) {
               y="0"
               textAnchor="middle"
               dominantBaseline="middle"
-              fontFamily="Rajdhani, sans-serif"
+              fontFamily={`"${props.fontName}", sans-serif`}
               fontWeight="700"
               fontSize={props.fontSizeMm}
               fill="#111b20"

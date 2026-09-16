@@ -7,6 +7,7 @@ import { SYSTEM } from "@/lib/system";
 
 interface Props {
   text: string;
+  fontName: string;
   fontSizeMm: number;
   centerXMm: number;
   centerYMm: number;
@@ -27,6 +28,7 @@ export function Cover3DPreview(props: Props) {
 
 function CoverScene({
   text,
+  fontName,
   fontSizeMm,
   centerXMm,
   centerYMm,
@@ -35,7 +37,7 @@ function CoverScene({
 }: Props) {
   const [dragging, setDragging] = useState(false);
   const start = useRef({ x: 0, y: 0, centerX: 0, centerY: 0, rotation: 0, rotate: false });
-  const textTexture = useCoverTextTexture(text || "Text", fontSizeMm);
+  const textTexture = useCoverTextTexture(text || "Text", fontSizeMm, fontName);
   const coverMaterial = useMemo(
     () => new THREE.MeshStandardMaterial({ color: 0x6f8b96, roughness: 0.5, metalness: 0.16 }),
     []
@@ -132,7 +134,7 @@ function CoverScene({
   );
 }
 
-function useCoverTextTexture(text: string, fontSizeMm: number) {
+function useCoverTextTexture(text: string, fontSizeMm: number, fontName: string) {
   const [result, setResult] = useState<{
     texture: THREE.CanvasTexture;
     widthMm: number;
@@ -146,13 +148,13 @@ function useCoverTextTexture(text: string, fontSizeMm: number) {
 
     const fontPx = 160;
     const paddingPx = 32;
-    context.font = `600 ${fontPx}px Rajdhani, sans-serif`;
+    context.font = `600 ${fontPx}px "${fontName}", sans-serif`;
     const measuredWidth = Math.ceil(context.measureText(text).width);
     canvas.width = Math.max(256, measuredWidth + paddingPx * 2);
     canvas.height = 240;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
-    context.font = `600 ${fontPx}px Rajdhani, sans-serif`;
+    context.font = `600 ${fontPx}px "${fontName}", sans-serif`;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.lineJoin = "round";
@@ -173,7 +175,7 @@ function useCoverTextTexture(text: string, fontSizeMm: number) {
     setResult({ texture, widthMm, heightMm });
 
     return () => texture.dispose();
-  }, [fontSizeMm, text]);
+  }, [fontName, fontSizeMm, text]);
 
   return result;
 }

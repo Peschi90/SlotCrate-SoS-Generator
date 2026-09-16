@@ -9,6 +9,7 @@ import { SYSTEM } from "@/lib/system";
 export function CoverGeneratorClient() {
   const t = useTranslations("cover");
   const [text, setText] = useState("SlotCrate");
+  const [fontName, setFontName] = useState("DejaVu Sans");
   const [fontSizeMm, setFontSizeMm] = useState(18);
   const [centerXMm, setCenterXMm] = useState(SYSTEM.coverWidthMm / 2);
   const [centerYMm, setCenterYMm] = useState(SYSTEM.coverDepthMm / 2);
@@ -35,7 +36,7 @@ export function CoverGeneratorClient() {
       const response = await fetch("/api/cover/stl", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, fontSizeMm, centerXMm, centerYMm, rotationDeg })
+        body: JSON.stringify({ text, fontName, fontSizeMm, centerXMm, centerYMm, rotationDeg })
       });
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
@@ -64,9 +65,18 @@ export function CoverGeneratorClient() {
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-wide">{t("title")}</h1>
           <p className="text-sm text-white/70 max-w-2xl mt-1">{t("description")}</p>
         </div>
-        <button type="button" onClick={download} disabled={downloading || !text} className="slotcrate-button-primary flex items-center justify-center gap-2 text-sm py-2.5 px-6">
-          <span aria-hidden="true">{downloading ? "..." : "↓"}</span>
-          <span>{downloading ? t("generating") : t("download")}</span>
+        <button type="button" onClick={download} disabled={downloading || !text} className="slotcrate-button-primary flex items-center gap-2 text-sm py-2.5 px-6 shadow-lg hover:shadow-[#5fbb2e]/25">
+          {downloading ? (
+            <>
+              <span className="inline-block animate-spin" aria-hidden="true">⏳</span>
+              <span>{t("generating")}</span>
+            </>
+          ) : (
+            <>
+              <span aria-hidden="true">⬇</span>
+              <span>{t("download")}</span>
+            </>
+          )}
         </button>
       </header>
 
@@ -77,6 +87,7 @@ export function CoverGeneratorClient() {
           <div className="rounded-3xl border border-white/15 bg-black/40 backdrop-blur-md overflow-hidden h-[480px] lg:h-[620px] relative shadow-2xl">
             <Cover3DPreview
               text={text}
+              fontName={fontName}
               fontSizeMm={fontSizeMm}
               centerXMm={centerXMm}
               centerYMm={centerYMm}
@@ -88,6 +99,7 @@ export function CoverGeneratorClient() {
           <div className="lg:sticky lg:top-28">
             <CoverFrontEditor
               text={text}
+              fontName={fontName}
               fontSizeMm={fontSizeMm}
               centerXMm={centerXMm}
               centerYMm={centerYMm}
@@ -108,6 +120,18 @@ export function CoverGeneratorClient() {
               className="w-full rounded-xl border border-white/20 bg-black/50 px-3 py-2.5 text-white outline-none focus:border-[#f0b35b]"
             />
             <p className="mt-1 text-xs text-white/50">{t("textHint", { count: SYSTEM.coverMaxTextLength })}</p>
+          </div>
+
+          <div>
+            <label htmlFor="cover-font" className="block text-sm font-semibold text-white mb-2">{t("fontFamily")}</label>
+            <select
+              id="cover-font"
+              value={fontName}
+              onChange={(event) => setFontName(event.target.value)}
+              className="slotcrate-select w-full text-sm py-2.5 px-3 rounded-xl border border-white/20 bg-black/60 text-white"
+            >
+              {SYSTEM.coverFonts.map((font) => <option key={font.value} value={font.value}>{font.label}</option>)}
+            </select>
           </div>
 
           <RangeField label={t("fontSize")} value={fontSizeMm} min={SYSTEM.coverMinFontSizeMm} max={SYSTEM.coverMaxFontSizeMm} step={0.5} unit="mm" onChange={setFontSizeMm} />

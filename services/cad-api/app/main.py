@@ -279,6 +279,7 @@ def create_app() -> FastAPI:
         )
         key = cover_cache_key(
             payload.text,
+            payload.fontName,
             payload.fontSizeMm,
             payload.centerXMm,
             payload.centerYMm,
@@ -291,6 +292,7 @@ def create_app() -> FastAPI:
         if cached is None:
             data = stl_bytes_for_cover(
                 text=payload.text,
+                font_name=payload.fontName,
                 font_size_mm=payload.fontSizeMm,
                 center_x_mm=payload.centerXMm,
                 center_y_mm=payload.centerYMm,

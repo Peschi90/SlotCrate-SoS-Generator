@@ -80,8 +80,11 @@ Kompakte Wiedereinstiegs-Checkliste nach längerer Pause:
   - **Slotcar-Modul Cover-Generator** (`/cover`): Text auf der glatten
     Vorderseite des `SC_SM_Cover.step` platzieren, per 3D-Drag verschieben
     oder mit Shift drehen und als 0,2 mm tiefe, 0,8 mm breite Konturgravur
-    exportieren (`/api/cover/stl`). Die runden Vertiefungen bleiben auf der
-    Rückseite des Referenzteils unverändert.
+    exportieren (`/api/cover/stl`). Die Gravur ist 0,4 mm breit und 0,2 mm
+    tief; Innenkonturen von Buchstaben wie O, P und e werden nach innen
+    versetzt. Schriftgröße bis 60 mm und eine serverseitig geprüfte Auswahl
+    verfügbarer Schriften werden unterstützt. Die runden Vertiefungen bleiben
+    auf der Rückseite des Referenzteils unverändert.
   - Automatische lokale Speicherung von Layouts, JSON-Export/-Import,
     benannte Entwürfe und teilbare Kurz-URLs (`/planner?share=<id>`).
   - Nachträgliches Bearbeiten platzierter Kästen: Drag-and-drop verschieben,

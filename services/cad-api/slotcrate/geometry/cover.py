@@ -8,12 +8,12 @@ import cadquery as cq
 from slotcrate.geometry.constants import (
     COVER_GROOVE_DEPTH_MM,
     COVER_GROOVE_WIDTH_MM,
+    COVER_FONTS,
     COVER_STEP_FILE,
 )
 from slotcrate.geometry.export import shape_to_stl_bytes
 from slotcrate.geometry.reference import REFERENCE_DIR, _load_step, tight_bbox
 
-COVER_FONT = "DejaVu Sans"
 _CUTTER_OVERLAP_MM = 0.05
 
 
@@ -31,6 +31,7 @@ def _text_solid(
     center_x_mm: float,
     center_y_mm: float,
     rotation_deg: float,
+    font_name: str,
     height_mm: float,
 ) -> cq.Workplane:
     base = load_cover_base()
@@ -43,7 +44,7 @@ def _text_solid(
             font_size_mm,
             height_mm,
             combine=False,
-            font=COVER_FONT,
+            font=font_name,
             halign="center",
             valign="center",
         )
@@ -56,13 +57,23 @@ def build_cover_shape(
     center_x_mm: float,
     center_y_mm: float,
     rotation_deg: float = 0.0,
+    font_name: str = COVER_FONTS[0],
 ) -> cq.Shape:
-    """Schneidet ein 0,8 mm breites, 0,2 mm tiefes Konturband um den Text."""
+    """Schneidet ein 0,4 mm breites, 0,2 mm tiefes Konturband um den Text.
+
+    CadQuery erhält dabei alle Text-Wires gemeinsam. Die Orientierung der
+    verschachtelten Innen-Wires sorgt dafür, dass ihre Kontur beim positiven
+    Offset nach innen läuft; dadurch bleiben Buchstabenlöcher wie bei O, P
+    und e als echte Innenvertiefungen erhalten.
+    """
     base = load_cover_base()
     cutter_height = COVER_GROOVE_DEPTH_MM + _CUTTER_OVERLAP_MM
 
+    if font_name not in COVER_FONTS:
+        raise ValueError(f"unsupported cover font: {font_name}")
+
     inner = _text_solid(
-        text, font_size_mm, center_x_mm, center_y_mm, rotation_deg, cutter_height
+        text, font_size_mm, center_x_mm, center_y_mm, rotation_deg, font_name, cutter_height
     )
     bottom_wires = inner.faces("<Z").wires().vals()
     outer = (
@@ -82,6 +93,7 @@ def stl_bytes_for_cover(
     center_x_mm: float,
     center_y_mm: float,
     rotation_deg: float = 0.0,
+    font_name: str = COVER_FONTS[0],
     stl_tessellation_linear_mm: float = 0.05,
     stl_tessellation_angular_rad: float = 0.5,
 ) -> bytes:
@@ -91,6 +103,7 @@ def stl_bytes_for_cover(
         center_x_mm=center_x_mm,
         center_y_mm=center_y_mm,
         rotation_deg=rotation_deg,
+        font_name=font_name,
     )
     return shape_to_stl_bytes(
         shape,

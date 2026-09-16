@@ -32,3 +32,7 @@ Canvas-Textur; dort kann er direkt verschoben und über den Drehgriff rotiert
 werden. Sie benötigt
 keinen externen Font-Resolver oder CDN-Zugriff. Netzwerkquellen bleiben auf
 `'self'` begrenzt.
+
+Die Cover-Gravur verwendet eine Konturbreite von 0,4 mm und unterstützt
+Innenkonturen in Buchstabenprofilen. Schriftgrößen bis 60 mm und die im
+Frontend angebotenen Schriften werden serverseitig als Whitelist validiert.
