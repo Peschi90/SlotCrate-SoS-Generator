@@ -86,7 +86,7 @@ function CoverScene({
         </mesh>
       ))}
       <group
-        position={[centerXMm, centerYMm, SYSTEM.coverHeightMm + 0.08]}
+        position={[SYSTEM.coverWidthMm - centerXMm, SYSTEM.coverDepthMm - centerYMm, SYSTEM.coverHeightMm + 0.08]}
         rotation={[0, 0, (rotationDeg * Math.PI) / 180]}
         onPointerDown={(event) => {
           event.stopPropagation();
@@ -168,10 +168,9 @@ function useCoverTextTexture(text: string, fontSizeMm: number, fontName: string)
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.anisotropy = 4;
     const mmPerPixel = fontSizeMm / fontPx;
-    const maxWidthMm = SYSTEM.coverWidthMm - SYSTEM.coverEdgeMarginMm * 2;
     const naturalWidthMm = canvas.width * mmPerPixel;
-    const widthMm = Math.min(maxWidthMm, naturalWidthMm);
-    const heightMm = canvas.height * mmPerPixel * (widthMm / naturalWidthMm);
+    const widthMm = naturalWidthMm;
+    const heightMm = canvas.height * mmPerPixel;
     setResult({ texture, widthMm, heightMm });
 
     return () => texture.dispose();

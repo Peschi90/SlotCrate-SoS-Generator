@@ -118,6 +118,9 @@ COVER_FONTS: tuple[str, ...] = (
 	"DejaVu Sans Condensed",
 	"DejaVu Serif Condensed",
 	"Liberation Sans Narrow",
+	"FreeSans",
+	"FreeSerif",
+	"FreeMono",
 )
 
 # Toleranzen für Geometrietests

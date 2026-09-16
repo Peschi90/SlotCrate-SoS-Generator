@@ -67,7 +67,10 @@ export const SYSTEM = {
     { value: "Liberation Mono", label: "Liberation Mono" },
     { value: "DejaVu Sans Condensed", label: "DejaVu Sans Condensed" },
     { value: "DejaVu Serif Condensed", label: "DejaVu Serif Condensed" },
-    { value: "Liberation Sans Narrow", label: "Liberation Sans Narrow" }
+    { value: "Liberation Sans Narrow", label: "Liberation Sans Narrow" },
+    { value: "FreeSans", label: "FreeSans" },
+    { value: "FreeSerif", label: "FreeSerif" },
+    { value: "FreeMono", label: "FreeMono" }
   ],
   coverVariantId: "sc-124-v2",
   coverMaxTextLength: 24,
@@ -84,12 +87,15 @@ export function previewFontFamily(fontName: string): string {
     case "DejaVu Serif":
     case "Liberation Serif":
     case "DejaVu Serif Condensed":
+    case "FreeSerif":
       return "Georgia, serif";
     case "DejaVu Sans Mono":
     case "Liberation Mono":
+    case "FreeMono":
       return "ui-monospace, SFMono-Regular, Menlo, monospace";
     case "Liberation Sans":
     case "Liberation Sans Narrow":
+    case "FreeSans":
       return "Arial, sans-serif";
     case "DejaVu Sans":
     case "DejaVu Sans Condensed":

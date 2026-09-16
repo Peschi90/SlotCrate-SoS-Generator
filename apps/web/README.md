@@ -39,3 +39,5 @@ Frontend angebotenen Schriften werden serverseitig als Whitelist validiert.
 Der aktuelle Cover-Datensatz ist an `sc-124-v2` (SC V2 124) gebunden.
 Die 3D-Ansicht und Front-Draufsicht verwenden dieselbe an die Coverbreite
 angepasste Vorschaugröße; der STL-Export behält die gewählte Originalgröße.
+Die Vorschau spiegelt die X-/Y-Koordinaten der 3D-Szene gegenüber der
+SVG-Draufsicht korrekt.
