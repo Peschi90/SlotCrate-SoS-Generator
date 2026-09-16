@@ -26,6 +26,9 @@ die Cover-Abmessungen und übergibt Text, Position, Drehung und Schriftgröße
 an `/api/cover/stl`; die verbindliche BREP-Gravur wird serverseitig aus
 `reference/SC_SM_Cover.step` erzeugt.
 
-Die Cover-Vorschau rendert den Text als lokale Canvas-Textur und benötigt
+Die Cover-Vorschau zeigt die abgeschrägte Referenzform mit den rückseitigen
+Vertiefungen. Eine separate Front-Draufsicht rendert den Text als lokale
+Canvas-Textur; dort kann er direkt verschoben und über den Drehgriff rotiert
+werden. Sie benötigt
 keinen externen Font-Resolver oder CDN-Zugriff. Netzwerkquellen bleiben auf
 `'self'` begrenzt.

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Cover3DPreview } from "@/components/Cover3DPreview";
+import { CoverFrontEditor } from "@/components/CoverFrontEditor";
 import { SYSTEM } from "@/lib/system";
 
 export function CoverGeneratorClient() {
@@ -72,7 +73,8 @@ export function CoverGeneratorClient() {
       {error && <div className="rounded-2xl border border-red-500/40 bg-red-950/40 p-4 text-sm text-red-200">{error}</div>}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-7 rounded-3xl border border-white/15 bg-black/40 backdrop-blur-md overflow-hidden h-[480px] lg:h-[620px] relative shadow-2xl">
+        <div className="lg:col-span-7 space-y-4">
+          <div className="rounded-3xl border border-white/15 bg-black/40 backdrop-blur-md overflow-hidden h-[480px] lg:h-[620px] relative shadow-2xl">
           <Cover3DPreview
             text={text}
             fontSizeMm={fontSizeMm}
@@ -81,7 +83,16 @@ export function CoverGeneratorClient() {
             rotationDeg={rotationDeg}
             onTransformChange={updateTransform}
           />
-          <div className="absolute bottom-3 right-3 rounded-lg bg-black/65 px-3 py-2 text-[11px] text-white/70">{t("dragHint")}</div>
+            <div className="absolute bottom-3 right-3 rounded-lg bg-black/65 px-3 py-2 text-[11px] text-white/70">{t("dragHint")}</div>
+          </div>
+          <CoverFrontEditor
+            text={text}
+            fontSizeMm={fontSizeMm}
+            centerXMm={centerXMm}
+            centerYMm={centerYMm}
+            rotationDeg={rotationDeg}
+            onTransformChange={updateTransform}
+          />
         </div>
 
         <section className="lg:col-span-5 rounded-2xl border border-white/10 bg-black/30 p-5 space-y-5">
@@ -116,7 +127,7 @@ function RangeField({ label, value, min, max, step, unit, onChange }: { label: s
   return (
     <label className="block">
       <span className="flex justify-between text-sm text-white/85 mb-2"><span>{label}</span><span className="font-mono text-white/55">{value.toFixed(step < 1 ? 1 : 0)} {unit}</span></span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(event) => onChange(Number(event.target.value))} className="w-full accent-[#f0b35b]" />
+          <input type="range" min={min} max={max} step={step} value={value} onChange={(event) => onChange(Number(event.target.value))} className="slotcrate-range" />
     </label>
   );
 }

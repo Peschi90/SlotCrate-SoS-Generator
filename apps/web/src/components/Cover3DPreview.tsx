@@ -37,19 +37,52 @@ function CoverScene({
   const start = useRef({ x: 0, y: 0, centerX: 0, centerY: 0, rotation: 0, rotate: false });
   const textTexture = useCoverTextTexture(text || "Text", fontSizeMm);
   const coverMaterial = useMemo(
-    () => new THREE.MeshStandardMaterial({ color: 0x3d4450, roughness: 0.42, metalness: 0.28 }),
+    () => new THREE.MeshStandardMaterial({ color: 0x6f8b96, roughness: 0.5, metalness: 0.16 }),
+    []
+  );
+  const coverGeometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    const w = SYSTEM.coverWidthMm;
+    const d = SYSTEM.coverDepthMm;
+    const c = 8;
+    shape.moveTo(c, 0);
+    shape.lineTo(w - c, 0);
+    shape.lineTo(w, c);
+    shape.lineTo(w, d - c);
+    shape.lineTo(w - c, d);
+    shape.lineTo(c, d);
+    shape.lineTo(0, d - c);
+    shape.lineTo(0, c);
+    shape.lineTo(c, 0);
+    return new THREE.ExtrudeGeometry(shape, { depth: SYSTEM.coverHeightMm, bevelEnabled: false });
+  }, []);
+  const rearRecessMaterial = useMemo(
+    () => new THREE.MeshStandardMaterial({ color: 0x18252d, roughness: 0.85, metalness: 0.05 }),
+    []
+  );
+  const rearRecesses = useMemo(
+    () => [
+      [20, 14], [SYSTEM.coverWidthMm - 20, 14],
+      [20, SYSTEM.coverDepthMm - 14], [SYSTEM.coverWidthMm - 20, SYSTEM.coverDepthMm - 14],
+      [8, SYSTEM.coverDepthMm / 2], [SYSTEM.coverWidthMm - 8, SYSTEM.coverDepthMm / 2]
+    ] as const,
     []
   );
 
   return (
     <group>
       <mesh
-        position={[SYSTEM.coverWidthMm / 2, SYSTEM.coverDepthMm / 2, SYSTEM.coverHeightMm / 2]}
+        position={[0, 0, 0]}
+        rotation={[0, 0, 0]}
+        geometry={coverGeometry}
         material={coverMaterial}
         receiveShadow
-      >
-        <boxGeometry args={[SYSTEM.coverWidthMm, SYSTEM.coverDepthMm, SYSTEM.coverHeightMm]} />
-      </mesh>
+      />
+      {rearRecesses.map(([x, y], index) => (
+        <mesh key={index} position={[x, y, -0.04]} rotation={[Math.PI / 2, 0, 0]} material={rearRecessMaterial}>
+          <cylinderGeometry args={[2.6, 2.6, 0.16, 32]} />
+        </mesh>
+      ))}
       <group
         position={[centerXMm, centerYMm, SYSTEM.coverHeightMm + 0.08]}
         rotation={[0, 0, (rotationDeg * Math.PI) / 180]}
