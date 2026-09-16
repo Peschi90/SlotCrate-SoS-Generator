@@ -17,6 +17,7 @@ type DragMode = "move" | "rotate";
 
 export function CoverFrontEditor(props: Props) {
   const t = useTranslations("cover");
+  const { onTransformChange } = props;
   const svgRef = useRef<SVGSVGElement | null>(null);
   const dragRef = useRef<{ mode: DragMode; startX: number; startY: number; x: number; y: number; rotation: number } | null>(null);
   const [active, setActive] = useState<DragMode | null>(null);
