@@ -118,8 +118,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <div className="slotcrate-bg" aria-hidden="true" />
           <div className="slotcrate-grid" aria-hidden="true" />
           <div className="min-h-screen flex flex-col relative">
-            <header className="border-b border-white/10 bg-black/35 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4 sticky top-0 z-20">
-              <div className="flex items-center gap-3">
+            <header className="border-b border-white/10 bg-black/35 backdrop-blur-md px-4 py-3 sm:px-6 sticky top-0 z-20">
+              <div className="flex items-center gap-4 max-w-7xl mx-auto">
                 <Link href="/" className="flex items-center gap-2 text-xl font-semibold tracking-wider slotcrate-brand hover:text-white">
                   <Image
                     src="/SC-SOS-Logo.png"
@@ -132,15 +132,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   />
                   <span>{t("brand")}</span>
                 </Link>
-                <span className="hidden sm:inline text-xs text-white/60">Transport. Organize. Race.</span>
-                <LanguageSwitcher current={locale} className="ml-auto hidden md:flex" />
+                <nav className="ml-auto hidden md:flex items-center gap-1 text-sm text-white/85">
+                  <Link href="/generator" className="slotcrate-navlink">{t("nav.generator")}</Link>
+                  <Link href="/planner" className="slotcrate-navlink">{t("nav.planner")}</Link>
+                  <Link href="/cover" className="slotcrate-navlink">{t("nav.cover")}</Link>
+                  <Link href="/inlay" className="slotcrate-navlink flex items-center gap-1.5">
+                    <span>{t("nav.inlay")}</span>
+                    <span className="slotcrate-status">{t("inDevelopmentBadge")}</span>
+                  </Link>
+                </nav>
+                <LanguageSwitcher current={locale} className="hidden md:flex" />
                 <details className="ml-auto md:hidden relative">
                   <summary className="slotcrate-menubutton">{t("nav.menu")}</summary>
                   <div className="absolute right-0 mt-2 w-56 rounded-2xl border border-white/15 bg-black/90 p-3 shadow-2xl">
                     <nav className="flex flex-col gap-2 text-sm text-white/90">
-                      <Link href="/" className="slotcrate-navlink text-center">
-                        {t("nav.home")}
-                      </Link>
                       <Link href="/generator" className="slotcrate-navlink text-center">
                         {t("nav.generator")}
                       </Link>
@@ -149,9 +154,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                       </Link>
                       <Link href="/inlay" className="slotcrate-navlink text-center flex items-center justify-center gap-1.5">
                         <span>{t("nav.inlay")}</span>
-                        <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                          {t("inDevelopmentBadge")}
-                        </span>
+                        <span className="slotcrate-status">{t("inDevelopmentBadge")}</span>
                       </Link>
                       <Link href="/cover" className="slotcrate-navlink text-center">
                         {t("nav.cover")}
@@ -169,38 +172,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   </div>
                 </details>
               </div>
-              <nav className="mt-3 hidden md:flex flex-wrap items-center gap-3 text-sm text-white/85">
-                <Link href="/" className="slotcrate-navlink">
-                  {t("nav.home")}
-                </Link>
-                <Link href="/generator" className="slotcrate-navlink">
-                  {t("nav.generator")}
-                </Link>
-                <Link href="/planner" className="slotcrate-navlink">
-                  {t("nav.planner")}
-                </Link>
-                <Link href="/inlay" className="slotcrate-navlink flex items-center gap-1.5">
-                  <span>{t("nav.inlay")}</span>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                    {t("inDevelopmentBadge")}
-                  </span>
-                </Link>
-                <Link href="/cover" className="slotcrate-navlink">
-                  {t("nav.cover")}
-                </Link>
-                <a
-                  href={slotcrateHref}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="slotcrate-navcta"
-                >
-                  {t("nav.website")}
-                </a>
-              </nav>
             </header>
             <main className="flex-1 relative z-10">{children}</main>
             <footer className="border-t border-white/10 bg-black/35 backdrop-blur-md px-6 py-4 mt-auto relative z-10">
               <nav className="flex flex-wrap items-center justify-center gap-4 text-xs text-white/70">
+                <a href={slotcrateHref} target="_blank" rel="noreferrer" className="hover:text-white underline-offset-4 hover:underline">
+                  {t("nav.website")}
+                </a>
+                <span aria-hidden="true" className="text-white/30">·</span>
                 <Link href="/impressum" className="hover:text-white underline-offset-4 hover:underline">
                   {t("nav.imprint")}
                 </Link>

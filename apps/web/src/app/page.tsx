@@ -14,87 +14,52 @@ export default async function HomePage() {
   const locale = await getLocale();
   const slotcrateHref = locale === "en" ? "https://slotcrate.i3ull3t.de/en/" : "https://slotcrate.i3ull3t.de/";
   return (
-    <section className="max-w-6xl mx-auto px-6 py-14">
-      <div className="rounded-3xl border border-white/15 bg-black/45 backdrop-blur-md overflow-hidden">
-        <div className="px-8 py-10 md:px-12 md:py-14">
-          <p className="uppercase tracking-[0.28em] text-xs text-white/65 mb-4">DIY 3D Print Tools</p>
-          <h1 className="text-4xl md:text-5xl font-semibold mb-4 leading-tight slotcrate-brand">{t("home.title")}</h1>
-          <p className="text-white/80 max-w-3xl text-base md:text-lg">{t("home.subtitle")}</p>
-
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link className="slotcrate-button-primary" href="/generator">
-              {t("home.generator.cta")}
-            </Link>
-            <Link className="slotcrate-button-secondary" href="/planner">
-              {t("home.planner.cta")}
-            </Link>
-            <Link className="slotcrate-button-secondary flex items-center gap-2" href="/inlay">
-              <span>{t("home.inlay.cta")}</span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                {t("inDevelopmentBadge")}
-              </span>
-            </Link>
-            <Link className="slotcrate-button-secondary" href="/cover">
-              {t("home.cover.cta")}
-            </Link>
-            <a
-              href={slotcrateHref}
-              target="_blank"
-              rel="noreferrer"
-              className="slotcrate-button-secondary"
-            >
-              {t("home.website.cta")}
-            </a>
-          </div>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-white/10">
-          <article className="slotcrate-card">
-            <h2 className="text-lg font-semibold mb-1">{t("home.generator.title")}</h2>
-            <p className="text-white/70 text-sm mb-4">{t("home.generator.description")}</p>
-            <Link className="slotcrate-inline-link" href="/generator">
-              {t("home.generator.cta")}
-            </Link>
-          </article>
-
-          <article className="slotcrate-card">
-            <h2 className="text-lg font-semibold mb-1">{t("home.cover.title")}</h2>
-            <p className="text-white/70 text-sm mb-4">{t("home.cover.description")}</p>
-            <Link className="slotcrate-inline-link" href="/cover">
-              {t("home.cover.cta")}
-            </Link>
-          </article>
-
-          <article className="slotcrate-card">
-            <h2 className="text-lg font-semibold mb-1">{t("home.planner.title")}</h2>
-            <p className="text-white/70 text-sm mb-4">{t("home.planner.description")}</p>
-            <Link className="slotcrate-inline-link" href="/planner">
-              {t("home.planner.cta")}
-            </Link>
-          </article>
-
-          <article className="slotcrate-card">
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-lg font-semibold">{t("home.inlay.title")}</h2>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                {t("inDevelopmentBadge")}
-              </span>
-            </div>
-            <p className="text-white/70 text-sm mb-4">{t("home.inlay.description")}</p>
-            <Link className="slotcrate-inline-link" href="/inlay">
-              {t("home.inlay.cta")}
-            </Link>
-          </article>
-
-          <article className="slotcrate-card">
-            <h2 className="text-lg font-semibold mb-1">{t("home.website.title")}</h2>
-            <p className="text-white/70 text-sm mb-4">{t("home.website.description")}</p>
-            <a href={slotcrateHref} target="_blank" rel="noreferrer" className="slotcrate-inline-link">
-              {t("home.website.cta")}
-            </a>
-          </article>
-        </div>
+    <section className="max-w-5xl mx-auto px-6 py-16 md:py-24">
+      <div className="max-w-3xl">
+        <h1 className="text-4xl md:text-6xl font-semibold mb-5 leading-tight slotcrate-brand">{t("home.title")}</h1>
+        <p className="text-white/75 text-base md:text-lg">{t("home.subtitle")}</p>
       </div>
+
+      <div className="mt-12 border-y border-white/15">
+        <Link href="/generator" className="slotcrate-tool-row group">
+          <div>
+            <h2 className="text-xl font-semibold">{t("home.generator.title")}</h2>
+            <p className="mt-1 text-sm text-white/65">{t("home.generator.description")}</p>
+          </div>
+          <span className="slotcrate-row-action">{t("home.generator.cta")} <span aria-hidden="true">→</span></span>
+        </Link>
+
+        <Link href="/planner" className="slotcrate-tool-row group">
+          <div>
+            <h2 className="text-xl font-semibold">{t("home.planner.title")}</h2>
+            <p className="mt-1 text-sm text-white/65">{t("home.planner.description")}</p>
+          </div>
+          <span className="slotcrate-row-action">{t("home.planner.cta")} <span aria-hidden="true">→</span></span>
+        </Link>
+
+        <Link href="/cover" className="slotcrate-tool-row group">
+          <div>
+            <h2 className="text-xl font-semibold">{t("home.cover.title")}</h2>
+            <p className="mt-1 text-sm text-white/65">{t("home.cover.description")}</p>
+          </div>
+          <span className="slotcrate-row-action">{t("home.cover.cta")} <span aria-hidden="true">→</span></span>
+        </Link>
+
+        <Link href="/inlay" className="slotcrate-tool-row group">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="text-xl font-semibold">{t("home.inlay.title")}</h2>
+              <span className="slotcrate-status">{t("inDevelopmentBadge")}</span>
+            </div>
+            <p className="mt-1 text-sm text-white/65">{t("home.inlay.description")}</p>
+          </div>
+          <span className="slotcrate-row-action">{t("home.inlay.cta")} <span aria-hidden="true">→</span></span>
+        </Link>
+      </div>
+
+      <a href={slotcrateHref} target="_blank" rel="noreferrer" className="mt-6 inline-block text-sm text-white/55 hover:text-white underline-offset-4 hover:underline">
+        {t("home.website.cta")} ↗
+      </a>
     </section>
   );
 }

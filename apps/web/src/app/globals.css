@@ -51,15 +51,22 @@ body {
 }
 
 .slotcrate-navlink {
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 9999px;
-    padding: 0.35rem 0.9rem;
+    border-radius: 0.45rem;
+    padding: 0.45rem 0.7rem;
     transition: 180ms ease;
 }
 
 .slotcrate-navlink:hover {
-    border-color: rgba(255, 255, 255, 0.28);
     background: rgba(255, 255, 255, 0.08);
+}
+
+.slotcrate-status {
+    color: #fbbf24;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
 }
 
 .slotcrate-navcta {
@@ -224,4 +231,40 @@ textarea {
     outline: none;
     border-color: #ff7b00;
     box-shadow: 0 0 0 2px rgba(255, 123, 0, 0.25);
+}
+
+.slotcrate-tool-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    transition: 180ms ease;
+}
+
+.slotcrate-tool-row:last-child {
+    border-bottom: 0;
+}
+
+.slotcrate-tool-row:hover {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.slotcrate-row-action {
+    flex: 0 0 auto;
+    color: var(--green-bright);
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .slotcrate-tool-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
 }
