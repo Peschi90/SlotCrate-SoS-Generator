@@ -66,7 +66,6 @@ export function BoxPreview({
   const centerZ = heightMm / 2;
   const radius = Math.max(outerW, outerD, heightMm) * 0.9;
   return (
-    <CadCanvas center={[centerX, centerY, centerZ]} radius={radius}>
     <CadCanvas
       center={[centerX, centerY, centerZ]}
       radius={radius}
@@ -79,7 +78,7 @@ export function BoxPreview({
         widthCells={widthCells}
         depthCells={depthCells}
         heightMm={heightMm}
-          color={color}
+        color={color}
         gridPitchMm={gridPitchMm}
         wallThicknessMm={wallThicknessMm}
         innerFloorRadiusMm={innerFloorRadiusMm}

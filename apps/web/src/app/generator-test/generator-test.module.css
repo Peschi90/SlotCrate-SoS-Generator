@@ -73,8 +73,11 @@
     line-height: 1.8;
 }
 
-background-image: linear-gradient(rgba(234, 181, 47, .06) 1px, transparent 1px),
-linear-gradient(90deg, rgba(234, 181, 47, .06) 1px, transparent 1px);
+.previewPanel {
+    background-image: linear-gradient(rgba(234, 181, 47, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(234, 181, 47, .06) 1px, transparent 1px);
+    background-size: 42px 42px;
+}
+
 .canvas {
     position: relative;
     min-height: 420px;
