@@ -255,7 +255,7 @@ docker compose -f infra\docker-compose.yml up --build
 
 - Startseite: <http://localhost:6293/>
 - Generator: <http://localhost:6293/generator>
-- Generator Design-Test: <http://localhost:6293/generator-test> (isolierte Einzelkasten-Oberfläche; bewusst nicht in der produktiven Navigation verlinkt)
+- Generator Design-Test: <http://localhost:6293/generator-test> (isolierte Einzelkasten-Oberfläche mit Trennstegen, Taschen, Wannen-Einsätzen und STL-Export; bewusst nicht in der produktiven Navigation verlinkt)
 - Planner: <http://localhost:6293/planner>
 - Admin: <http://localhost:6293/admin>
 - CAD-API-Health: <http://127.0.0.1:6294/health>

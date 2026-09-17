@@ -233,6 +233,78 @@
     font-size: 12px;
 }
 
+.featureSections {
+    border-bottom: 1px solid rgba(255, 255, 255, .1);
+}
+
+.featureSections>div {
+    border-bottom-color: rgba(234, 181, 47, .16);
+}
+
+.resetButton {
+    width: 100%;
+    min-height: 38px;
+    margin-top: 8px;
+    border: 1px solid #635840;
+    color: #c8c0ad;
+    background: transparent;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.resetButton:hover:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.resetButton:disabled {
+    opacity: .5;
+}
+
+
+/* Keep the current SlotCrate palette after the legacy layout block below. */
+
+.studio {
+    --accent: #eab52f;
+    --line: rgba(234, 181, 47, .34);
+    color: #f7f3e8;
+    background: #0b0b0b;
+}
+
+.studioHeader,
+.config {
+    background: #11110f;
+}
+
+.rail {
+    background: #10100f;
+}
+
+.railActive {
+    background: linear-gradient(90deg, rgba(234, 181, 47, .2), transparent);
+}
+
+.previewPanel {
+    background-image: linear-gradient(rgba(234, 181, 47, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(234, 181, 47, .06) 1px, transparent 1px);
+}
+
+.canvas {
+    background: radial-gradient(circle at 50% 75%, rgba(234, 181, 47, .14), transparent 42%), #171411;
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .72), 0 0 28px rgba(234, 181, 47, .05);
+}
+
+.configSection select,
+.stepper div,
+.heightGrid button {
+    border-color: #5a513c;
+    background: #181611;
+}
+
+.exportButton {
+    color: #171107;
+    box-shadow: 0 0 20px rgba(234, 181, 47, .24);
+}
+
 .studio {
     --accent: #59ff52;
     --line: rgba(89, 255, 82, .32);

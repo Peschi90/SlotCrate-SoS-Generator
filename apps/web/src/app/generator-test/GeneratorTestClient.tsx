@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { BoxPreview } from "@/components/BoxPreview";
+import { CollapsibleSection } from "@/components/CollapsibleSection";
+import { DividerEditor } from "@/components/DividerEditor";
+import { PocketEditor } from "@/components/PocketEditor";
+import { WaveInsertEditor } from "@/components/WaveInsertEditor";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
+import { clampDividers, clampPockets, clampWaveInserts } from "@/lib/layout-store";
+import type { Divider, Pocket, WaveInsert } from "@/lib/schema";
 import { SYSTEM } from "@/lib/system";
 import styles from "./generator-test.module.css";
 
@@ -32,12 +38,38 @@ export function GeneratorTestClient({
   const [widthCells, setWidthCells] = useState(activeVariant.minCells);
   const [depthCells, setDepthCells] = useState(activeVariant.minCells);
   const [heightMm, setHeightMm] = useState(closestHeight(activeVariant.boxHeightMm));
+  const [dividers, setDividers] = useState<Divider[]>([]);
+  const [pockets, setPockets] = useState<Pocket[]>([]);
+  const [pocketsFillOuter, setPocketsFillOuter] = useState(false);
+  const [waveInserts, setWaveInserts] = useState<WaveInsert[]>([]);
+  const [activeDividerIndex, setActiveDividerIndex] = useState<number | null>(null);
+  const [activePocketIndex, setActivePocketIndex] = useState<number | null>(null);
+  const [activeWaveInsertIndex, setActiveWaveInsertIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
   const [pending, startTransition] = useTransition();
   const busy = pending || controller !== null;
   const widthMm = widthCells * activeVariant.gridPitchMm;
   const depthMm = depthCells * activeVariant.gridPitchMm;
+  const sanitizedDividers = useMemo(
+    () => clampDividers(dividers, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm),
+    [dividers, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm]
+  );
+  const sanitizedPockets = useMemo(
+    () => clampPockets(pockets, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm),
+    [pockets, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm]
+  );
+  const sanitizedWaveInserts = useMemo(
+    () => clampWaveInserts(waveInserts, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm),
+    [waveInserts, widthCells, depthCells, heightMm, activeVariant.gridPitchMm, activeVariant.wallThicknessMm]
+  );
+
+  useEffect(() => { if (sanitizedDividers.length !== dividers.length) setDividers(sanitizedDividers); }, [sanitizedDividers, dividers.length]);
+  useEffect(() => { if (sanitizedPockets.length !== pockets.length) setPockets(sanitizedPockets); }, [sanitizedPockets, pockets.length]);
+  useEffect(() => { if (sanitizedWaveInserts.length !== waveInserts.length) setWaveInserts(sanitizedWaveInserts); }, [sanitizedWaveInserts, waveInserts.length]);
+  useEffect(() => { setActiveDividerIndex((index) => index !== null && index >= sanitizedDividers.length ? null : index); }, [sanitizedDividers.length]);
+  useEffect(() => { setActivePocketIndex((index) => index !== null && index >= sanitizedPockets.length ? null : index); }, [sanitizedPockets.length]);
+  useEffect(() => { setActiveWaveInsertIndex((index) => index !== null && index >= sanitizedWaveInserts.length ? null : index); }, [sanitizedWaveInserts.length]);
 
   async function download() {
     setError(null);
@@ -57,10 +89,10 @@ export function GeneratorTestClient({
           outerClearanceMm: activeVariant.outerClearanceMm,
           stlTessellationLinearMm: activeVariant.stlTessellationLinearMm,
           stlTessellationAngularRad: activeVariant.stlTessellationAngularRad,
-          dividers: [],
-          pockets: [],
-          pocketsFillOuter: false,
-          waveInserts: []
+          dividers: sanitizedDividers,
+          pockets: sanitizedPockets,
+          pocketsFillOuter,
+          waveInserts: sanitizedWaveInserts
         }),
         signal: abortController.signal
       });
@@ -87,6 +119,20 @@ export function GeneratorTestClient({
     setWidthCells((value) => Math.min(next.maxWidthCells, Math.max(next.minCells, value)));
     setDepthCells((value) => Math.min(next.maxDepthCells, Math.max(next.minCells, value)));
     setHeightMm(Math.min(maxHeightMm, Math.max(minHeightMm, closestHeight(next.boxHeightMm))));
+  }
+
+  function resetConfiguration() {
+    setWidthCells(activeVariant.minCells);
+    setDepthCells(activeVariant.minCells);
+    setHeightMm(Math.min(maxHeightMm, Math.max(minHeightMm, closestHeight(activeVariant.boxHeightMm))));
+    setDividers([]);
+    setPockets([]);
+    setPocketsFillOuter(false);
+    setWaveInserts([]);
+    setActiveDividerIndex(null);
+    setActivePocketIndex(null);
+    setActiveWaveInsertIndex(null);
+    setError(null);
   }
 
   return (
@@ -128,6 +174,16 @@ export function GeneratorTestClient({
               wallThicknessMm={activeVariant.wallThicknessMm}
               innerFloorRadiusMm={activeVariant.innerFloorRadiusMm}
               outerClearanceMm={activeVariant.outerClearanceMm}
+              dividers={sanitizedDividers}
+              pockets={sanitizedPockets}
+              pocketsFillOuter={pocketsFillOuter}
+              waveInserts={sanitizedWaveInserts}
+              activeDividerIndex={activeDividerIndex}
+              activePocketIndex={activePocketIndex}
+              activeWaveInsertIndex={activeWaveInsertIndex}
+              onDividerActivate={setActiveDividerIndex}
+              onPocketActivate={setActivePocketIndex}
+              onWaveInsertActivate={setActiveWaveInsertIndex}
             />
             <dl className={styles.measurements}>
               <div><dt>{t("width")}</dt><dd>{widthMm.toFixed(1)} mm</dd></div>
@@ -164,10 +220,22 @@ export function GeneratorTestClient({
               ))}
             </div>
           </ConfigSection>
+          <div className={styles.featureSections}>
+            <CollapsibleSection title={t("features.dividers")} badge={sanitizedDividers.length || undefined} defaultOpen={sanitizedDividers.length > 0}>
+              <DividerEditor widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} gridPitchMm={activeVariant.gridPitchMm} wallThicknessMm={activeVariant.wallThicknessMm} dividers={sanitizedDividers} onChange={setDividers} activeIndex={activeDividerIndex} onActiveIndexChange={setActiveDividerIndex} />
+            </CollapsibleSection>
+            <CollapsibleSection title={t("features.pockets")} badge={sanitizedPockets.length || undefined} defaultOpen={sanitizedPockets.length > 0}>
+              <PocketEditor widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} gridPitchMm={activeVariant.gridPitchMm} wallThicknessMm={activeVariant.wallThicknessMm} pockets={sanitizedPockets} onChange={setPockets} fillOuter={pocketsFillOuter} onFillOuterChange={setPocketsFillOuter} activeIndex={activePocketIndex} onActiveIndexChange={setActivePocketIndex} />
+            </CollapsibleSection>
+            <CollapsibleSection title={t("features.waveInserts")} badge={sanitizedWaveInserts.length || undefined} defaultOpen={sanitizedWaveInserts.length > 0}>
+              <WaveInsertEditor widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} gridPitchMm={activeVariant.gridPitchMm} wallThicknessMm={activeVariant.wallThicknessMm} waveInserts={sanitizedWaveInserts} onChange={setWaveInserts} activeIndex={activeWaveInsertIndex} onActiveIndexChange={setActiveWaveInsertIndex} />
+            </CollapsibleSection>
+          </div>
           <section className={styles.exportBlock}>
             <p>{t("exportHint")}</p>
             <button className={styles.exportButton} type="submit" disabled={busy}>{busy ? t("exporting") : t("exportStl")}</button>
             {busy && <button className={styles.cancelButton} type="button" onClick={() => controller?.abort()}>{t("cancel")}</button>}
+            <button className={styles.resetButton} type="button" onClick={resetConfiguration} disabled={busy}>{t("reset")}</button>
             {error && <div className={styles.error} role="alert">{error}</div>}
           </section>
         </form>

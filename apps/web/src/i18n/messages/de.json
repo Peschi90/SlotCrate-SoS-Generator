@@ -94,6 +94,12 @@
         "exportStl": "STL exportieren",
         "exporting": "STL wird erzeugt ...",
         "cancel": "Abbrechen",
+        "reset": "Konfiguration zurücksetzen",
+        "features": {
+            "dividers": "Trennstege",
+            "pockets": "Runde Taschen",
+            "waveInserts": "Wannen-Einsätze"
+        },
         "exportError": "Die STL-Datei konnte nicht erzeugt werden."
     },
     "planner": {

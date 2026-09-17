@@ -94,6 +94,12 @@
         "exportStl": "Export STL",
         "exporting": "Generating STL ...",
         "cancel": "Cancel",
+        "reset": "Reset configuration",
+        "features": {
+            "dividers": "Internal dividers",
+            "pockets": "Round pockets",
+            "waveInserts": "Wave inserts"
+        },
         "exportError": "The STL file could not be generated."
     },
     "planner": {
