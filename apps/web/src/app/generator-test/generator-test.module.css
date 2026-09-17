@@ -241,6 +241,76 @@
     border-bottom-color: rgba(234, 181, 47, .16);
 }
 
+.featureSection {
+    border: 0;
+    border-bottom: 1px solid rgba(234, 181, 47, .18);
+    border-radius: 0;
+    background: transparent;
+}
+
+.featureSection>button {
+    min-height: 52px;
+    padding: 0 16px;
+    border: 0;
+    border-left: 3px solid transparent;
+    border-radius: 0;
+    color: #e7dfcd;
+    background: #151411;
+    font-family: var(--font-rajdhani), sans-serif;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.featureSection>button:hover {
+    border-left-color: var(--accent);
+    background: #1c1913;
+}
+
+.featureSection>button span {
+    color: inherit;
+}
+
+.featureSection>button span span {
+    border-radius: 0;
+    background: rgba(234, 181, 47, .14);
+    color: var(--accent);
+}
+
+.featureSection>div {
+    border-top: 1px solid rgba(234, 181, 47, .16);
+    padding: 14px 16px 16px;
+    background: #0e0e0c;
+}
+
+.featureSection :global(.rounded-xl),
+.featureSection :global(.rounded-2xl) {
+    border-radius: 0;
+}
+
+.featureSection :global(.border-neutral-800),
+.featureSection :global(.border-neutral-700) {
+    border-color: #4e4634;
+}
+
+.featureSection :global(.bg-neutral-900\/60),
+.featureSection :global(.bg-neutral-900\/80),
+.featureSection :global(.bg-neutral-900\/40) {
+    background: #171611;
+}
+
+.featureSection :global(.text-crate-box) {
+    color: var(--accent);
+}
+
+.previewPanel {
+    position: sticky;
+    top: 120px;
+    align-self: start;
+    height: calc(100vh - 120px);
+    max-height: calc(100vh - 120px);
+    overflow: hidden;
+}
+
 .resetButton {
     width: 100%;
     min-height: 38px;
@@ -303,6 +373,16 @@
 .exportButton {
     color: #171107;
     box-shadow: 0 0 20px rgba(234, 181, 47, .24);
+}
+
+@media (max-width: 850px) {
+    .previewPanel {
+        position: relative;
+        top: auto;
+        height: auto;
+        max-height: none;
+        overflow: visible;
+    }
 }
 
 .studio {

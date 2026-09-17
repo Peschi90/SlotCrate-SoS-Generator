@@ -7,6 +7,7 @@ interface Props {
   badge?: string | number;
   defaultOpen?: boolean;
   children: ReactNode;
+  className?: string;
 }
 
 /**
@@ -14,10 +15,10 @@ interface Props {
  * verwandte Einstellungen visuell, damit die Leiste nicht als unstrukturierte
  * Liste von Reglern erscheint.
  */
-export function CollapsibleSection({ title, badge, defaultOpen = false, children }: Props) {
+export function CollapsibleSection({ title, badge, defaultOpen = false, children, className }: Props) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <section className="rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden">
+    <section className={`rounded-2xl border border-neutral-800 bg-neutral-900/40 overflow-hidden ${className ?? ""}`}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

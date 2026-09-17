@@ -221,13 +221,13 @@ export function GeneratorTestClient({
             </div>
           </ConfigSection>
           <div className={styles.featureSections}>
-            <CollapsibleSection title={t("features.dividers")} badge={sanitizedDividers.length || undefined} defaultOpen={sanitizedDividers.length > 0}>
+            <CollapsibleSection className={styles.featureSection} title={t("features.dividers")} badge={sanitizedDividers.length || undefined} defaultOpen={sanitizedDividers.length > 0}>
               <DividerEditor widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} gridPitchMm={activeVariant.gridPitchMm} wallThicknessMm={activeVariant.wallThicknessMm} dividers={sanitizedDividers} onChange={setDividers} activeIndex={activeDividerIndex} onActiveIndexChange={setActiveDividerIndex} />
             </CollapsibleSection>
-            <CollapsibleSection title={t("features.pockets")} badge={sanitizedPockets.length || undefined} defaultOpen={sanitizedPockets.length > 0}>
+            <CollapsibleSection className={styles.featureSection} title={t("features.pockets")} badge={sanitizedPockets.length || undefined} defaultOpen={sanitizedPockets.length > 0}>
               <PocketEditor widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} gridPitchMm={activeVariant.gridPitchMm} wallThicknessMm={activeVariant.wallThicknessMm} pockets={sanitizedPockets} onChange={setPockets} fillOuter={pocketsFillOuter} onFillOuterChange={setPocketsFillOuter} activeIndex={activePocketIndex} onActiveIndexChange={setActivePocketIndex} />
             </CollapsibleSection>
-            <CollapsibleSection title={t("features.waveInserts")} badge={sanitizedWaveInserts.length || undefined} defaultOpen={sanitizedWaveInserts.length > 0}>
+            <CollapsibleSection className={styles.featureSection} title={t("features.waveInserts")} badge={sanitizedWaveInserts.length || undefined} defaultOpen={sanitizedWaveInserts.length > 0}>
               <WaveInsertEditor widthCells={widthCells} depthCells={depthCells} heightMm={heightMm} gridPitchMm={activeVariant.gridPitchMm} wallThicknessMm={activeVariant.wallThicknessMm} waveInserts={sanitizedWaveInserts} onChange={setWaveInserts} activeIndex={activeWaveInsertIndex} onActiveIndexChange={setActiveWaveInsertIndex} />
             </CollapsibleSection>
           </div>
