@@ -822,3 +822,97 @@
         display: none;
     }
 }
+
+
+/* Linear feature controls: the reusable editors keep their behavior, while
+   this route gives every nested control the same visual language. */
+
+.featureSection {
+    border: 0 !important;
+    border-bottom: 1px solid rgba(234, 181, 47, .2) !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+}
+
+.featureSection>button {
+    min-height: 50px;
+    border: 0 !important;
+    border-left: 3px solid transparent !important;
+    border-radius: 0 !important;
+    background: #10110f !important;
+    color: #f2ead8 !important;
+    letter-spacing: .08em;
+}
+
+.featureSection>button:hover {
+    border-left-color: var(--accent) !important;
+    background: #171812 !important;
+}
+
+.featureSection>button>span>span {
+    border-radius: 0 !important;
+    background: rgba(234, 181, 47, .14) !important;
+    color: var(--accent) !important;
+}
+
+.featureSection>div {
+    border-top: 1px solid rgba(234, 181, 47, .2) !important;
+    border-radius: 0 !important;
+    background: #0a0c0a !important;
+    padding: 14px 16px 16px !important;
+}
+
+.featureSection :global(.rounded-xl),
+.featureSection :global(.rounded-2xl),
+.featureSection :global(.rounded-lg),
+.featureSection :global(.rounded-full) {
+    border-radius: 0 !important;
+}
+
+.featureSection :global(.bg-neutral-900\/40),
+.featureSection :global(.bg-neutral-900\/60),
+.featureSection :global(.bg-neutral-900\/70),
+.featureSection :global(.bg-neutral-900\/80) {
+    background: #111310 !important;
+}
+
+.featureSection :global(.border-neutral-800),
+.featureSection :global(.border-neutral-700) {
+    border-color: #3d3b30 !important;
+}
+
+.featureSection :global(li) {
+    border-inline: 0 !important;
+    border-top: 0 !important;
+    border-bottom: 1px solid #33352c !important;
+    background: transparent !important;
+    padding-inline: 0 !important;
+}
+
+.featureSection :global(input[type="number"]),
+.featureSection :global(input[type="text"]) {
+    border-radius: 0 !important;
+    border-color: #514a36 !important;
+    background: #151611 !important;
+}
+
+.featureSection :global(button) {
+    border-radius: 0 !important;
+    border-color: #514a36 !important;
+    background: #151611 !important;
+    color: #ddd5c2 !important;
+}
+
+.featureSection :global(button:hover:not(:disabled)) {
+    border-color: var(--accent) !important;
+    background: #211e14 !important;
+    color: var(--accent) !important;
+}
+
+.featureSection :global(input[type="range"]) {
+    background: linear-gradient(90deg, var(--accent), var(--accent-hot)) !important;
+}
+
+.featureSection :global(.text-crate-box) {
+    color: var(--accent) !important;
+}
