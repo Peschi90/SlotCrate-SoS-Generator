@@ -18,6 +18,10 @@ interface Props {
   center?: [number, number, number];
   radius: number;
   children: React.ReactNode;
+  backgroundColor?: string;
+  ambientLightColor?: string;
+  groundLightColor?: string;
+  axisColors?: [string, string, string];
 }
 
 /**
@@ -28,7 +32,11 @@ interface Props {
 export function CadCanvas({
   center = [0, 0, 0],
   radius,
-  children
+  children,
+  backgroundColor = "#0e1116",
+  ambientLightColor = "#e6ecff",
+  groundLightColor = "#20242c",
+  axisColors = ["#e2483b", "#3ea86a", "#4c8cff"]
 }: Props) {
   const [preset, setPreset] = useState<ViewPreset>("iso");
   const [seq, setSeq] = useState(0);
@@ -54,9 +62,9 @@ export function CadCanvas({
         }}
         gl={{ antialias: true }}
       >
-        <color attach="background" args={["#0e1116"]} />
+        <color attach="background" args={[backgroundColor]} />
         <ambientLight intensity={0.35} />
-        <hemisphereLight color="#e6ecff" groundColor="#20242c" intensity={0.5} />
+        <hemisphereLight color={ambientLightColor} groundColor={groundLightColor} intensity={0.5} />
         <directionalLight
           position={[radius * 1.5, -radius * 1.5, radius * 2]}
           intensity={0.9}
@@ -65,8 +73,8 @@ export function CadCanvas({
         <OrbitControls makeDefault target={centerVec.toArray()} enableDamping />
         <GizmoHelper alignment="bottom-right" margin={[72, 72]}>
           <GizmoViewport
-            axisColors={["#e2483b", "#3ea86a", "#4c8cff"]}
-            labelColor="#0e1116"
+            axisColors={axisColors}
+            labelColor={backgroundColor}
           />
         </GizmoHelper>
         <ViewController preset={preset} seq={seq} center={centerVec} radius={radius} />

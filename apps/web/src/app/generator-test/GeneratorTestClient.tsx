@@ -119,6 +119,11 @@ export function GeneratorTestClient({
               widthCells={widthCells}
               depthCells={depthCells}
               heightMm={heightMm}
+              color="#d9a928"
+              canvasBackgroundColor="#171411"
+              canvasAmbientLightColor="#fff1c2"
+              canvasGroundLightColor="#2d2114"
+              canvasAxisColors={["#e85d3f", "#d9a928", "#f4f0df"]}
               gridPitchMm={activeVariant.gridPitchMm}
               wallThicknessMm={activeVariant.wallThicknessMm}
               innerFloorRadiusMm={activeVariant.innerFloorRadiusMm}

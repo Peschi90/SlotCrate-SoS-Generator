@@ -9,6 +9,11 @@ interface Props {
   widthCells: number;
   depthCells: number;
   heightMm: number;
+  color?: string;
+  canvasBackgroundColor?: string;
+  canvasAmbientLightColor?: string;
+  canvasGroundLightColor?: string;
+  canvasAxisColors?: [string, string, string];
   gridPitchMm?: number;
   wallThicknessMm?: number;
   innerFloorRadiusMm?: number;
@@ -31,6 +36,11 @@ export function BoxPreview({
   widthCells,
   depthCells,
   heightMm,
+  color,
+  canvasBackgroundColor,
+  canvasAmbientLightColor,
+  canvasGroundLightColor,
+  canvasAxisColors,
   gridPitchMm = SYSTEM.gridPitchMm,
   wallThicknessMm = SYSTEM.wallThicknessMm,
   innerFloorRadiusMm = 2.5,
@@ -57,10 +67,19 @@ export function BoxPreview({
   const radius = Math.max(outerW, outerD, heightMm) * 0.9;
   return (
     <CadCanvas center={[centerX, centerY, centerZ]} radius={radius}>
+    <CadCanvas
+      center={[centerX, centerY, centerZ]}
+      radius={radius}
+      backgroundColor={canvasBackgroundColor}
+      ambientLightColor={canvasAmbientLightColor}
+      groundLightColor={canvasGroundLightColor}
+      axisColors={canvasAxisColors}
+    >
       <BoxMesh
         widthCells={widthCells}
         depthCells={depthCells}
         heightMm={heightMm}
+          color={color}
         gridPitchMm={gridPitchMm}
         wallThicknessMm={wallThicknessMm}
         innerFloorRadiusMm={innerFloorRadiusMm}
