@@ -8,6 +8,7 @@ import { SYSTEM } from "@/lib/system";
 import type { GeneratorSettingsPayload } from "@/lib/generator-settings-schema";
 
 type SuitcaseVariant = GeneratorSettingsPayload["suitcaseVariants"][number];
+type CoverFontName = typeof SYSTEM.coverFonts[number]["value"];
 
 interface Props {
   suitcaseVariants?: SuitcaseVariant[];
@@ -18,7 +19,7 @@ export function CoverGeneratorClient({ suitcaseVariants, supportedVariantId }: P
   const t = useTranslations("cover");
   const supportedVariant = suitcaseVariants?.find((variant) => variant.id === supportedVariantId);
   const [text, setText] = useState("SlotCrate");
-  const [fontName, setFontName] = useState(SYSTEM.coverFonts[0].value);
+  const [fontName, setFontName] = useState<CoverFontName>(SYSTEM.coverFonts[0].value);
   const [fontSizeMm, setFontSizeMm] = useState(18);
   const [centerXMm, setCenterXMm] = useState(SYSTEM.coverWidthMm / 2);
   const [centerYMm, setCenterYMm] = useState(SYSTEM.coverDepthMm / 2);
@@ -144,7 +145,7 @@ export function CoverGeneratorClient({ suitcaseVariants, supportedVariantId }: P
             <select
               id="cover-font"
               value={fontName}
-              onChange={(event) => setFontName(event.target.value)}
+              onChange={(event) => setFontName(event.target.value as CoverFontName)}
               className="slotcrate-select w-full text-sm py-2.5 px-3 rounded-xl border border-white/20 bg-black/60 text-white"
             >
               {SYSTEM.coverFonts.map((font) => <option key={font.value} value={font.value}>{font.label}</option>)}
