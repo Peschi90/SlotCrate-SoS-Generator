@@ -18,7 +18,7 @@ export function CoverGeneratorClient({ suitcaseVariants, supportedVariantId }: P
   const t = useTranslations("cover");
   const supportedVariant = suitcaseVariants?.find((variant) => variant.id === supportedVariantId);
   const [text, setText] = useState("SlotCrate");
-  const [fontName, setFontName] = useState("DejaVu Sans");
+  const [fontName, setFontName] = useState(SYSTEM.coverFonts[0].value);
   const [fontSizeMm, setFontSizeMm] = useState(18);
   const [centerXMm, setCenterXMm] = useState(SYSTEM.coverWidthMm / 2);
   const [centerYMm, setCenterYMm] = useState(SYSTEM.coverDepthMm / 2);
